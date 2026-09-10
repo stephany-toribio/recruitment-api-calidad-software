@@ -1,0 +1,59 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: portal_empleos_app
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+    ports:
+      - "8000:8000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - portal_empleos
+
+  mysql:
+    image: mysql:8.0
+    container_name: portal_empleos_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: portal_empleos
+      MYSQL_USER: laravel
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: rootsecret
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-prootsecret" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - portal_empleos
+
+  redis:
+    image: redis:alpine
+    container_name: portal_empleos_redis
+    networks:
+      - portal_empleos
+
+  mailpit:
+    image: axllent/mailpit
+    container_name: portal_empleos_mailpit
+    ports:
+      - "8025:8025" # UI web para ver correos capturados
+      - "1025:1025" # servidor SMTP falso
+    networks:
+      - portal_empleos
+
+volumes:
+  mysql_data:
+
+networks:
+  portal_empleos:
+    driver: bridge
