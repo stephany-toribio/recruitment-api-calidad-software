@@ -36,21 +36,6 @@ services:
     networks:
       - portal_empleos
 
-  redis:
-    image: redis:alpine
-    container_name: portal_empleos_redis
-    networks:
-      - portal_empleos
-
-  mailpit:
-    image: axllent/mailpit
-    container_name: portal_empleos_mailpit
-    ports:
-      - "8025:8025" # UI web para ver correos capturados
-      - "1025:1025" # servidor SMTP falso
-    networks:
-      - portal_empleos
-
 volumes:
   mysql_data:
 
