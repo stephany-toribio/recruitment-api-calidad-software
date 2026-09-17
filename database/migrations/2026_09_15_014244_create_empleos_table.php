@@ -15,24 +15,19 @@ return new class extends Migration
                 ->constrained('empresas')
                 ->onDelete('cascade');
 
-            $table->string('titulo');
-            $table->text('descripcion')->nullable();
-            $table->string('nivel_experiencia')->nullable();
-            $table->decimal('salario_min', 10, 2)->nullable();
-            $table->decimal('salario_max', 10, 2)->nullable();
+            $table->string('titulo', 100);
+            $table->text('descripcion');
+            $table->enum('nivel_experiencia', ['junior', 'semi_senior', 'senior']);
+            $table->decimal('salario_min', 10, 2);
+            $table->decimal('salario_max', 10, 2);
             $table->enum('estado_empleo', ['activo', 'cerrado', 'finalizado'])
                 ->default('activo');
-            $table->dateTime('fecha_publicacion')->nullable();
+            $table->timestamp('fecha_publicacion')->useCurrent();
             $table->dateTime('fecha_cierre')->nullable();
-            $table->enum('tipo_empleo', ['presencial', 'remoto', 'hibrido'])
-                ->default('presencial');
+            $table->enum('tipo_empleo', ['presencial', 'remoto', 'hibrido'])->nullable();
             $table->unsignedSmallInteger('numero_vacantes')->default(1);
-            
-
             $table->timestamps();
-
             $table->index(['estado_empleo', 'tipo_empleo']);
-
         });
     }
 

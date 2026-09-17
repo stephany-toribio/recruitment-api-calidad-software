@@ -12,12 +12,11 @@ return new class extends Migration
             $table->foreignId('empleo_id')
                 ->constrained('empleos')
                 ->onDelete('cascade');
-
             $table->foreignId('habilidad_id')
                 ->constrained('habilidades')
                 ->onDelete('restrict'); 
                 
-            $table->unsignedTinyInteger('peso');
+            $table->enum('tipo_requisito', ['must_have', 'nice_to_have']);
             $table->timestamps();
 
             $table->primary(['empleo_id', 'habilidad_id']);

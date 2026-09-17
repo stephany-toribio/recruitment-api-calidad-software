@@ -10,19 +10,18 @@ return new class extends Migration
     {
         Schema::create('usuarios', function (Blueprint $table) {
             $table->id();
+
             $table->foreignId('rol_id')
                 ->constrained('roles')
                 ->onDelete('restrict');
+
             $table->string('correo')->unique();
             $table->string('password');
-            
-
             $table->enum('estado_cuenta', ['activo', 'suspendido'])->default('activo');
             $table->unsignedTinyInteger('intentos_fallidos')->default(0);
             $table->dateTime('bloqueado_hasta')->nullable();
             $table->string('motivo_suspension')->nullable();
             $table->timestamp('fecha_suspension')->nullable();
-
             $table->timestamps();
         });
     }

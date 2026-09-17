@@ -13,17 +13,18 @@ return new class extends Migration
             $table->id();
  
             $table->foreignId('usuario_id')
+                ->unique()
                 ->constrained('usuarios')
                 ->onDelete('cascade');
 
             $table->string('nombre');
             $table->string('apellido_paterno');
             $table->string('apellido_materno'); 
-            $table->string('dni', 8)->unique(); 
-            $table->date('fecha_nacimiento');
+            $table->string('dni', 8)->unique()->nullable();
+            $table->date('fecha_nacimiento')->nullable();
             $table->string('celular', 20);
-            $table->enum('genero', ['masculino', 'femenino', 'otro'])->default('masculino');
-            $table->enum('disponibilidad', ['inmediata', '1_semana', '1_mes'])->default('inmediata');
+            $table->enum('genero', ['masculino', 'femenino', 'otro'])->nullable();
+            $table->enum('disponibilidad', ['inmediata', '1_semana', '1_mes'])->nullable();
             $table->timestamps();
         });
     }

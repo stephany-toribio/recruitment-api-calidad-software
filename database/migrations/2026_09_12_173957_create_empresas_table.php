@@ -12,13 +12,14 @@ return new class extends Migration
             $table->id(); 
 
             $table->foreignId('usuario_id')
+                ->unique()
                 ->constrained('usuarios')
                 ->onDelete('cascade');
 
             $table->string('razon_social');
-            $table->string('descripcion')->nullable();
-            $table->string('ruc', 11)->unique();
-            $table->string('pagina_web')->nullable(); 
+            $table->text('descripcion')->nullable();
+            $table->char('ruc', 11)->unique();
+            $table->string('sitio_web');
             $table->timestamps();
         });
     }

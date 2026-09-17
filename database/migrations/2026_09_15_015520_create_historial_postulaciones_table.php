@@ -15,19 +15,15 @@ return new class extends Migration
             $table->foreignId('postulacion_id')
                 ->constrained('postulaciones')
                 ->onDelete('cascade');
-
-            
             $table->foreignId('estado_postulacion_id')
                 ->constrained('estados_postulacion')
                 ->onDelete('restrict');
-
             $table->foreignId('motivo_rechazo_id')
                 ->nullable()
                 ->constrained('motivos_rechazo')
                 ->nullOnDelete();
 
             $table->timestamp('fecha_cambio')->useCurrent();
-
             $table->timestamps();
         });
     }

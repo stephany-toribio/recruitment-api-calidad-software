@@ -10,10 +10,10 @@ return new class extends Migration
     { 
         Schema::create('habilidades', function (Blueprint $table) {
             $table->id();
+
             $table->string('nombre')->unique();
             $table->string('tipo_habilidad')->nullable();
             $table->enum('estado', ['activo', 'inactivo'])->default('activo');
-
             $table->timestamps();
         });
     }
