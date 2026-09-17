@@ -24,14 +24,14 @@ return new class extends Migration
                 ->default('activo');
             $table->dateTime('fecha_publicacion')->nullable();
             $table->dateTime('fecha_cierre')->nullable();
-            $table->enum('modalidad', ['presencial', 'remoto', 'hibrido'])
+            $table->enum('tipo_empleo', ['presencial', 'remoto', 'hibrido'])
                 ->default('presencial');
-            $table->unsignedSmallInteger('cantidad_vacantes')->default(1);
+            $table->unsignedSmallInteger('numero_vacantes')->default(1);
             
 
             $table->timestamps();
 
-            $table->index(['estado_empleo', 'modalidad']);
+            $table->index(['estado_empleo', 'tipo_empleo']);
 
         });
     }

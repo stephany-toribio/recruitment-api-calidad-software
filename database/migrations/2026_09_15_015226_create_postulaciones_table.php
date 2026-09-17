@@ -20,22 +20,18 @@ return new class extends Migration
                 ->constrained('empleos')
                 ->onDelete('restrict');
 
-            $table->decimal('porcentaje_match', 5, 2)->nullable();
-            
+            $table->foreignId('estado_postulacion_id')
+                ->constrained('estados_postulacion')
+                ->onDelete('restrict');
 
-            $table->enum('estado', [
-                'recibido',
-                'en_revision',
-                'entrevista',
-                'contratado',
-                'rechazado',
-            ])->default('recibido');
+            $table->decimal('porcentaje_match', 5, 2)->nullable();
+            $table->timestamp('fecha_postulacion')->useCurrent();
 
             $table->timestamps();                       
 
             $table->unique(['candidato_id', 'empleo_id']);
 
-            $table->index(['empleo_id', 'estado']);
+            $table->index(['empleo_id', 'estado_postulacion_id']);
         });
     }
 

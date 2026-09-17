@@ -17,14 +17,13 @@ return new class extends Migration
                 ->onDelete('cascade');
 
             $table->string('nombre');
-            $table->string('apellido')->nullable();
+            $table->string('apellido_paterno');
+            $table->string('apellido_materno'); 
             $table->string('dni', 8)->unique(); 
             $table->date('fecha_nacimiento');
-            $table->string('telefono', 20);
-            $table->decimal('expectativa_salarial', 10, 2);
+            $table->string('celular', 20);
+            $table->enum('genero', ['masculino', 'femenino', 'otro'])->default('masculino');
             $table->enum('disponibilidad', ['inmediata', '1_semana', '1_mes'])->default('inmediata');
-            $table->string('cv_path')->nullable(); 
-            $table->string('foto_url')->nullable();
             $table->timestamps();
         });
     }

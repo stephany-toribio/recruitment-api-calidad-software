@@ -10,11 +10,12 @@ return new class extends Migration
     {
         Schema::create('usuarios', function (Blueprint $table) {
             $table->id();
-            $table->string('correo')->unique();
-            $table->string('password');
             $table->foreignId('rol_id')
                 ->constrained('roles')
                 ->onDelete('restrict');
+            $table->string('correo')->unique();
+            $table->string('password');
+            
 
             $table->enum('estado_cuenta', ['activo', 'suspendido'])->default('activo');
             $table->unsignedTinyInteger('intentos_fallidos')->default(0);

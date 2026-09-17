@@ -17,24 +17,16 @@ return new class extends Migration
                 ->onDelete('cascade');
 
             
-            $table->enum('estado_anterior', [
-                'recibido',
-                'en_revision',
-                'entrevista',
-                'contratado',
-                'rechazado',
-            ])->nullable();
+            $table->foreignId('estado_postulacion_id')
+                ->constrained('estados_postulacion')
+                ->onDelete('restrict');
 
-            
-            $table->enum('estado_nuevo', [
-                'recibido',
-                'en_revision',
-                'entrevista',
-                'contratado',
-                'rechazado',
-            ]);
+            $table->foreignId('motivo_rechazo_id')
+                ->nullable()
+                ->constrained('motivos_rechazo')
+                ->nullOnDelete();
 
-            
+            $table->timestamp('fecha_cambio')->useCurrent();
 
             $table->timestamps();
         });

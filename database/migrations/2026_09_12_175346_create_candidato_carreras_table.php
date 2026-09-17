@@ -18,16 +18,22 @@ return new class extends Migration
                 ->constrained('candidatos')
                 ->onDelete('cascade');
 
-            $table->string('nombre_carrera');
-            $table->string('nombre_institucion');
+            $table->foreignId('carrera_id')
+                ->constrained('carreras')
+                ->onDelete('cascade');
+
+            $table->string('area');
+            $table->string('institucion');
                 
             $table->enum('estado', ['en_curso', 'egresado', 'titulado'])->default('egresado');
             $table->unsignedTinyInteger('ciclo_actual')->nullable();
+            $table->date('fecha_inicio')->nullable();
+            $table->date('fecha_fin')->nullable();
     
             $table->timestamps();
 
-            //Evita duplicar la misma carrera para el mismo candidato
-            $table->unique(['candidato_id', 'nombre_carrera', 'nombre_institucion'], 'candidato_carrera_inst_unique');
+            // Evita duplicar la misma carrera e institucion para el mismo candidato
+            $table->unique(['candidato_id', 'carrera_id', 'institucion'], 'candidato_carrera_inst_unique');
         });
 
     }
