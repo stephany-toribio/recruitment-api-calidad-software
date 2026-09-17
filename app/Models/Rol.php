@@ -11,7 +11,6 @@ class Rol extends Model
     use HasFactory;
 
     protected $table = 'roles';
-
     protected $fillable = ['nombre'];
 
     public function usuarios(): HasMany

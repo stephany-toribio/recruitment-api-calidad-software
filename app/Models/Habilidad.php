@@ -10,6 +10,5 @@ class Habilidad extends Model
     use HasFactory;
 
     protected $table = 'habilidades';
-
-    protected $fillable = ['nombre', 'categoria', 'estado'];
+    protected $fillable = ['nombre', 'tipo_habilidad', 'estado'];
 }
