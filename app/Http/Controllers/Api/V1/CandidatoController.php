@@ -29,13 +29,10 @@ class CandidatoController extends BaseApiController
     }
 
 
-    // GET /api/v1/candidatos/{id} (Ver perfil por ID) 
-    public function show(int $id): JsonResponse
+    // GET /api/v1/candidatos/{candidato} (Ver perfil por ID) 
+    public function show(Candidato $candidato): JsonResponse
     {
-        $candidato = Candidato::with(['habilidades', 'carreras', 'usuario'])->find($id);
-        if (!$candidato) {
-            return $this->errorResponse('El candidato no existe.', Response::HTTP_NOT_FOUND);
-        }
+        $candidato->load(['habilidades', 'carreras', 'usuario']);
         return $this->successResponse(
             new CandidatoResource($candidato),
             'Perfil de candidato obtenido exitosamente'
@@ -44,10 +41,12 @@ class CandidatoController extends BaseApiController
 
 
     // PUT /api/v1/candidatos/{id} (Actualizar perfil por ID)
-    public function update(ActualizarCandidatoRequest $request, int $id): JsonResponse
+    public function update(ActualizarCandidatoRequest $request, Candidato $candidato): JsonResponse
     {
-        $candidato = Candidato::findOrFail($id);
-        $candidatoActualizado = $this->candidatoService->actualizar($candidato, $request->validated());
+        $candidatoActualizado = $this->candidatoService->actualizar(
+            $candidato,
+            $request->validated()
+        ); 
         
         return $this->successResponse(
             new CandidatoResource($candidatoActualizado),
