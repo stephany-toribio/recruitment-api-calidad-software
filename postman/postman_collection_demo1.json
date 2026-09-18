@@ -1,0 +1,289 @@
+{
+	"info": {
+		"_postman_id": "portal-empleos-demo1-collection",
+		"name": "Portal Empleos - Demo 1 (Auth & Candidatos)",
+		"description": "Colección completa para probar los endpoints de Dev 1 (Auth & Usuarios) y Dev 2 (Candidatos) en la Demo 1 (Solución A: Sin Tokens / IDs en URL).",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Auth & Usuarios (Dev 1)",
+			"item": [
+				{
+					"name": "1. Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.usuario_id) {",
+									"        pm.environment.set(\"usuario_id\", jsonData.data.usuario_id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"correo\": \"juan.perez@example.com\",\n    \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "Inicia sesión con correo y contraseña. Devuelve usuario_id, correo y rol."
+					},
+					"response": []
+				},
+				{
+					"name": "2. Ver Perfil de Usuario por ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/auth/usuarios/{{usuario_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"usuarios",
+								"{{usuario_id}}"
+							]
+						},
+						"description": "Devuelve el perfil del usuario con su rol y perfil de candidato o empresa vinculado."
+					},
+					"response": []
+				},
+				{
+					"name": "3. Cambiar Contraseña",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"password_actual\": \"password123\",\n    \"password_nuevo\": \"nuevo_password123\",\n    \"password_nuevo_confirmation\": \"nuevo_password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/usuarios/{{usuario_id}}/password",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"usuarios",
+								"{{usuario_id}}",
+								"password"
+							]
+						},
+						"description": "Cambia la contraseña verificando primero la contraseña actual."
+					},
+					"response": []
+				},
+				{
+					"name": "4. Cerrar Sesión (Logout)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/auth/logout",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"logout"
+							]
+						},
+						"description": "Retorna mensaje de confirmación de fin de sesión."
+					},
+					"response": []
+				},
+				{
+					"name": "5. Recuperar Contraseña (Forgot Password)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"correo\": \"juan.perez@example.com\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/forgot-password",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"forgot-password"
+							]
+						},
+						"description": "Envío de enlace de recuperación (Mock)."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Candidatos (Dev 2)",
+			"item": [
+				{
+					"name": "1. Registrar Candidato",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.id) {",
+									"        pm.environment.set(\"candidato_id\", jsonData.data.id);",
+									"    }",
+									"    if (jsonData.data && jsonData.data.usuario_id) {",
+									"        pm.environment.set(\"usuario_id\", jsonData.data.usuario_id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nombre\": \"Juan\",\n    \"apellido_paterno\": \"Perez\",\n    \"apellido_materno\": \"Gomez\",\n    \"dni\": \"12345678\",\n    \"fecha_nacimiento\": \"1995-05-15\",\n    \"genero\": \"masculino\",\n    \"correo\": \"juan.perez@example.com\",\n    \"password\": \"password123\",\n    \"password_confirmation\": \"password123\",\n    \"celular\": \"987654321\",\n    \"disponibilidad\": \"inmediata\",\n    \"habilidades\": [1, 2],\n    \"carreras\": [\n        {\n            \"carrera_id\": 1,\n            \"institucion\": \"Universidad Nacional de Ingeniería\",\n            \"estado\": \"egresado\",\n            \"ciclo_actual\": null,\n            \"area\": \"Tecnología\"\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/candidatos",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"candidatos"
+							]
+						},
+						"description": "Registra un candidato creando su usuario base, sus habilidades y sus carreras."
+					},
+					"response": []
+				},
+				{
+					"name": "2. Ver Perfil de Candidato por ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/candidatos/{{candidato_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"candidatos",
+								"{{candidato_id}}"
+							]
+						},
+						"description": "Obtiene los detalles del perfil del candidato, incluyendo habilidades y carreras."
+					},
+					"response": []
+				},
+				{
+					"name": "3. Actualizar Perfil de Candidato",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nombre\": \"Juan Carlos\",\n    \"apellido_paterno\": \"Perez\",\n    \"apellido_materno\": \"Gomez\",\n    \"dni\": \"12345678\",\n    \"celular\": \"911223344\",\n    \"disponibilidad\": \"1_semana\",\n    \"habilidades\": [1, 2, 3]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/candidatos/{{candidato_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"candidatos",
+								"{{candidato_id}}"
+							]
+						},
+						"description": "Actualiza los datos del candidato. Permite enviar el mismo DNI sin conflicto."
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
