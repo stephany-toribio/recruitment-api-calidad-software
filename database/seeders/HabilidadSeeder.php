@@ -7,35 +7,34 @@ use Illuminate\Database\Seeder;
 
 class HabilidadSeeder extends Seeder
 {
-    /**
-     * Inserta el catálogo inicial de habilidades.
-     * Usa firstOrCreate para ser idempotente.
-     */
     public function run(): void
     {
         $habilidades = [
-            ['nombre' => 'PHP',        'categoria' => 'Tecnica'],
-            ['nombre' => 'Laravel',    'categoria' => 'Tecnica'],
-            ['nombre' => 'Python',     'categoria' => 'Tecnica'],
-            ['nombre' => 'Node.js',    'categoria' => 'Tecnica'],
-            ['nombre' => 'JavaScript', 'categoria' => 'Tecnica'],
-            ['nombre' => 'React',      'categoria' => 'Tecnica'],
-            ['nombre' => 'Angular',    'categoria' => 'Tecnica'],
-            ['nombre' => 'Vue.js',     'categoria' => 'Tecnica'],
-            ['nombre' => 'MySQL',      'categoria' => 'Tecnica'],
-            ['nombre' => 'PostgreSQL', 'categoria' => 'Tecnica'],
-            ['nombre' => 'Docker',     'categoria' => 'Tecnica'],
-            ['nombre' => 'Git',        'categoria' => 'Tecnica'],
-            ['nombre' => 'Excel',      'categoria' => 'Blanda'],
-            ['nombre' => 'Trabajo en equipo', 'categoria' => 'Blanda'],
-            ['nombre' => 'Comunicacion efectiva', 'categoria' => 'Blanda'],
-            ['nombre' => 'Liderazgo', 'categoria' => 'Blanda'],
+            ['nombre' => 'PHP', 'tipo_habilidad' => 'tecnica'],
+            ['nombre' => 'Laravel', 'tipo_habilidad' => 'tecnica'],
+            ['nombre' => 'Python', 'tipo_habilidad' => 'tecnica'],
+            ['nombre' => 'Node.js', 'tipo_habilidad' => 'tecnica'],
+            ['nombre' => 'JavaScript', 'tipo_habilidad' => 'tecnica'],
+            ['nombre' => 'React', 'tipo_habilidad' => 'tecnica'],
+            ['nombre' => 'Angular', 'tipo_habilidad' => 'tecnica'],
+            ['nombre' => 'Vue.js', 'tipo_habilidad' => 'tecnica'],
+            ['nombre' => 'MySQL', 'tipo_habilidad' => 'tecnica'],
+            ['nombre' => 'PostgreSQL', 'tipo_habilidad' => 'tecnica'],
+            ['nombre' => 'Docker', 'tipo_habilidad' => 'tecnica'],
+            ['nombre' => 'Git', 'tipo_habilidad' => 'tecnica'],
+            ['nombre' => 'Excel', 'tipo_habilidad' => 'tecnica'],
+            ['nombre' => 'Trabajo en equipo', 'tipo_habilidad' => 'blanda'],
+            ['nombre' => 'Comunicación efectiva', 'tipo_habilidad' => 'blanda'],
+            ['nombre' => 'Liderazgo', 'tipo_habilidad' => 'blanda'],
         ];
 
         foreach ($habilidades as $habilidad) {
-            Habilidad::firstOrCreate(
+            Habilidad::updateOrCreate(
                 ['nombre' => $habilidad['nombre']],
-                $habilidad
+                [
+                    'tipo_habilidad' => $habilidad['tipo_habilidad'],
+                    'estado' => 'activo',
+                ]
             );
         }
     }
