@@ -1,289 +1,3333 @@
 {
-	"info": {
-		"_postman_id": "portal-empleos-demo1-collection",
-		"name": "Portal Empleos - Demo 1 (Auth & Candidatos)",
-		"description": "Colección completa para probar los endpoints de Dev 1 (Auth & Usuarios) y Dev 2 (Candidatos) en la Demo 1 (Solución A: Sin Tokens / IDs en URL).",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-	},
-	"item": [
-		{
-			"name": "Auth & Usuarios (Dev 1)",
-			"item": [
-				{
-					"name": "1. Login",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"if (pm.response.code === 200) {",
-									"    var jsonData = pm.response.json();",
-									"    if (jsonData.data && jsonData.data.usuario_id) {",
-									"        pm.environment.set(\"usuario_id\", jsonData.data.usuario_id);",
-									"    }",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Accept",
-								"value": "application/json"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"correo\": \"juan.perez@example.com\",\n    \"password\": \"password123\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/auth/login",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"auth",
-								"login"
-							]
-						},
-						"description": "Inicia sesión con correo y contraseña. Devuelve usuario_id, correo y rol."
-					},
-					"response": []
-				},
-				{
-					"name": "2. Ver Perfil de Usuario por ID",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Accept",
-								"value": "application/json"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/auth/usuarios/{{usuario_id}}",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"auth",
-								"usuarios",
-								"{{usuario_id}}"
-							]
-						},
-						"description": "Devuelve el perfil del usuario con su rol y perfil de candidato o empresa vinculado."
-					},
-					"response": []
-				},
-				{
-					"name": "3. Cambiar Contraseña",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Accept",
-								"value": "application/json"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"password_actual\": \"password123\",\n    \"password_nuevo\": \"nuevo_password123\",\n    \"password_nuevo_confirmation\": \"nuevo_password123\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/auth/usuarios/{{usuario_id}}/password",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"auth",
-								"usuarios",
-								"{{usuario_id}}",
-								"password"
-							]
-						},
-						"description": "Cambia la contraseña verificando primero la contraseña actual."
-					},
-					"response": []
-				},
-				{
-					"name": "4. Cerrar Sesión (Logout)",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Accept",
-								"value": "application/json"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/auth/logout",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"auth",
-								"logout"
-							]
-						},
-						"description": "Retorna mensaje de confirmación de fin de sesión."
-					},
-					"response": []
-				},
-				{
-					"name": "5. Recuperar Contraseña (Forgot Password)",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Accept",
-								"value": "application/json"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"correo\": \"juan.perez@example.com\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/auth/forgot-password",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"auth",
-								"forgot-password"
-							]
-						},
-						"description": "Envío de enlace de recuperación (Mock)."
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Candidatos (Dev 2)",
-			"item": [
-				{
-					"name": "1. Registrar Candidato",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"if (pm.response.code === 201) {",
-									"    var jsonData = pm.response.json();",
-									"    if (jsonData.data && jsonData.data.id) {",
-									"        pm.environment.set(\"candidato_id\", jsonData.data.id);",
-									"    }",
-									"    if (jsonData.data && jsonData.data.usuario_id) {",
-									"        pm.environment.set(\"usuario_id\", jsonData.data.usuario_id);",
-									"    }",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Accept",
-								"value": "application/json"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"nombre\": \"Juan\",\n    \"apellido_paterno\": \"Perez\",\n    \"apellido_materno\": \"Gomez\",\n    \"dni\": \"12345678\",\n    \"fecha_nacimiento\": \"1995-05-15\",\n    \"genero\": \"masculino\",\n    \"correo\": \"juan.perez@example.com\",\n    \"password\": \"password123\",\n    \"password_confirmation\": \"password123\",\n    \"celular\": \"987654321\",\n    \"disponibilidad\": \"inmediata\",\n    \"habilidades\": [1, 2],\n    \"carreras\": [\n        {\n            \"carrera_id\": 1,\n            \"institucion\": \"Universidad Nacional de Ingeniería\",\n            \"estado\": \"egresado\",\n            \"ciclo_actual\": null,\n            \"area\": \"Tecnología\"\n        }\n    ]\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/candidatos",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"candidatos"
-							]
-						},
-						"description": "Registra un candidato creando su usuario base, sus habilidades y sus carreras."
-					},
-					"response": []
-				},
-				{
-					"name": "2. Ver Perfil de Candidato por ID",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Accept",
-								"value": "application/json"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/candidatos/{{candidato_id}}",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"candidatos",
-								"{{candidato_id}}"
-							]
-						},
-						"description": "Obtiene los detalles del perfil del candidato, incluyendo habilidades y carreras."
-					},
-					"response": []
-				},
-				{
-					"name": "3. Actualizar Perfil de Candidato",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Accept",
-								"value": "application/json"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"nombre\": \"Juan Carlos\",\n    \"apellido_paterno\": \"Perez\",\n    \"apellido_materno\": \"Gomez\",\n    \"dni\": \"12345678\",\n    \"celular\": \"911223344\",\n    \"disponibilidad\": \"1_semana\",\n    \"habilidades\": [1, 2, 3]\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/candidatos/{{candidato_id}}",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"candidatos",
-								"{{candidato_id}}"
-							]
-						},
-						"description": "Actualiza los datos del candidato. Permite enviar el mismo DNI sin conflicto."
-					},
-					"response": []
-				}
-			]
-		}
-	]
+  "info": {
+    "_postman_id": "portal-empleos-demo1-collection",
+    "name": "Portal Empleos - Demo 1 (Backend Completo)",
+    "description": "Colección integral para la Demo 1 del Portal de Empleos. Incluye todos los endpoints de Dev 1 (Auth & Usuarios), Dev 2 (Candidatos) y Dev 3 (Empresas & Habilidades) con cobertura exhaustiva de casos de éxito (200, 201) y casos de fallo detallados (401, 404, 422).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Auth & Usuarios (Dev 1)",
+      "description": "Autenticación con email/password, gestión de sesiones con tokens Sanctum, perfil del usuario y reseteo de contraseña.",
+      "item": [
+        {
+          "name": "1.1 Login - Éxito (200 OK)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Inicia sesión con credenciales válidas. Devuelve usuario_id, correo, rol y el token de autenticación Sanctum. Almacena automáticamente las variables `token` y `usuario_id`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"juan.perez@example.com\",\n    \"password\": \"password123\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK - Login Exitoso",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/login",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"correo\": \"juan.perez@example.com\",\n    \"password\": \"password123\"\n}"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": true,\n    \"message\": \"Inicio de sesión exitoso\",\n    \"data\": {\n        \"usuario_id\": 1,\n        \"correo\": \"juan.perez@example.com\",\n        \"rol\": \"candidato\",\n        \"token\": \"1|abcdef1234567890abcdef1234567890\"\n    }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Respuesta exitosa con contrato estándar', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data).to.have.property('token');",
+                  "    pm.expect(jsonData.data).to.have.property('usuario_id');",
+                  "    if (jsonData.data && jsonData.data.token) {",
+                  "        pm.environment.set('token', jsonData.data.token);",
+                  "    }",
+                  "    if (jsonData.data && jsonData.data.usuario_id) {",
+                  "        pm.environment.set('usuario_id', jsonData.data.usuario_id);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.2 Login - Error Credenciales Incorrectas (401)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Intento de inicio de sesión con contraseña errónea o correo no registrado. Por directriz de seguridad OWASP, devuelve mensaje genérico para evitar enumeración de usuarios.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"juan.perez@example.com\",\n    \"password\": \"contraseña_incorrecta\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "401 Unauthorized - Credenciales Incorrectas",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/login",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"correo\": \"juan.perez@example.com\",\n    \"password\": \"contraseña_incorrecta\"\n}"
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": false,\n    \"message\": \"Credenciales incorrectas.\",\n    \"error_code\": \"UNAUTHORIZED\"\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "pm.test('Devuelve error_code UNAUTHORIZED', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.error_code).to.eql('UNAUTHORIZED');",
+                  "    pm.expect(jsonData.message).to.eql('Credenciales incorrectas.');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.3 Login - Error Validación Campos Vacíos (422)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Intento de login enviando campos vacíos o con formato de correo incorrecto.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"\",\n    \"password\": \"\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "422 Unprocessable - Validación Errónea",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/login",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"correo\": \"\",\n    \"password\": \"\"\n}"
+                }
+              },
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": false,\n    \"message\": \"Los datos proporcionados no son válidos.\",\n    \"error_code\": \"VALIDATION_ERROR\",\n    \"errors\": {\n        \"correo\": [\n            \"El correo es obligatorio.\"\n        ],\n        \"password\": [\n            \"La contraseña es obligatoria.\"\n        ]\n    }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Content', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Devuelve error_code VALIDATION_ERROR con detalle de campos', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.error_code).to.eql('VALIDATION_ERROR');",
+                  "    pm.expect(jsonData.errors).to.have.property('correo');",
+                  "    pm.expect(jsonData.errors).to.have.property('password');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.4 Ver Perfil /me - Éxito (200 con Token)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Obtiene los datos del usuario autenticado a través del Bearer Token de Sanctum (Dev 3 & Auth)."
+          },
+          "response": [
+            {
+              "name": "200 OK - Perfil /me",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/me",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "me"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": true,\n    \"message\": \"Usuario obtenido correctamente\",\n    \"data\": {\n        \"id\": 1,\n        \"correo\": \"juan.perez@example.com\",\n        \"rol\": \"candidato\",\n        \"candidato\": {\n            \"id\": 1,\n            \"nombre\": \"Juan Carlos\",\n            \"apellido_paterno\": \"Perez\",\n            \"apellido_materno\": \"Gomez\",\n            \"dni\": \"12345678\"\n        }\n    }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Devuelve perfil autenticado del usuario', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data).to.have.property('id');",
+                  "    pm.expect(jsonData.data).to.have.property('correo');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.5 Ver Perfil /me - Error Sin Token (401)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Intento de consultar `/auth/me` sin enviar el header `Authorization: Bearer <token>`."
+          },
+          "response": [
+            {
+              "name": "401 Unauthorized - Sin Token",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/me",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "me"
+                  ]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": false,\n    \"message\": \"No autenticado o token inválido.\",\n    \"error_code\": \"UNAUTHENTICATED\"\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "pm.test('Devuelve error_code UNAUTHENTICATED', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.error_code).to.eql('UNAUTHENTICATED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.6 Ver Perfil por ID /usuarios/{id} - Éxito (200)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/usuarios/{{usuario_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "usuarios",
+                "{{usuario_id}}"
+              ]
+            },
+            "description": "Consulta el usuario directamente por su ID de URL (sin requerir token, según flujo inicial de Dev 1)."
+          },
+          "response": [
+            {
+              "name": "200 OK - Usuario Encontrado",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/usuarios/{{usuario_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "usuarios",
+                    "{{usuario_id}}"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": true,\n    \"message\": \"Usuario obtenido correctamente\",\n    \"data\": {\n        \"id\": 1,\n        \"correo\": \"juan.perez@example.com\",\n        \"rol\": \"candidato\",\n        \"candidato\": {\n            \"id\": 1,\n            \"nombre\": \"Juan Carlos\",\n            \"apellido_paterno\": \"Perez\"\n        }\n    }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Devuelve información del usuario por ID', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data.id).to.eql(parseInt(pm.environment.get('usuario_id')));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.7 Ver Perfil por ID /usuarios/{id} - Error No Encontrado (404)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/usuarios/99999",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "usuarios",
+                "99999"
+              ]
+            },
+            "description": "Intento de consultar un usuario que no existe en el sistema."
+          },
+          "response": [
+            {
+              "name": "404 Not Found - Usuario Inexistente",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/usuarios/99999",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "usuarios",
+                    "99999"
+                  ]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": false,\n    \"message\": \"El Usuario solicitado no fue encontrado.\",\n    \"error_code\": \"RESOURCE_NOT_FOUND\"\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 404 Not Found', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test('Devuelve RESOURCE_NOT_FOUND', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.error_code).to.eql('RESOURCE_NOT_FOUND');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.8 Cambiar Contraseña - Éxito (200)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/usuarios/{{usuario_id}}/password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "usuarios",
+                "{{usuario_id}}",
+                "password"
+              ]
+            },
+            "description": "Actualiza la contraseña del usuario validando la contraseña actual.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"password_actual\": \"password123\",\n    \"password_nuevo\": \"nuevo_password123\",\n    \"password_nuevo_confirmation\": \"nuevo_password123\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK - Contraseña Cambiada",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/usuarios/{{usuario_id}}/password",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "usuarios",
+                    "{{usuario_id}}",
+                    "password"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"password_actual\": \"password123\",\n    \"password_nuevo\": \"nuevo_password123\",\n    \"password_nuevo_confirmation\": \"nuevo_password123\"\n}"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": true,\n    \"message\": \"Contraseña actualizada exitosamente\",\n    \"data\": null\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Mensaje de éxito', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.message).to.eql('Contraseña actualizada exitosamente');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.9 Cambiar Contraseña - Error Contraseña Actual Incorrecta (422)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/usuarios/{{usuario_id}}/password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "usuarios",
+                "{{usuario_id}}",
+                "password"
+              ]
+            },
+            "description": "Fallo de verificación al intentar cambiar la contraseña con una contraseña actual incorrecta.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"password_actual\": \"password_invalido_xyz\",\n    \"password_nuevo\": \"otro_password123\",\n    \"password_nuevo_confirmation\": \"otro_password123\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "422 Unprocessable - Password Actual Errónea",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/usuarios/{{usuario_id}}/password",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "usuarios",
+                    "{{usuario_id}}",
+                    "password"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"password_actual\": \"password_invalido_xyz\",\n    \"password_nuevo\": \"otro_password123\",\n    \"password_nuevo_confirmation\": \"otro_password123\"\n}"
+                }
+              },
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": false,\n    \"message\": \"Los datos proporcionados no son válidos.\",\n    \"error_code\": \"VALIDATION_ERROR\",\n    \"errors\": {\n        \"password_actual\": [\n            \"La contraseña actual es incorrecta.\"\n        ]\n    }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Content', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Error específico en password_actual', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.errors).to.have.property('password_actual');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.10 Cambiar Contraseña - Error Confirmación No Coincide (422)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/usuarios/{{usuario_id}}/password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "usuarios",
+                "{{usuario_id}}",
+                "password"
+              ]
+            },
+            "description": "Fallo de validación cuando `password_nuevo_confirmation` no coincide exactamente con `password_nuevo`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"password_actual\": \"password123\",\n    \"password_nuevo\": \"nuevo_password123\",\n    \"password_nuevo_confirmation\": \"diferente_password123\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "422 Unprocessable - Confirmación No Coincide",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/usuarios/{{usuario_id}}/password",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "usuarios",
+                    "{{usuario_id}}",
+                    "password"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"password_actual\": \"password123\",\n    \"password_nuevo\": \"nuevo_password123\",\n    \"password_nuevo_confirmation\": \"diferente_password123\"\n}"
+                }
+              },
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": false,\n    \"message\": \"Los datos proporcionados no son válidos.\",\n    \"error_code\": \"VALIDATION_ERROR\",\n    \"errors\": {\n        \"password_nuevo\": [\n            \"La confirmación de la contraseña no coincide.\"\n        ]\n    }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Content', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Error en password_nuevo por confirmación', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.errors).to.have.property('password_nuevo');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.11 Recuperar Contraseña (Forgot Password) - Éxito (200)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/forgot-password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "forgot-password"
+              ]
+            },
+            "description": "Solicita el restablecimiento de contraseña enviando correo registrado.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"juan.perez@example.com\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK - Solicitud de Recuperación Enviada",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/forgot-password",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "forgot-password"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"correo\": \"juan.perez@example.com\"\n}"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": true,\n    \"message\": \"Si el correo existe en el sistema, recibirás un enlace de recuperación.\",\n    \"data\": null\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Mensaje de confirmación neutro/seguro', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.12 Recuperar Contraseña - Error Correo Inválido (422)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/forgot-password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "forgot-password"
+              ]
+            },
+            "description": "Envío de correo con sintaxis no válida o campo ausente.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"formato-invalido-de-correo\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "422 Unprocessable - Formato de Correo Inválido",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/forgot-password",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "forgot-password"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"correo\": \"formato-invalido-de-correo\"\n}"
+                }
+              },
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": false,\n    \"message\": \"Los datos proporcionados no son válidos.\",\n    \"error_code\": \"VALIDATION_ERROR\",\n    \"errors\": {\n        \"correo\": [\n            \"El correo debe tener un formato válido.\"\n        ]\n    }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Content', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Error en campo correo', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.errors).to.have.property('correo');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.13 Cerrar Sesión (Logout) - Éxito (200)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/logout",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "logout"
+              ]
+            },
+            "description": "Cierra la sesión del usuario revocando el token Sanctum activo."
+          },
+          "response": [
+            {
+              "name": "200 OK - Logout Exitoso",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/logout",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "logout"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": true,\n    \"message\": \"Sesión cerrada exitosamente\",\n    \"data\": null\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Sesión cerrada con éxito', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.message).to.eql('Sesión cerrada exitosamente');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.14 Cerrar Sesión (Logout) - Error Sin Token (401)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/logout",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "logout"
+              ]
+            },
+            "description": "Intento de logout sin Authorization header."
+          },
+          "response": [
+            {
+              "name": "401 Unauthorized - No Autenticado",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/logout",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "logout"
+                  ]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": false,\n    \"message\": \"No autenticado o token inválido.\",\n    \"error_code\": \"UNAUTHENTICATED\"\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "pm.test('UNAUTHENTICATED al no enviar token', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.error_code).to.eql('UNAUTHENTICATED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2. Candidatos (Dev 2)",
+      "description": "Registro de candidatos con carreras y habilidades, consulta de perfil mediante Route Model Binding y actualización con soporte para el mismo DNI.",
+      "item": [
+        {
+          "name": "2.1 Registrar Candidato - Éxito (201 Created)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos"
+              ]
+            },
+            "description": "Registra un candidato completo. Crea el usuario base con rol 'candidato', vincula habilidades técnicas/blandas y carreras. Guarda `candidato_id` y `usuario_id`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Juan\",\n    \"apellido_paterno\": \"Perez\",\n    \"apellido_materno\": \"Gomez\",\n    \"dni\": \"12345678\",\n    \"fecha_nacimiento\": \"1995-05-15\",\n    \"genero\": \"masculino\",\n    \"correo\": \"juan.perez@example.com\",\n    \"password\": \"password123\",\n    \"password_confirmation\": \"password123\",\n    \"celular\": \"987654321\",\n    \"disponibilidad\": \"inmediata\",\n    \"habilidades\": [\n        1,\n        2\n    ],\n    \"carreras\": [\n        {\n            \"carrera_id\": 1,\n            \"institucion\": \"Universidad Nacional de Ingeniería\",\n            \"estado\": \"egresado\",\n            \"ciclo_actual\": null,\n            \"area\": \"Tecnología\"\n        }\n    ]\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created - Candidato Registrado",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/candidatos",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "candidatos"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"nombre\": \"Juan\",\n    \"apellido_paterno\": \"Perez\",\n    \"apellido_materno\": \"Gomez\",\n    \"dni\": \"12345678\",\n    \"fecha_nacimiento\": \"1995-05-15\",\n    \"genero\": \"masculino\",\n    \"correo\": \"juan.perez@example.com\",\n    \"password\": \"password123\",\n    \"password_confirmation\": \"password123\",\n    \"celular\": \"987654321\",\n    \"disponibilidad\": \"inmediata\",\n    \"habilidades\": [\n        1,\n        2\n    ],\n    \"carreras\": [\n        {\n            \"carrera_id\": 1,\n            \"institucion\": \"Universidad Nacional de Ingeniería\",\n            \"estado\": \"egresado\",\n            \"ciclo_actual\": null,\n            \"area\": \"Tecnología\"\n        }\n    ]\n}"
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": true,\n    \"message\": \"Candidato registrado exitosamente\",\n    \"data\": {\n        \"id\": 1,\n        \"usuario_id\": 1,\n        \"correo\": \"juan.perez@example.com\",\n        \"nombre\": \"Juan\",\n        \"apellido_paterno\": \"Perez\",\n        \"apellido_materno\": \"Gomez\",\n        \"dni\": \"12345678\",\n        \"fecha_nacimiento\": \"1995-05-15\",\n        \"celular\": \"987654321\",\n        \"genero\": \"masculino\",\n        \"disponibilidad\": \"inmediata\",\n        \"carreras\": [\n            {\n                \"id\": 1,\n                \"carrera_id\": 1,\n                \"area\": \"Tecnología\",\n                \"institucion\": \"Universidad Nacional de Ingeniería\",\n                \"estado\": \"egresado\",\n                \"ciclo_actual\": null,\n                \"fecha_inicio\": null,\n                \"fecha_fin\": null\n            }\n        ],\n        \"habilidades\": [\n            {\n                \"id\": 1,\n                \"nombre\": \"PHP\",\n                \"tipo_habilidad\": \"tecnica\",\n                \"estado\": \"activo\"\n            },\n            {\n                \"id\": 2,\n                \"nombre\": \"Laravel\",\n                \"tipo_habilidad\": \"tecnica\",\n                \"estado\": \"activo\"\n            }\n        ],\n        \"creado_en\": \"2026-09-18T18:00:00.000000Z\"\n    }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Guarda candidato_id y usuario_id en entorno', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    if (jsonData.data && jsonData.data.id) {",
+                  "        pm.environment.set('candidato_id', jsonData.data.id);",
+                  "    }",
+                  "    if (jsonData.data && jsonData.data.usuario_id) {",
+                  "        pm.environment.set('usuario_id', jsonData.data.usuario_id);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.2 Registrar Candidato - Error DNI o Correo Duplicado (422)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos"
+              ]
+            },
+            "description": "Intento de registro con un DNI o Correo que ya se encuentran registrados en la base de datos.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Juan Segundo\",\n    \"apellido_paterno\": \"Perez\",\n    \"apellido_materno\": \"Gomez\",\n    \"dni\": \"12345678\",\n    \"fecha_nacimiento\": \"1996-01-01\",\n    \"genero\": \"masculino\",\n    \"correo\": \"juan.perez@example.com\",\n    \"password\": \"password123\",\n    \"password_confirmation\": \"password123\",\n    \"celular\": \"912345678\",\n    \"disponibilidad\": \"inmediata\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "422 Unprocessable - DNI o Correo Duplicado",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/candidatos",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "candidatos"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"nombre\": \"Juan Segundo\",\n    \"apellido_paterno\": \"Perez\",\n    \"apellido_materno\": \"Gomez\",\n    \"dni\": \"12345678\",\n    \"fecha_nacimiento\": \"1996-01-01\",\n    \"genero\": \"masculino\",\n    \"correo\": \"juan.perez@example.com\",\n    \"password\": \"password123\",\n    \"password_confirmation\": \"password123\",\n    \"celular\": \"912345678\",\n    \"disponibilidad\": \"inmediata\"\n}"
+                }
+              },
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": false,\n    \"message\": \"Los datos proporcionados no son válidos.\",\n    \"error_code\": \"VALIDATION_ERROR\",\n    \"errors\": {\n        \"correo\": [\n            \"El correo ya está registrado.\"\n        ],\n        \"dni\": [\n            \"El DNI ya pertenece a otro candidato registrado.\"\n        ]\n    }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Content', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Retorna errores de unicidad para correo o dni', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.error_code).to.eql('VALIDATION_ERROR');",
+                  "    pm.expect(jsonData.errors).to.satisfy(function(e) {",
+                  "        return e.correo !== undefined || e.dni !== undefined;",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.3 Registrar Candidato - Error Formato DNI o Celular Inválido (422)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos"
+              ]
+            },
+            "description": "Validación de formatos en DNI (no tiene 8 dígitos), celular (no inicia con 9 o no tiene 9 dígitos), fecha futura o confirmación de password.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Carlos\",\n    \"apellido_paterno\": \"Silva\",\n    \"apellido_materno\": \"Ruiz\",\n    \"dni\": \"123\",\n    \"fecha_nacimiento\": \"2035-01-01\",\n    \"genero\": \"otro\",\n    \"correo\": \"carlos.silva@example.com\",\n    \"password\": \"pass\",\n    \"password_confirmation\": \"pass_distinto\",\n    \"celular\": \"12345\",\n    \"disponibilidad\": \"inmediata\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "422 Unprocessable - Formatos Inválidos",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/candidatos",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "candidatos"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"nombre\": \"Carlos\",\n    \"apellido_paterno\": \"Silva\",\n    \"apellido_materno\": \"Ruiz\",\n    \"dni\": \"123\",\n    \"fecha_nacimiento\": \"2035-01-01\",\n    \"genero\": \"otro\",\n    \"correo\": \"carlos.silva@example.com\",\n    \"password\": \"pass\",\n    \"password_confirmation\": \"pass_distinto\",\n    \"celular\": \"12345\",\n    \"disponibilidad\": \"inmediata\"\n}"
+                }
+              },
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": false,\n    \"message\": \"Los datos proporcionados no son válidos.\",\n    \"error_code\": \"VALIDATION_ERROR\",\n    \"errors\": {\n        \"dni\": [\n            \"El DNI debe tener exactamente 8 dígitos.\"\n        ],\n        \"celular\": [\n            \"El formato del número de celular no es válido para Perú.\"\n        ],\n        \"password\": [\n            \"La contraseña debe tener al menos 8 caracteres.\"\n        ],\n        \"fecha_nacimiento\": [\n            \"La fecha de nacimiento debe ser una fecha anterior a hoy.\"\n        ]\n    }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Content', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Errores en campos dni y celular', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.errors).to.have.property('dni');",
+                  "    pm.expect(jsonData.errors).to.have.property('celular');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.4 Ver Perfil Candidato por ID - Éxito (200)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos/{{candidato_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos",
+                "{{candidato_id}}"
+              ]
+            },
+            "description": "Obtiene el perfil detallado del candidato con sus carreras y habilidades cargadas con eager loading."
+          },
+          "response": [
+            {
+              "name": "200 OK - Perfil de Candidato Encontrado",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/candidatos/{{candidato_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "candidatos",
+                    "{{candidato_id}}"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": true,\n    \"message\": \"Perfil del candidato obtenido exitosamente\",\n    \"data\": {\n        \"id\": 1,\n        \"usuario_id\": 1,\n        \"correo\": \"juan.perez@example.com\",\n        \"nombre\": \"Juan\",\n        \"apellido_paterno\": \"Perez\",\n        \"apellido_materno\": \"Gomez\",\n        \"dni\": \"12345678\",\n        \"fecha_nacimiento\": \"1995-05-15\",\n        \"celular\": \"987654321\",\n        \"genero\": \"masculino\",\n        \"disponibilidad\": \"inmediata\",\n        \"carreras\": [],\n        \"habilidades\": []\n    }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Devuelve perfil del candidato', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data.id).to.eql(parseInt(pm.environment.get('candidato_id')));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.5 Ver Perfil Candidato por ID - Error No Encontrado (404)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos/99999",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos",
+                "99999"
+              ]
+            },
+            "description": "Route Model Binding de Laravel detecta de forma automática que el Candidato no existe y devuelve 404 antes de procesar la lógica de negocio."
+          },
+          "response": [
+            {
+              "name": "404 Not Found - Candidato No Encontrado",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/candidatos/99999",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "candidatos",
+                    "99999"
+                  ]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": false,\n    \"message\": \"El Candidato solicitado no fue encontrado.\",\n    \"error_code\": \"RESOURCE_NOT_FOUND\"\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 404 Not Found', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test('Mensaje estándar: El Candidato solicitado no fue encontrado', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.error_code).to.eql('RESOURCE_NOT_FOUND');",
+                  "    pm.expect(jsonData.message).to.eql('El Candidato solicitado no fue encontrado.');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.6 Actualizar Perfil Candidato - Éxito Mismo DNI (200)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos/{{candidato_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos",
+                "{{candidato_id}}"
+              ]
+            },
+            "description": "Actualiza los datos del candidato. Demuestra que la regla de validación DNI ignora al propio candidato en edición, evitando el error de unicidad al enviar su mismo DNI.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Juan Carlos\",\n    \"apellido_paterno\": \"Perez\",\n    \"apellido_materno\": \"Gomez\",\n    \"dni\": \"12345678\",\n    \"celular\": \"911223344\",\n    \"disponibilidad\": \"1_semana\",\n    \"habilidades\": [\n        1,\n        2,\n        3\n    ]\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK - Perfil Actualizado",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/candidatos/{{candidato_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "candidatos",
+                    "{{candidato_id}}"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"nombre\": \"Juan Carlos\",\n    \"apellido_paterno\": \"Perez\",\n    \"apellido_materno\": \"Gomez\",\n    \"dni\": \"12345678\",\n    \"celular\": \"911223344\",\n    \"disponibilidad\": \"1_semana\",\n    \"habilidades\": [\n        1,\n        2,\n        3\n    ]\n}"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": true,\n    \"message\": \"Perfil actualizado exitosamente\",\n    \"data\": {\n        \"id\": 1,\n        \"usuario_id\": 1,\n        \"correo\": \"juan.perez@example.com\",\n        \"nombre\": \"Juan Carlos\",\n        \"apellido_paterno\": \"Perez\",\n        \"apellido_materno\": \"Gomez\",\n        \"dni\": \"12345678\",\n        \"fecha_nacimiento\": \"1995-05-15\",\n        \"celular\": \"911223344\",\n        \"genero\": \"masculino\",\n        \"disponibilidad\": \"1_semana\",\n        \"carreras\": [],\n        \"habilidades\": [\n            {\n                \"id\": 1,\n                \"nombre\": \"PHP\",\n                \"tipo_habilidad\": \"tecnica\",\n                \"estado\": \"activo\"\n            },\n            {\n                \"id\": 2,\n                \"nombre\": \"Laravel\",\n                \"tipo_habilidad\": \"tecnica\",\n                \"estado\": \"activo\"\n            },\n            {\n                \"id\": 3,\n                \"nombre\": \"Python\",\n                \"tipo_habilidad\": \"tecnica\",\n                \"estado\": \"activo\"\n            }\n        ]\n    }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Perfil actualizado exitosamente', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data.nombre).to.eql('Juan Carlos');",
+                  "    pm.expect(jsonData.data.celular).to.eql('911223344');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.7 Actualizar Perfil Candidato - Error No Encontrado (404)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos/99999",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos",
+                "99999"
+              ]
+            },
+            "description": "Demuestra la ventaja de Route Model Binding: si el candidato ID no existe, Laravel corta inmediatamente con 404 antes de evaluar validaciones del body.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Inexistente\",\n    \"apellido_paterno\": \"Test\",\n    \"apellido_materno\": \"Test\",\n    \"dni\": \"12345678\",\n    \"celular\": \"911223344\",\n    \"disponibilidad\": \"1_semana\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "404 Not Found - Candidato Inexistente",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/candidatos/99999",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "candidatos",
+                    "99999"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"nombre\": \"Inexistente\",\n    \"apellido_paterno\": \"Test\",\n    \"apellido_materno\": \"Test\",\n    \"dni\": \"12345678\",\n    \"celular\": \"911223344\",\n    \"disponibilidad\": \"1_semana\"\n}"
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": false,\n    \"message\": \"El Candidato solicitado no fue encontrado.\",\n    \"error_code\": \"RESOURCE_NOT_FOUND\"\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 404 Not Found', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test('Corta con 404 antes de validar', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.error_code).to.eql('RESOURCE_NOT_FOUND');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.8 Actualizar Perfil Candidato - Error DNI Pertenece a Otro (422)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos/{{candidato_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos",
+                "{{candidato_id}}"
+              ]
+            },
+            "description": "Intento de actualizar el perfil de este candidato usando un DNI que ya pertenece a otro candidato registrado en la base de datos.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Juan Carlos\",\n    \"apellido_paterno\": \"Perez\",\n    \"apellido_materno\": \"Gomez\",\n    \"dni\": \"87654321\",\n    \"celular\": \"911223344\",\n    \"disponibilidad\": \"1_semana\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "422 Unprocessable - DNI de Otro Candidato",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/candidatos/{{candidato_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "candidatos",
+                    "{{candidato_id}}"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"nombre\": \"Juan Carlos\",\n    \"apellido_paterno\": \"Perez\",\n    \"apellido_materno\": \"Gomez\",\n    \"dni\": \"87654321\",\n    \"celular\": \"911223344\",\n    \"disponibilidad\": \"1_semana\"\n}"
+                }
+              },
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": false,\n    \"message\": \"Los datos proporcionados no son válidos.\",\n    \"error_code\": \"VALIDATION_ERROR\",\n    \"errors\": {\n        \"dni\": [\n            \"El DNI ya pertenece a otro candidato registrado.\"\n        ]\n    }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Content', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Error de DNI duplicado de otro usuario', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.errors).to.have.property('dni');",
+                  "    pm.expect(jsonData.errors.dni[0]).to.eql('El DNI ya pertenece a otro candidato registrado.');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3. Empresas (Dev 3)",
+      "description": "Registro de empresas con RUC y contraseña segura, login empresarial, consulta de perfil de la empresa autenticada (/empresas/me) y actualización.",
+      "item": [
+        {
+          "name": "3.1 Registrar Empresa - Éxito (201 Created)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas"
+              ]
+            },
+            "description": "Registra una empresa creando usuario con rol 'empresa'. Requiere RUC de 11 dígitos y password robusto (min 8 car, mayúsculas, minúsculas, números y símbolos).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"contacto@techinnovate.com\",\n    \"password\": \"EmpresaPass2026#\",\n    \"razon_social\": \"Tech Innovate Solutions S.A.C.\",\n    \"ruc\": \"20601234567\",\n    \"sitio_web\": \"https://techinnovate.com\",\n    \"descripcion\": \"Empresa líder especializada en arquitectura cloud y desarrollo web empresarial.\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created - Empresa Registrada",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/empresas",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "empresas"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"correo\": \"contacto@techinnovate.com\",\n    \"password\": \"EmpresaPass2026#\",\n    \"razon_social\": \"Tech Innovate Solutions S.A.C.\",\n    \"ruc\": \"20601234567\",\n    \"sitio_web\": \"https://techinnovate.com\",\n    \"descripcion\": \"Empresa líder especializada en arquitectura cloud y desarrollo web empresarial.\"\n}"
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": true,\n    \"message\": \"Empresa registrada correctamente\",\n    \"data\": {\n        \"id\": 1,\n        \"correo\": \"contacto@techinnovate.com\",\n        \"razon_social\": \"Tech Innovate Solutions S.A.C.\",\n        \"ruc\": \"20601234567\",\n        \"sitio_web\": \"https://techinnovate.com\",\n        \"descripcion\": \"Empresa líder especializada en arquitectura cloud y desarrollo web empresarial.\"\n    }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Empresa registrada con éxito', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    if (jsonData.data && jsonData.data.id) {",
+                  "        pm.environment.set('empresa_id', jsonData.data.id);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.2 Registrar Empresa - Error RUC o Correo Duplicado (422)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas"
+              ]
+            },
+            "description": "Intento de registro con RUC o correo corporativo que ya existe en el sistema.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"contacto@techinnovate.com\",\n    \"password\": \"EmpresaPass2026#\",\n    \"razon_social\": \"Otra Empresa S.A.C.\",\n    \"ruc\": \"20601234567\",\n    \"sitio_web\": \"https://otraempresa.com\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "422 Unprocessable - RUC o Correo Ya Registrado",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/empresas",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "empresas"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"correo\": \"contacto@techinnovate.com\",\n    \"password\": \"EmpresaPass2026#\",\n    \"razon_social\": \"Otra Empresa S.A.C.\",\n    \"ruc\": \"20601234567\",\n    \"sitio_web\": \"https://otraempresa.com\"\n}"
+                }
+              },
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": false,\n    \"message\": \"Los datos proporcionados no son válidos.\",\n    \"error_code\": \"VALIDATION_ERROR\",\n    \"errors\": {\n        \"correo\": [\n            \"El correo ya está registrado.\"\n        ],\n        \"ruc\": [\n            \"El RUC ya está registrado.\"\n        ]\n    }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Content', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Error de unicidad en correo o ruc', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.errors).to.satisfy(function(e) {",
+                  "        return e.correo !== undefined || e.ruc !== undefined;",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.3 Registrar Empresa - Error Contraseña Débil o RUC Inválido (422)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas"
+              ]
+            },
+            "description": "Validación de requisitos estrictos: RUC debe tener 11 dígitos, contraseña debe tener símbolos/mayúsculas/números, sitio web debe ser URL válida.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"empresa.invalida@tech.com\",\n    \"password\": \"123\",\n    \"razon_social\": \"Empresa Test\",\n    \"ruc\": \"12345\",\n    \"sitio_web\": \"no-es-una-url\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "422 Unprocessable - Requisitos No Cumplidos",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/empresas",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "empresas"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"correo\": \"empresa.invalida@tech.com\",\n    \"password\": \"123\",\n    \"razon_social\": \"Empresa Test\",\n    \"ruc\": \"12345\",\n    \"sitio_web\": \"no-es-una-url\"\n}"
+                }
+              },
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": false,\n    \"message\": \"Los datos proporcionados no son válidos.\",\n    \"error_code\": \"VALIDATION_ERROR\",\n    \"errors\": {\n        \"password\": [\n            \"The password field must be at least 8 characters.\",\n            \"The password field must contain at least one uppercase and one lowercase letter.\",\n            \"The password field must contain at least one symbol.\"\n        ],\n        \"ruc\": [\n            \"El RUC debe tener exactamente 11 dígitos.\"\n        ],\n        \"sitio_web\": [\n            \"El sitio web debe ser una URL válida.\"\n        ]\n    }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Content', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Errores detallados en ruc, password y sitio_web', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.errors).to.have.property('ruc');",
+                  "    pm.expect(jsonData.errors).to.have.property('password');",
+                  "    pm.expect(jsonData.errors).to.have.property('sitio_web');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.4 Login Empresa - Éxito (200 OK)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Inicia sesión con la cuenta de la empresa y guarda el token generado en `token_empresa` para las peticiones de `/empresas/me`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"contacto@techinnovate.com\",\n    \"password\": \"EmpresaPass2026#\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK - Login Empresa Exitoso",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/login",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"correo\": \"contacto@techinnovate.com\",\n    \"password\": \"EmpresaPass2026#\"\n}"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": true,\n    \"message\": \"Inicio de sesión exitoso\",\n    \"data\": {\n        \"usuario_id\": 2,\n        \"correo\": \"contacto@techinnovate.com\",\n        \"rol\": \"empresa\",\n        \"token\": \"2|empresaToken987654321abcdef\"\n    }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Guarda token_empresa en entorno', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data.rol).to.eql('empresa');",
+                  "    if (jsonData.data && jsonData.data.token) {",
+                  "        pm.environment.set('token_empresa', jsonData.data.token);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.5 Ver Perfil Empresa /me - Éxito (200 con Token Empresa)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_empresa}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me"
+              ]
+            },
+            "description": "Devuelve los datos de la empresa vinculada al usuario autenticado mediante el token de Sanctum."
+          },
+          "response": [
+            {
+              "name": "200 OK - Perfil Empresa Obtenido",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token_empresa}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/empresas/me",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "empresas",
+                    "me"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": true,\n    \"message\": \"Empresa obtenida correctamente\",\n    \"data\": {\n        \"id\": 1,\n        \"correo\": \"contacto@techinnovate.com\",\n        \"razon_social\": \"Tech Innovate Solutions S.A.C.\",\n        \"ruc\": \"20601234567\",\n        \"sitio_web\": \"https://techinnovate.com\",\n        \"descripcion\": \"Empresa líder especializada en arquitectura cloud y desarrollo web empresarial.\"\n    }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Retorna perfil de la empresa', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data).to.have.property('ruc');",
+                  "    pm.expect(jsonData.data).to.have.property('razon_social');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.6 Ver Perfil Empresa /me - Error Sin Token (401)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me"
+              ]
+            },
+            "description": "Intento de acceder a la ruta protegida `/empresas/me` sin enviar cabecera Authorization."
+          },
+          "response": [
+            {
+              "name": "401 Unauthorized - Sin Token",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/empresas/me",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "empresas",
+                    "me"
+                  ]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": false,\n    \"message\": \"No autenticado o token inválido.\",\n    \"error_code\": \"UNAUTHENTICATED\"\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "pm.test('Devuelve error_code UNAUTHENTICATED', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.error_code).to.eql('UNAUTHENTICATED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.7 Actualizar Empresa /me - Éxito (200 OK)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_empresa}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me"
+              ]
+            },
+            "description": "Actualiza los datos de la empresa autenticada. La validación comprueba que el RUC puede ser el mismo de la propia empresa sin colisionar.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"razon_social\": \"Tech Innovate Global Solutions S.A.C.\",\n    \"ruc\": \"20601234567\",\n    \"sitio_web\": \"https://techinnovate.global\",\n    \"descripcion\": \"Empresa global líder en consultoría de arquitectura cloud y desarrollo moderno.\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK - Empresa Actualizada",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token_empresa}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/empresas/me",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "empresas",
+                    "me"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"razon_social\": \"Tech Innovate Global Solutions S.A.C.\",\n    \"ruc\": \"20601234567\",\n    \"sitio_web\": \"https://techinnovate.global\",\n    \"descripcion\": \"Empresa global líder en consultoría de arquitectura cloud y desarrollo moderno.\"\n}"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": true,\n    \"message\": \"Empresa actualizada correctamente\",\n    \"data\": {\n        \"id\": 1,\n        \"correo\": \"contacto@techinnovate.com\",\n        \"razon_social\": \"Tech Innovate Global Solutions S.A.C.\",\n        \"ruc\": \"20601234567\",\n        \"sitio_web\": \"https://techinnovate.global\",\n        \"descripcion\": \"Empresa global líder en consultoría de arquitectura cloud y desarrollo moderno.\"\n    }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Empresa actualizada correctamente', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data.razon_social).to.eql('Tech Innovate Global Solutions S.A.C.');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.8 Actualizar Empresa /me - Error Sitio Web Inválido (422)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_empresa}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me"
+              ]
+            },
+            "description": "Validación de actualización con datos incorrectos (URL inválida en sitio_web).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"razon_social\": \"Tech Innovate\",\n    \"ruc\": \"20601234567\",\n    \"sitio_web\": \"sitio-web-invalido\",\n    \"descripcion\": \"Descripción de prueba\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "422 Unprocessable - URL Inválida",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token_empresa}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/empresas/me",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "empresas",
+                    "me"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"razon_social\": \"Tech Innovate\",\n    \"ruc\": \"20601234567\",\n    \"sitio_web\": \"sitio-web-invalido\",\n    \"descripcion\": \"Descripción de prueba\"\n}"
+                }
+              },
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": false,\n    \"message\": \"Los datos proporcionados no son válidos.\",\n    \"error_code\": \"VALIDATION_ERROR\",\n    \"errors\": {\n        \"sitio_web\": [\n            \"El sitio web debe ser una URL válida.\"\n        ]\n    }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Content', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Error en campo sitio_web', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.errors).to.have.property('sitio_web');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "4. Habilidades - Catálogo (Dev 3)",
+      "description": "Catálogo central de habilidades técnicas y blandas. Listado de activas, alta con validación de tipo y unicidad, y actualización/cambio de estado.",
+      "item": [
+        {
+          "name": "4.1 Listar Habilidades Activas - Éxito (200 OK)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/habilidades",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "habilidades"
+              ]
+            },
+            "description": "Obtiene el catálogo de todas las habilidades con estado 'activo' ordenadas alfabéticamente."
+          },
+          "response": [
+            {
+              "name": "200 OK - Catálogo de Habilidades",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/habilidades",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "habilidades"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": true,\n    \"message\": \"Catálogo de habilidades obtenido correctamente\",\n    \"data\": [\n        {\n            \"id\": 1,\n            \"nombre\": \"PHP\",\n            \"tipo_habilidad\": \"tecnica\",\n            \"estado\": \"activo\"\n        },\n        {\n            \"id\": 2,\n            \"nombre\": \"Laravel\",\n            \"tipo_habilidad\": \"tecnica\",\n            \"estado\": \"activo\"\n        },\n        {\n            \"id\": 3,\n            \"nombre\": \"Python\",\n            \"tipo_habilidad\": \"tecnica\",\n            \"estado\": \"activo\"\n        }\n    ]\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Respuesta contiene lista de habilidades', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(Array.isArray(jsonData.data)).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.2 Crear Habilidad - Éxito (201 Created)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/habilidades",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "habilidades"
+              ]
+            },
+            "description": "Crea una nueva habilidad técnica o blanda en el catálogo. Almacena automáticamente `habilidad_id`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Vue.js\",\n    \"tipo_habilidad\": \"tecnica\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created - Habilidad Creada",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/habilidades",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "habilidades"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"nombre\": \"Vue.js\",\n    \"tipo_habilidad\": \"tecnica\"\n}"
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": true,\n    \"message\": \"Habilidad creada correctamente\",\n    \"data\": {\n        \"id\": 11,\n        \"nombre\": \"Vue.js\",\n        \"tipo_habilidad\": \"tecnica\",\n        \"estado\": \"activo\"\n    }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Habilidad creada y guarda habilidad_id', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    if (jsonData.data && jsonData.data.id) {",
+                  "        pm.environment.set('habilidad_id', jsonData.data.id);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.3 Crear Habilidad - Error Nombre Duplicado (422)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/habilidades",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "habilidades"
+              ]
+            },
+            "description": "Fallo de validación de unicidad cuando se intenta registrar una habilidad con un nombre que ya existe.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"PHP\",\n    \"tipo_habilidad\": \"tecnica\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "422 Unprocessable - Nombre Duplicado",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/habilidades",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "habilidades"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"nombre\": \"PHP\",\n    \"tipo_habilidad\": \"tecnica\"\n}"
+                }
+              },
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": false,\n    \"message\": \"Los datos proporcionados no son válidos.\",\n    \"error_code\": \"VALIDATION_ERROR\",\n    \"errors\": {\n        \"nombre\": [\n            \"La habilidad ya existe.\"\n        ]\n    }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Content', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Error específico La habilidad ya existe', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.errors).to.have.property('nombre');",
+                  "    pm.expect(jsonData.errors.nombre[0]).to.eql('La habilidad ya existe.');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.4 Crear Habilidad - Error Tipo Inválido (422)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/habilidades",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "habilidades"
+              ]
+            },
+            "description": "Fallo de validación en regla `in:tecnica,blanda` para el campo `tipo_habilidad`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"React Native\",\n    \"tipo_habilidad\": \"otra_categoria\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "422 Unprocessable - Tipo Inválido",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/habilidades",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "habilidades"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"nombre\": \"React Native\",\n    \"tipo_habilidad\": \"otra_categoria\"\n}"
+                }
+              },
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": false,\n    \"message\": \"Los datos proporcionados no son válidos.\",\n    \"error_code\": \"VALIDATION_ERROR\",\n    \"errors\": {\n        \"tipo_habilidad\": [\n            \"El tipo de habilidad debe ser tecnica o blanda.\"\n        ]\n    }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Content', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Error en tipo_habilidad', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.errors).to.have.property('tipo_habilidad');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.5 Actualizar Habilidad - Éxito (200 OK)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/habilidades/{{habilidad_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "habilidades",
+                "{{habilidad_id}}"
+              ]
+            },
+            "description": "Actualiza el nombre, tipo o estado (activo/inactivo) de una habilidad existente.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Vue.js 3\",\n    \"tipo_habilidad\": \"tecnica\",\n    \"estado\": \"activo\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK - Habilidad Actualizada",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/habilidades/{{habilidad_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "habilidades",
+                    "{{habilidad_id}}"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"nombre\": \"Vue.js 3\",\n    \"tipo_habilidad\": \"tecnica\",\n    \"estado\": \"activo\"\n}"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": true,\n    \"message\": \"Habilidad actualizada correctamente\",\n    \"data\": {\n        \"id\": 11,\n        \"nombre\": \"Vue.js 3\",\n        \"tipo_habilidad\": \"tecnica\",\n        \"estado\": \"activo\"\n    }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Habilidad actualizada correctamente', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data.nombre).to.eql('Vue.js 3');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.6 Actualizar Habilidad - Error No Encontrada (404)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/habilidades/99999",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "habilidades",
+                "99999"
+              ]
+            },
+            "description": "Intento de actualizar una habilidad inexistente por ID.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"No Existe\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "404 Not Found - Habilidad No Encontrada",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/habilidades/99999",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "habilidades",
+                    "99999"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"nombre\": \"No Existe\"\n}"
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": false,\n    \"message\": \"El Habilidad solicitado no fue encontrado.\",\n    \"error_code\": \"RESOURCE_NOT_FOUND\"\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 404 Not Found', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test('RESOURCE_NOT_FOUND para Habilidad', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.error_code).to.eql('RESOURCE_NOT_FOUND');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.7 Actualizar Habilidad - Error Estado Inválido (422)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/habilidades/{{habilidad_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "habilidades",
+                "{{habilidad_id}}"
+              ]
+            },
+            "description": "Validación de restricción `in:activo,inactivo` para el estado de la habilidad.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"estado\": \"desactivado_erroneo\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "422 Unprocessable - Estado Inválido",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/habilidades/{{habilidad_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "habilidades",
+                    "{{habilidad_id}}"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"estado\": \"desactivado_erroneo\"\n}"
+                }
+              },
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": false,\n    \"message\": \"Los datos proporcionados no son válidos.\",\n    \"error_code\": \"VALIDATION_ERROR\",\n    \"errors\": {\n        \"estado\": [\n            \"El estado debe ser activo o inactivo.\"\n        ]\n    }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Content', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Error en campo estado', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.errors).to.have.property('estado');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }
