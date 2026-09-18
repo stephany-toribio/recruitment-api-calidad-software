@@ -12,7 +12,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->redirectGuestsTo(function ($request) {
+            return null;
+        });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // 1. Asegura que cualquier excepción en la API devuelva JSON evitando redirecciones HTML
