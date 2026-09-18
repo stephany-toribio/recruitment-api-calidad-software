@@ -26,15 +26,21 @@ class CandidatoResource extends JsonResource
     {
         $user = $request->user();
 
-        // En Sprint 1: implementar lógica de verificación según las relaciones de BD
-        // Ejemplo: $puedeVerContacto = $user?->id === $this->user_id || $user?->esEmpresaConPostulacionDe($this->id);
+      
         $puedeVerContacto = false;
 
         return [
             'id'          => $this->id,
             'nombre'      => $this->nombre,
             'correo'      => $puedeVerContacto ? $this->correo : null,
-            'telefono'    => $puedeVerContacto ? $this->telefono : null,
+            'celular'     => $puedeVerContacto ? $this->celular : null,
+            'apellido_paterno' => $this->apellido_paterno,
+            'apellido_materno' => $this->apellido_materno,
+            'dni' => $this->dni,
+            'fecha_nacimiento' => $this->fecha_nacimiento,
+            'genero' => $this->genero,
+            'disponibilidad' => $this->disponibilidad,
+            'carreras'=>$this->carreras,
 
             // Relación con habilidades (cargada condicionalmente cuando se use with('habilidades'))
             'habilidades' => HabilidadResource::collection($this->whenLoaded('habilidades')),
@@ -44,3 +50,4 @@ class CandidatoResource extends JsonResource
         ];
     }
 }
+ 
