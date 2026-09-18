@@ -20,7 +20,7 @@ return new class extends Migration
 
             $table->string('area')->nullable();
             $table->string('institucion');
-            $table->enum('estado', ['en_curso', 'egresado', 'titulado']);
+            $table->enum('estado', ['en_curso', 'egresado', 'retirado']);
             $table->unsignedTinyInteger('ciclo_actual')->nullable();
             $table->date('fecha_inicio')->nullable();
             $table->date('fecha_fin')->nullable();

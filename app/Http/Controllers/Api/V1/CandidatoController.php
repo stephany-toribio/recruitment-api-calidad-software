@@ -29,16 +29,15 @@ class CandidatoController extends BaseApiController
     }
 
 
-    // GET /api/v1/candidatos/{id} (Ver perfil por ID)
-    public function show(Candidato $candidato): JsonResponse
+    // GET /api/v1/candidatos/{id} (Ver perfil por ID) 
+    public function show(int $id): JsonResponse
     {
-        $candidato->load(['habilidades', 'carreras', 'usuario']);
-
+        $candidato = Candidato::with(['habilidades', 'carreras', 'usuario'])->findOrFail($id);
         return $this->successResponse(
             new CandidatoResource($candidato),
             'Perfil de candidato obtenido exitosamente'     
         );  
-    } 
+    }
 
 
     // PUT /api/v1/candidatos/{id} (Actualizar perfil por ID)
