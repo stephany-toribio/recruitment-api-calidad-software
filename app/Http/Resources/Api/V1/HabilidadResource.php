@@ -20,7 +20,7 @@ class HabilidadResource extends JsonResource
         return [
             'id'        => $this->id,
             'nombre'    => $this->nombre,
-            'tipo'      => $this->tipo ?? 'tecnica', // 'tecnica' o 'blanda' (según migración de Sprint 1)
+            'tipo'      => $this->tipo_habilidad ?? $this->tipo ?? 'tecnica',
         ];
     }
 }

@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Laravel\Sanctum\HasApiTokens;
 
 class Usuario extends Authenticatable
@@ -37,8 +39,18 @@ class Usuario extends Authenticatable
         ];
     }
 
-    public function rol()
+    public function rol(): BelongsTo
     {
         return $this->belongsTo(Rol::class, 'rol_id');
+    }
+
+    public function candidato(): HasOne
+    {
+        return $this->hasOne(Candidato::class, 'usuario_id');
+    }
+
+    public function empresa(): HasOne
+    {
+        return $this->hasOne(Empresa::class, 'usuario_id');
     }
 }
