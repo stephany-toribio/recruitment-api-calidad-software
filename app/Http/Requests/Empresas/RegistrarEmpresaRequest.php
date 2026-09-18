@@ -65,6 +65,11 @@ class RegistrarEmpresaRequest extends FormRequest
             'correo.unique' => 'El correo ya está registrado.',
 
             'password.required' => 'La contraseña es obligatoria.',
+            'password.min'      => 'La contraseña debe tener al menos 8 caracteres.',
+            'password.mixed'    => 'La contraseña debe contener al menos una letra mayúscula y una minúscula.',
+            'password.letters'  => 'La contraseña debe contener al menos una letra.',
+            'password.symbols'  => 'La contraseña debe contener al menos un símbolo.',
+            'password.numbers'  => 'La contraseña debe contener al menos un número.',
 
             'razon_social.required' => 'La razón social es obligatoria.',
 

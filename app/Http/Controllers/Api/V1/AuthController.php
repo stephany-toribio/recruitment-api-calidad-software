@@ -38,7 +38,7 @@ class AuthController extends BaseApiController
 
             if ($usuario->intentos_fallidos >= 5) {
                 $usuario->update([
-                    'bloqueado_hasta' => Carbon::now()->addMinutes(30),
+                    'bloqueado_hasta' => Carbon::now()->addMinutes(15),
                 ]);
             }
 

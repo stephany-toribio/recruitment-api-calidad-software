@@ -19,8 +19,7 @@ class CandidatoResource extends JsonResource
             'usuario_id'       => $this->usuario_id,
             'correo'           => $this->usuario?->correo,
             'nombre'           => $this->nombre,
-            'apellido_paterno' => $this->apellido_paterno,
-            'apellido_materno' => $this->apellido_materno,
+            'apellidos'        => $this->apellidos,
             'dni'              => $this->dni,
             'fecha_nacimiento' => $this->fecha_nacimiento instanceof \DateTimeInterface 
                                     ? $this->fecha_nacimiento->format('Y-m-d') 

@@ -27,11 +27,10 @@ class CandidatoService
             $candidato=Candidato::create([
                 'usuario_id'           =>$usuario->id,
                 'nombre'               =>$datos['nombre'],
-                'apellido_paterno'     =>$datos['apellido_paterno'],
-                'apellido_materno'     =>$datos['apellido_materno'],
+                'apellidos'            =>$datos['apellidos'],
                 'dni'                  =>$datos['dni'],
                 'fecha_nacimiento'     =>$datos['fecha_nacimiento'],
-                'genero'               =>$datos['genero'],
+                'genero'               =>$datos['genero'] ?? 'prefiero no decir',
                 'disponibilidad'       =>$datos['disponibilidad'],
                 'celular'              =>$datos['celular'],
             ]); 
@@ -56,8 +55,7 @@ class CandidatoService
         return DB::transaction(function () use($candidato, $datos){
             $candidato->update(array_filter([
                 'nombre'               => $datos['nombre']               ?? null,
-                'apellido_paterno'     => $datos['apellido_paterno']     ?? null,
-                'apellido_materno'     => $datos['apellido_materno']     ?? null,
+                'apellidos'            => $datos['apellidos']            ?? null,
                 'dni'                  => $datos['dni']                  ?? null,
                 'fecha_nacimiento'     => $datos['fecha_nacimiento']     ?? null,
                 'genero'               => $datos['genero']               ?? null,

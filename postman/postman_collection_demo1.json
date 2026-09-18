@@ -358,7 +358,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n    \"success\": true,\n    \"message\": \"Usuario obtenido correctamente\",\n    \"data\": {\n        \"id\": 1,\n        \"correo\": \"juan.perez@example.com\",\n        \"rol\": \"candidato\",\n        \"candidato\": {\n            \"id\": 1,\n            \"nombre\": \"Juan Carlos\",\n            \"apellido_paterno\": \"Perez\",\n            \"apellido_materno\": \"Gomez\",\n            \"dni\": \"12345678\"\n        }\n    }\n}"
+              "body": "{\n    \"success\": true,\n    \"message\": \"Usuario obtenido correctamente\",\n    \"data\": {\n        \"id\": 1,\n        \"correo\": \"juan.perez@example.com\",\n        \"rol\": \"candidato\",\n        \"candidato\": {\n            \"id\": 1,\n            \"nombre\": \"Juan Carlos\",\n            \"apellidos\": \"Perez Gomez\",\n            \"dni\": \"12345678\"\n        }\n    }\n}"
             }
           ],
           "event": [
@@ -1276,7 +1276,7 @@
             "description": "Registra un candidato completo. Crea el usuario base con rol 'candidato', vincula habilidades técnicas/blandas y carreras. Guarda `candidato_id` y `usuario_id`.",
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"nombre\": \"Juan\",\n    \"apellido_paterno\": \"Perez\",\n    \"apellido_materno\": \"Gomez\",\n    \"dni\": \"12345678\",\n    \"fecha_nacimiento\": \"1995-05-15\",\n    \"genero\": \"masculino\",\n    \"correo\": \"juan.perez@example.com\",\n    \"password\": \"password123\",\n    \"password_confirmation\": \"password123\",\n    \"celular\": \"987654321\",\n    \"disponibilidad\": \"inmediata\",\n    \"habilidades\": [\n        1,\n        2\n    ],\n    \"carreras\": [\n        {\n            \"carrera_id\": 1,\n            \"institucion\": \"Universidad Nacional de Ingeniería\",\n            \"estado\": \"egresado\",\n            \"ciclo_actual\": null,\n            \"area\": \"Tecnología\"\n        }\n    ]\n}"
+              "raw": "{\n    \"nombre\": \"Juan\",\n    \"apellidos\": \"Perez Gomez\",\n    \"dni\": \"12345678\",\n    \"fecha_nacimiento\": \"1995-05-15\",\n    \"genero\": \"masculino\",\n    \"correo\": \"juan.perez@example.com\",\n    \"password\": \"password123\",\n    \"password_confirmation\": \"password123\",\n    \"celular\": \"987654321\",\n    \"disponibilidad\": \"inmediata\",\n    \"habilidades\": [\n        1,\n        2\n    ],\n    \"carreras\": [\n        {\n            \"carrera_id\": 1,\n            \"institucion\": \"Universidad Nacional de Ingeniería\",\n            \"estado\": \"egresado\",\n            \"ciclo_actual\": null,\n            \"area\": \"Tecnología\"\n        }\n    ]\n}"
             }
           },
           "response": [
@@ -1305,7 +1305,7 @@
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n    \"nombre\": \"Juan\",\n    \"apellido_paterno\": \"Perez\",\n    \"apellido_materno\": \"Gomez\",\n    \"dni\": \"12345678\",\n    \"fecha_nacimiento\": \"1995-05-15\",\n    \"genero\": \"masculino\",\n    \"correo\": \"juan.perez@example.com\",\n    \"password\": \"password123\",\n    \"password_confirmation\": \"password123\",\n    \"celular\": \"987654321\",\n    \"disponibilidad\": \"inmediata\",\n    \"habilidades\": [\n        1,\n        2\n    ],\n    \"carreras\": [\n        {\n            \"carrera_id\": 1,\n            \"institucion\": \"Universidad Nacional de Ingeniería\",\n            \"estado\": \"egresado\",\n            \"ciclo_actual\": null,\n            \"area\": \"Tecnología\"\n        }\n    ]\n}"
+                  "raw": "{\n    \"nombre\": \"Juan\",\n    \"apellidos\": \"Perez Gomez\",\n    \"dni\": \"12345678\",\n    \"fecha_nacimiento\": \"1995-05-15\",\n    \"genero\": \"masculino\",\n    \"correo\": \"juan.perez@example.com\",\n    \"password\": \"password123\",\n    \"password_confirmation\": \"password123\",\n    \"celular\": \"987654321\",\n    \"disponibilidad\": \"inmediata\",\n    \"habilidades\": [\n        1,\n        2\n    ],\n    \"carreras\": [\n        {\n            \"carrera_id\": 1,\n            \"institucion\": \"Universidad Nacional de Ingeniería\",\n            \"estado\": \"egresado\",\n            \"ciclo_actual\": null,\n            \"area\": \"Tecnología\"\n        }\n    ]\n}"
                 }
               },
               "status": "Created",
@@ -1318,7 +1318,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n    \"success\": true,\n    \"message\": \"Candidato registrado exitosamente\",\n    \"data\": {\n        \"id\": 1,\n        \"usuario_id\": 1,\n        \"correo\": \"juan.perez@example.com\",\n        \"nombre\": \"Juan\",\n        \"apellido_paterno\": \"Perez\",\n        \"apellido_materno\": \"Gomez\",\n        \"dni\": \"12345678\",\n        \"fecha_nacimiento\": \"1995-05-15\",\n        \"celular\": \"987654321\",\n        \"genero\": \"masculino\",\n        \"disponibilidad\": \"inmediata\",\n        \"carreras\": [\n            {\n                \"id\": 1,\n                \"carrera_id\": 1,\n                \"area\": \"Tecnología\",\n                \"institucion\": \"Universidad Nacional de Ingeniería\",\n                \"estado\": \"egresado\",\n                \"ciclo_actual\": null,\n                \"fecha_inicio\": null,\n                \"fecha_fin\": null\n            }\n        ],\n        \"habilidades\": [\n            {\n                \"id\": 1,\n                \"nombre\": \"PHP\",\n                \"tipo_habilidad\": \"tecnica\",\n                \"estado\": \"activo\"\n            },\n            {\n                \"id\": 2,\n                \"nombre\": \"Laravel\",\n                \"tipo_habilidad\": \"tecnica\",\n                \"estado\": \"activo\"\n            }\n        ],\n        \"creado_en\": \"2026-09-18T18:00:00.000000Z\"\n    }\n}"
+              "body": "{\n    \"success\": true,\n    \"message\": \"Candidato registrado exitosamente\",\n    \"data\": {\n        \"id\": 1,\n        \"usuario_id\": 1,\n        \"correo\": \"juan.perez@example.com\",\n        \"nombre\": \"Juan\",\n        \"apellidos\": \"Perez Gomez\",\n        \"dni\": \"12345678\",\n        \"fecha_nacimiento\": \"1995-05-15\",\n        \"celular\": \"987654321\",\n        \"genero\": \"masculino\",\n        \"disponibilidad\": \"inmediata\",\n        \"carreras\": [\n            {\n                \"id\": 1,\n                \"carrera_id\": 1,\n                \"area\": \"Tecnología\",\n                \"institucion\": \"Universidad Nacional de Ingeniería\",\n                \"estado\": \"egresado\",\n                \"ciclo_actual\": null,\n                \"fecha_inicio\": null,\n                \"fecha_fin\": null\n            }\n        ],\n        \"habilidades\": [\n            {\n                \"id\": 1,\n                \"nombre\": \"PHP\",\n                \"tipo_habilidad\": \"tecnica\",\n                \"estado\": \"activo\"\n            },\n            {\n                \"id\": 2,\n                \"nombre\": \"Laravel\",\n                \"tipo_habilidad\": \"tecnica\",\n                \"estado\": \"activo\"\n            }\n        ],\n        \"creado_en\": \"2026-09-18T18:00:00.000000Z\"\n    }\n}"
             }
           ],
           "event": [
@@ -1371,7 +1371,7 @@
             "description": "Intento de registro con un DNI o Correo que ya se encuentran registrados en la base de datos.",
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"nombre\": \"Juan Segundo\",\n    \"apellido_paterno\": \"Perez\",\n    \"apellido_materno\": \"Gomez\",\n    \"dni\": \"12345678\",\n    \"fecha_nacimiento\": \"1996-01-01\",\n    \"genero\": \"masculino\",\n    \"correo\": \"juan.perez@example.com\",\n    \"password\": \"password123\",\n    \"password_confirmation\": \"password123\",\n    \"celular\": \"912345678\",\n    \"disponibilidad\": \"inmediata\"\n}"
+              "raw": "{\n    \"nombre\": \"Juan Segundo\",\n    \"apellidos\": \"Perez Gomez\",\n    \"dni\": \"12345678\",\n    \"fecha_nacimiento\": \"1996-01-01\",\n    \"genero\": \"masculino\",\n    \"correo\": \"juan.perez@example.com\",\n    \"password\": \"password123\",\n    \"password_confirmation\": \"password123\",\n    \"celular\": \"912345678\",\n    \"disponibilidad\": \"inmediata\"\n}"
             }
           },
           "response": [
@@ -1400,7 +1400,7 @@
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n    \"nombre\": \"Juan Segundo\",\n    \"apellido_paterno\": \"Perez\",\n    \"apellido_materno\": \"Gomez\",\n    \"dni\": \"12345678\",\n    \"fecha_nacimiento\": \"1996-01-01\",\n    \"genero\": \"masculino\",\n    \"correo\": \"juan.perez@example.com\",\n    \"password\": \"password123\",\n    \"password_confirmation\": \"password123\",\n    \"celular\": \"912345678\",\n    \"disponibilidad\": \"inmediata\"\n}"
+                  "raw": "{\n    \"nombre\": \"Juan Segundo\",\n    \"apellidos\": \"Perez Gomez\",\n    \"dni\": \"12345678\",\n    \"fecha_nacimiento\": \"1996-01-01\",\n    \"genero\": \"masculino\",\n    \"correo\": \"juan.perez@example.com\",\n    \"password\": \"password123\",\n    \"password_confirmation\": \"password123\",\n    \"celular\": \"912345678\",\n    \"disponibilidad\": \"inmediata\"\n}"
                 }
               },
               "status": "Unprocessable Entity",
@@ -1464,7 +1464,7 @@
             "description": "Validación de formatos en DNI (no tiene 8 dígitos), celular (no inicia con 9 o no tiene 9 dígitos), fecha futura o confirmación de password.",
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"nombre\": \"Carlos\",\n    \"apellido_paterno\": \"Silva\",\n    \"apellido_materno\": \"Ruiz\",\n    \"dni\": \"123\",\n    \"fecha_nacimiento\": \"2035-01-01\",\n    \"genero\": \"otro\",\n    \"correo\": \"carlos.silva@example.com\",\n    \"password\": \"pass\",\n    \"password_confirmation\": \"pass_distinto\",\n    \"celular\": \"12345\",\n    \"disponibilidad\": \"inmediata\"\n}"
+              "raw": "{\n    \"nombre\": \"Carlos\",\n    \"apellidos\": \"Silva Ruiz\",\n    \"dni\": \"123\",\n    \"fecha_nacimiento\": \"2035-01-01\",\n    \"genero\": \"otro\",\n    \"correo\": \"carlos.silva@example.com\",\n    \"password\": \"pass\",\n    \"password_confirmation\": \"pass_distinto\",\n    \"celular\": \"12345\",\n    \"disponibilidad\": \"inmediata\"\n}"
             }
           },
           "response": [
@@ -1493,7 +1493,7 @@
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n    \"nombre\": \"Carlos\",\n    \"apellido_paterno\": \"Silva\",\n    \"apellido_materno\": \"Ruiz\",\n    \"dni\": \"123\",\n    \"fecha_nacimiento\": \"2035-01-01\",\n    \"genero\": \"otro\",\n    \"correo\": \"carlos.silva@example.com\",\n    \"password\": \"pass\",\n    \"password_confirmation\": \"pass_distinto\",\n    \"celular\": \"12345\",\n    \"disponibilidad\": \"inmediata\"\n}"
+                  "raw": "{\n    \"nombre\": \"Carlos\",\n    \"apellidos\": \"Silva Ruiz\",\n    \"dni\": \"123\",\n    \"fecha_nacimiento\": \"2035-01-01\",\n    \"genero\": \"otro\",\n    \"correo\": \"carlos.silva@example.com\",\n    \"password\": \"pass\",\n    \"password_confirmation\": \"pass_distinto\",\n    \"celular\": \"12345\",\n    \"disponibilidad\": \"inmediata\"\n}"
                 }
               },
               "status": "Unprocessable Entity",
@@ -1583,7 +1583,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n    \"success\": true,\n    \"message\": \"Perfil del candidato obtenido exitosamente\",\n    \"data\": {\n        \"id\": 1,\n        \"usuario_id\": 1,\n        \"correo\": \"juan.perez@example.com\",\n        \"nombre\": \"Juan\",\n        \"apellido_paterno\": \"Perez\",\n        \"apellido_materno\": \"Gomez\",\n        \"dni\": \"12345678\",\n        \"fecha_nacimiento\": \"1995-05-15\",\n        \"celular\": \"987654321\",\n        \"genero\": \"masculino\",\n        \"disponibilidad\": \"inmediata\",\n        \"carreras\": [],\n        \"habilidades\": []\n    }\n}"
+              "body": "{\n    \"success\": true,\n    \"message\": \"Perfil del candidato obtenido exitosamente\",\n    \"data\": {\n        \"id\": 1,\n        \"usuario_id\": 1,\n        \"correo\": \"juan.perez@example.com\",\n        \"nombre\": \"Juan\",\n        \"apellidos\": \"Perez Gomez\",\n        \"dni\": \"12345678\",\n        \"fecha_nacimiento\": \"1995-05-15\",\n        \"celular\": \"987654321\",\n        \"genero\": \"masculino\",\n        \"disponibilidad\": \"inmediata\",\n        \"carreras\": [],\n        \"habilidades\": []\n    }\n}"
             }
           ],
           "event": [
@@ -1709,7 +1709,7 @@
             "description": "Actualiza los datos del candidato. Demuestra que la regla de validación DNI ignora al propio candidato en edición, evitando el error de unicidad al enviar su mismo DNI.",
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"nombre\": \"Juan Carlos\",\n    \"apellido_paterno\": \"Perez\",\n    \"apellido_materno\": \"Gomez\",\n    \"dni\": \"12345678\",\n    \"celular\": \"911223344\",\n    \"disponibilidad\": \"1_semana\",\n    \"habilidades\": [\n        1,\n        2,\n        3\n    ]\n}"
+              "raw": "{\n    \"nombre\": \"Juan Carlos\",\n    \"apellidos\": \"Perez Gomez\",\n    \"dni\": \"12345678\",\n    \"celular\": \"911223344\",\n    \"disponibilidad\": \"1_semana\",\n    \"habilidades\": [\n        1,\n        2,\n        3\n    ]\n}"
             }
           },
           "response": [
@@ -1739,7 +1739,7 @@
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n    \"nombre\": \"Juan Carlos\",\n    \"apellido_paterno\": \"Perez\",\n    \"apellido_materno\": \"Gomez\",\n    \"dni\": \"12345678\",\n    \"celular\": \"911223344\",\n    \"disponibilidad\": \"1_semana\",\n    \"habilidades\": [\n        1,\n        2,\n        3\n    ]\n}"
+                  "raw": "{\n    \"nombre\": \"Juan Carlos\",\n    \"apellidos\": \"Perez Gomez\",\n    \"dni\": \"12345678\",\n    \"celular\": \"911223344\",\n    \"disponibilidad\": \"1_semana\",\n    \"habilidades\": [\n        1,\n        2,\n        3\n    ]\n}"
                 }
               },
               "status": "OK",
@@ -1752,7 +1752,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n    \"success\": true,\n    \"message\": \"Perfil actualizado exitosamente\",\n    \"data\": {\n        \"id\": 1,\n        \"usuario_id\": 1,\n        \"correo\": \"juan.perez@example.com\",\n        \"nombre\": \"Juan Carlos\",\n        \"apellido_paterno\": \"Perez\",\n        \"apellido_materno\": \"Gomez\",\n        \"dni\": \"12345678\",\n        \"fecha_nacimiento\": \"1995-05-15\",\n        \"celular\": \"911223344\",\n        \"genero\": \"masculino\",\n        \"disponibilidad\": \"1_semana\",\n        \"carreras\": [],\n        \"habilidades\": [\n            {\n                \"id\": 1,\n                \"nombre\": \"PHP\",\n                \"tipo_habilidad\": \"tecnica\",\n                \"estado\": \"activo\"\n            },\n            {\n                \"id\": 2,\n                \"nombre\": \"Laravel\",\n                \"tipo_habilidad\": \"tecnica\",\n                \"estado\": \"activo\"\n            },\n            {\n                \"id\": 3,\n                \"nombre\": \"Python\",\n                \"tipo_habilidad\": \"tecnica\",\n                \"estado\": \"activo\"\n            }\n        ]\n    }\n}"
+              "body": "{\n    \"success\": true,\n    \"message\": \"Perfil actualizado exitosamente\",\n    \"data\": {\n        \"id\": 1,\n        \"usuario_id\": 1,\n        \"correo\": \"juan.perez@example.com\",\n        \"nombre\": \"Juan Carlos\",\n        \"apellidos\": \"Perez Gomez\",\n        \"dni\": \"12345678\",\n        \"fecha_nacimiento\": \"1995-05-15\",\n        \"celular\": \"911223344\",\n        \"genero\": \"masculino\",\n        \"disponibilidad\": \"1_semana\",\n        \"carreras\": [],\n        \"habilidades\": [\n            {\n                \"id\": 1,\n                \"nombre\": \"PHP\",\n                \"tipo_habilidad\": \"tecnica\",\n                \"estado\": \"activo\"\n            },\n            {\n                \"id\": 2,\n                \"nombre\": \"Laravel\",\n                \"tipo_habilidad\": \"tecnica\",\n                \"estado\": \"activo\"\n            },\n            {\n                \"id\": 3,\n                \"nombre\": \"Python\",\n                \"tipo_habilidad\": \"tecnica\",\n                \"estado\": \"activo\"\n            }\n        ]\n    }\n}"
             }
           ],
           "event": [
@@ -1802,7 +1802,7 @@
             "description": "Demuestra la ventaja de Route Model Binding: si el candidato ID no existe, Laravel corta inmediatamente con 404 antes de evaluar validaciones del body.",
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"nombre\": \"Inexistente\",\n    \"apellido_paterno\": \"Test\",\n    \"apellido_materno\": \"Test\",\n    \"dni\": \"12345678\",\n    \"celular\": \"911223344\",\n    \"disponibilidad\": \"1_semana\"\n}"
+              "raw": "{\n    \"nombre\": \"Inexistente\",\n    \"apellidos\": \"Test Test\",\n    \"dni\": \"12345678\",\n    \"celular\": \"911223344\",\n    \"disponibilidad\": \"1_semana\"\n}"
             }
           },
           "response": [
@@ -1832,7 +1832,7 @@
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n    \"nombre\": \"Inexistente\",\n    \"apellido_paterno\": \"Test\",\n    \"apellido_materno\": \"Test\",\n    \"dni\": \"12345678\",\n    \"celular\": \"911223344\",\n    \"disponibilidad\": \"1_semana\"\n}"
+                  "raw": "{\n    \"nombre\": \"Inexistente\",\n    \"apellidos\": \"Test Test\",\n    \"dni\": \"12345678\",\n    \"celular\": \"911223344\",\n    \"disponibilidad\": \"1_semana\"\n}"
                 }
               },
               "status": "Not Found",
@@ -1894,7 +1894,7 @@
             "description": "Intento de actualizar el perfil de este candidato usando un DNI que ya pertenece a otro candidato registrado en la base de datos.",
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"nombre\": \"Juan Carlos\",\n    \"apellido_paterno\": \"Perez\",\n    \"apellido_materno\": \"Gomez\",\n    \"dni\": \"87654321\",\n    \"celular\": \"911223344\",\n    \"disponibilidad\": \"1_semana\"\n}"
+              "raw": "{\n    \"nombre\": \"Juan Carlos\",\n    \"apellidos\": \"Perez Gomez\",\n    \"dni\": \"87654321\",\n    \"celular\": \"911223344\",\n    \"disponibilidad\": \"1_semana\"\n}"
             }
           },
           "response": [
@@ -1924,7 +1924,7 @@
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n    \"nombre\": \"Juan Carlos\",\n    \"apellido_paterno\": \"Perez\",\n    \"apellido_materno\": \"Gomez\",\n    \"dni\": \"87654321\",\n    \"celular\": \"911223344\",\n    \"disponibilidad\": \"1_semana\"\n}"
+                  "raw": "{\n    \"nombre\": \"Juan Carlos\",\n    \"apellidos\": \"Perez Gomez\",\n    \"dni\": \"87654321\",\n    \"celular\": \"911223344\",\n    \"disponibilidad\": \"1_semana\"\n}"
                 }
               },
               "status": "Unprocessable Entity",

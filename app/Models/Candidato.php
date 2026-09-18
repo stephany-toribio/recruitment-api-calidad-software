@@ -17,8 +17,7 @@ class Candidato extends Model
     protected $fillable = [
         'usuario_id',
         'nombre',
-        'apellido_paterno',
-        'apellido_materno',
+        'apellidos',
         'dni',
         'fecha_nacimiento',
         'genero',

@@ -15,8 +15,7 @@ class RegistrarCandidatoRequest extends FormRequest
     {
         return [
             'nombre'                      => ['required', 'string', 'max:120'],
-            'apellido_paterno'            => ['required', 'string', 'max:120'],
-            'apellido_materno'            => ['required', 'string', 'max:120'],
+            'apellidos'                   => ['required', 'string', 'max:255'],
             'dni'                         => ['required', 'string', 'size:8', 'unique:candidatos,dni'], 
             'fecha_nacimiento'            => ['required', 'date'], 
             'genero'                      => ['required', 'in:masculino,femenino,otro'],
@@ -41,16 +40,19 @@ class RegistrarCandidatoRequest extends FormRequest
     {
         return [
             'nombre.required'             => 'El nombre es obligatorio.',
-            'apellido_paterno.required'   => 'El apellido paterno es obligatorio.',
-            'apellido_materno.required'   => 'El apellido materno es obligatorio.',
+            'apellidos.required'          => 'Los apellidos son obligatorios.',
             'dni.required'                => 'El DNI es obligatorio.',
             'dni.size'                    => 'El DNI debe tener exactamente 8 caracteres.',
             'dni.unique'                  => 'El DNI ya existe en la base de datos.',
+
             'fecha_nacimiento.required'   => 'La fecha de nacimiento es obligatoria.',
+
             'genero.required'             => 'El género es obligatorio.',
+
             'disponibilidad.required'     => 'La disponibilidad es obligatoria.',
             'disponibilidad.in'           => 'La disponibilidad debe ser inmediata, 1_semana o 1_mes.',
             'correo.required'             => 'El correo electrónico es obligatorio.',
+            
             'correo.unique'               => 'Este correo ya pertenece a una cuenta registrada.',
             'password.required'           => 'La contraseña es obligatoria.',
             'password.confirmed'          => 'La confirmación de la contraseña no coincide.',
