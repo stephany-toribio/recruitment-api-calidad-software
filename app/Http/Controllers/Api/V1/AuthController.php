@@ -57,11 +57,25 @@ class AuthController extends BaseApiController
             'bloqueado_hasta'   => null,
         ]);
 
+        $token = $usuario->createToken('auth_token')->plainTextToken;
+
         return $this->successResponse([
             'usuario_id' => $usuario->id,
             'correo'     => $usuario->correo,
             'rol'        => $usuario->rol?->nombre,
+            'token'      => $token,
         ], 'Inicio de sesión exitoso.');
+    }
+
+    /**
+     * GET /api/v1/auth/me
+     */
+    public function me(Request $request): JsonResponse
+    {
+        return $this->successResponse(
+            new UsuarioResource($request->user()),
+            'Usuario autenticado'
+        );
     }
 
     /**
@@ -102,8 +116,10 @@ class AuthController extends BaseApiController
     /**
      * POST /api/v1/auth/logout
      */
-    public function logout(): JsonResponse
+    public function logout(Request $request): JsonResponse
     {
+        $request->user()?->currentAccessToken()?->delete();
+
         return $this->successResponse(null, 'Sesión cerrada correctamente');
     }
 
