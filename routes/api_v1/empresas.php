@@ -1,9 +1,11 @@
 <?php
 
+use App\Http\Controllers\Api\V1\EmpresaController;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| Rutas del módulo Empresas (v1)
-|--------------------------------------------------------------------------
-*/
+Route::post('/empresas', [EmpresaController::class, 'store']);
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/empresas/me', [EmpresaController::class, 'show']);
+    Route::put('/empresas/me', [EmpresaController::class, 'update']);
+});

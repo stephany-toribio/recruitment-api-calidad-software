@@ -12,7 +12,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->redirectGuestsTo(function ($request) {
+            return null;
+        });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // 1. Asegura que cualquier excepción en la API devuelva JSON evitando redirecciones HTML
@@ -75,4 +77,18 @@ return Application::configure(basePath: dirname(__DIR__))
                 ], 403);
             }
         });
+
+        // Captura específicamente modelos de Eloquent que no existan
+        $exceptions->render(function (\Illuminate\Database\Eloquent\ModelNotFoundException $e, $request) {
+            if ($request->is('api/*')) {
+                $nombreModelo = class_basename($e->getModel()); // ej: "Candidato", "Usuario", etc.
+                return response()->json([
+                    'success'    => false,
+                    'message'    => "El {$nombreModelo} solicitado no fue encontrado.",
+                    'error_code' => 'RESOURCE_NOT_FOUND', 
+                ], 404);
+            }
+        });
+
+
     })->create();
