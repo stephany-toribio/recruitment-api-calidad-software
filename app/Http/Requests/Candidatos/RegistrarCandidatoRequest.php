@@ -23,7 +23,7 @@ class RegistrarCandidatoRequest extends FormRequest
             'password'                    => ['required', 'confirmed', 'min:8', 'max:120'], 
             'celular'                     => ['required', 'string', 'max:20'],
             'disponibilidad'              => ['required', 'in:inmediata,1_semana,1_mes'],
-            'habilidades'                 => ['required', 'array'],
+            'habilidades'                 => ['required', 'array','max:15'],
             'habilidades.*'               => ['required', 'integer', 'exists:habilidades,id'],
             'carreras'                    => ['nullable', 'array'],
             'carreras.*.carrera_id'       => ['required_with:carreras', 'integer', 'exists:carreras,id'],
@@ -60,6 +60,7 @@ class RegistrarCandidatoRequest extends FormRequest
             'celular.required'            => 'El número de teléfono es obligatorio.',
             'habilidades.required'        => 'Debe seleccionar al menos una habilidad.',
             'habilidades.*.exists'        => 'Una o más habilidades seleccionadas no son válidas.',
+            'habilidades.max'             => 'No puedes seleccionar más de 15 habilidades.',
             'carreras.*.carrera_id.exists'=> 'La carrera seleccionada no es válida.',
         ]; 
     }
