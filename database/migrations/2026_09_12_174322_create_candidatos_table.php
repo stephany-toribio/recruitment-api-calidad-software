@@ -18,12 +18,11 @@ return new class extends Migration
                 ->onDelete('cascade');
 
             $table->string('nombre');
-            $table->string('apellido_paterno');
-            $table->string('apellido_materno'); 
+            $table->string('apellidos');
             $table->string('dni', 8)->unique()->nullable();
             $table->date('fecha_nacimiento')->nullable();
             $table->string('celular', 20);
-            $table->enum('genero', ['masculino', 'femenino', 'otro'])->nullable();
+            $table->enum('genero', ['masculino', 'femenino', 'otro', 'prefiero no decir'])->nullable()->default('prefiero no decir');
             $table->enum('disponibilidad', ['inmediata', '1_semana', '1_mes'])->nullable();
             $table->timestamps();
         });
