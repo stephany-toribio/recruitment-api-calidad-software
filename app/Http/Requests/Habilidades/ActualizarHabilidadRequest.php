@@ -21,7 +21,7 @@ class ActualizarHabilidadRequest extends FormRequest
                 'string',
                 'max:255',
                 Rule::unique('habilidades', 'nombre')
-                    ->ignore($this->route('id')),
+                    ->ignore($this->route('habilidad')),
             ],
 
             'tipo_habilidad' => [

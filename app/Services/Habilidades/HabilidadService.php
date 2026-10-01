@@ -20,10 +20,8 @@ class HabilidadService
         return Habilidad::create($datos);
     }
 
-    public function actualizar(int $id, array $datos): Habilidad
+    public function actualizar(Habilidad $habilidad, array $datos): Habilidad
     {
-        $habilidad = Habilidad::findOrFail($id);
-
         $habilidad->update($datos);
 
         return $habilidad;

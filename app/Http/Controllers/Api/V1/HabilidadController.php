@@ -7,6 +7,7 @@ use App\Http\Requests\Habilidades\CrearHabilidadRequest;
 use App\Http\Resources\Api\V1\HabilidadResource;
 use App\Services\Habilidades\HabilidadService;
 use Illuminate\Http\JsonResponse;
+use App\Models\Habilidad;
 
 class HabilidadController extends BaseApiController
 {
@@ -40,15 +41,15 @@ class HabilidadController extends BaseApiController
 
     public function update(
         ActualizarHabilidadRequest $request,
-        int $id
+        Habilidad $habilidad
     ): JsonResponse {
-        $habilidad = $this->habilidadService->actualizar(
-            $id,
+        $habilidadActualizada = $this->habilidadService->actualizar(
+            $habilidad,
             $request->validated()
         );
 
         return $this->successResponse(
-            new HabilidadResource($habilidad),
+            new HabilidadResource($habilidadActualizada),
             'Habilidad actualizada correctamente'
         );
     }
