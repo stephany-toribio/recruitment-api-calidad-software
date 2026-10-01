@@ -42,16 +42,20 @@ class AuthController extends BaseApiController
                 ]);
             }
 
+            // Misma respuesta que con correo inexistente: no revelar si la cuenta existe
+            return $this->errorResponse('Credenciales incorrectas.', Response::HTTP_UNAUTHORIZED);
+        }
+
+        // 3. Cuenta suspendida por administración: no emitir token.
+        //    Se verifica después de la contraseña para no revelar el estado a terceros.
+        if ($usuario->estado_cuenta === 'suspendido') {
             return $this->errorResponse(
-                'Credenciales incorrectas.',
-                Response::HTTP_UNAUTHORIZED,
-                [
-                    'intentos_fallidos' => $usuario->intentos_fallidos,
-                ]
+                'Su cuenta se encuentra suspendida. Comuníquese con el administrador.',
+                Response::HTTP_FORBIDDEN
             );
         }
 
-        // 3. Login exitoso: reiniciar contadores
+        // 4. Login exitoso: reiniciar contadores
         $usuario->update([
             'intentos_fallidos' => 0,
             'bloqueado_hasta'   => null,
@@ -79,12 +83,12 @@ class AuthController extends BaseApiController
     }
 
     /**
-     * GET /api/v1/auth/usuarios/{id}
-     * Devuelve el perfil completo del usuario con rol y perfil asociado (candidato/empresa).
+     * GET /api/v1/auth/usuarios/me
+     * Devuelve el perfil completo del usuario autenticado con rol y perfil asociado (candidato/empresa).
      */
-    public function show(int $id): JsonResponse
+    public function show(Request $request): JsonResponse
     {
-        $usuario = Usuario::with(['rol', 'candidato', 'empresa'])->findOrFail($id);
+        $usuario = $request->user()->load(['rol', 'candidato', 'empresa']);
 
         return $this->successResponse(
             new UsuarioResource($usuario),
@@ -93,12 +97,12 @@ class AuthController extends BaseApiController
     }
 
     /**
-     * PUT /api/v1/auth/usuarios/{id}/password
-     * Cambia la contraseña verificando la contraseña actual.
+     * PUT /api/v1/auth/usuarios/me/password
+     * Cambia la contraseña del usuario autenticado verificando la contraseña actual.
      */
-    public function cambiarPassword(CambiarPasswordRequest $request, int $id): JsonResponse
+    public function cambiarPassword(CambiarPasswordRequest $request): JsonResponse
     {
-        $usuario = Usuario::findOrFail($id);
+        $usuario = $request->user();
 
         if (!Hash::check($request->password_actual, $usuario->password)) {
             return $this->errorResponse(
