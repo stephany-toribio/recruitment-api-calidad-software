@@ -49,6 +49,14 @@ class CandidatoService
         }); 
     }
 
+    //obtener el perfil candidato del usuario autenticado (404 si el usuario no es candidato)
+    public function obtenerPorUsuario(int $usuarioId): Candidato
+    {
+        return Candidato::with(['usuario', 'habilidades', 'carreras'])
+            ->where('usuario_id', $usuarioId)
+            ->firstOrFail();
+    }
+
     //actualizar perfil
     public function actualizar(Candidato $candidato, array $datos):Candidato
     {
