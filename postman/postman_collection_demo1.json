@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "portal-empleos-demo1-collection",
     "name": "Portal Empleos - Demo 1 (Backend Completo)",
-    "description": "Colección integral para la Demo 1 del Portal de Empleos. Incluye todos los endpoints de Dev 1 (Auth & Usuarios), Dev 2 (Candidatos) y Dev 3 (Empresas & Habilidades) con cobertura exhaustiva de casos de éxito (200, 201) y casos de fallo detallados (401, 404, 422).",
+    "description": "Colección integral para la Demo 1 del Portal de Empleos. Incluye todos los endpoints de Dev 1 (Auth & Usuarios), Dev 2 (Candidatos) y Dev 3 (Empresas & Habilidades) con cobertura exhaustiva de casos de éxito (200, 201) y casos de fallo detallados (401, 404, 422). Actualizada en HU-10: rutas privadas usan Authorization: Bearer {{token}} / {{token_candidato}} / {{token_empresa}}.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -133,7 +133,7 @@
                 "login"
               ]
             },
-            "description": "Intento de inicio de sesión con contraseña errónea o correo no registrado. Por directriz de seguridad OWASP, devuelve mensaje genérico para evitar enumeración de usuarios.",
+            "description": "Contraseña incorrecta. La respuesta es idéntica a la de un correo inexistente (no expone intentos_fallidos) para evitar enumeración de usuarios.",
             "body": {
               "mode": "raw",
               "raw": "{\n    \"correo\": \"juan.perez@example.com\",\n    \"password\": \"contraseña_incorrecta\"\n}"
@@ -179,7 +179,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n    \"success\": false,\n    \"message\": \"Credenciales incorrectas.\",\n    \"error_code\": \"UNAUTHORIZED\"\n}"
+              "body": "{\n    \"success\": false,\n    \"message\": \"Credenciales incorrectas.\",\n    \"errors\": null\n}"
             }
           ],
           "event": [
@@ -458,48 +458,56 @@
           ]
         },
         {
-          "name": "1.6 Ver Perfil por ID /usuarios/{id} - Éxito (200)",
+          "name": "1.6 Ver Perfil /usuarios/me - Éxito (200 con Token)",
           "request": {
             "method": "GET",
             "header": [
               {
                 "key": "Accept",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
               }
             ],
             "url": {
-              "raw": "{{base_url}}/auth/usuarios/{{usuario_id}}",
+              "raw": "{{base_url}}/auth/usuarios/me",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "auth",
                 "usuarios",
-                "{{usuario_id}}"
+                "me"
               ]
             },
-            "description": "Consulta el usuario directamente por su ID de URL (sin requerir token, según flujo inicial de Dev 1)."
+            "description": "Devuelve el perfil completo del usuario autenticado (rol y perfil candidato/empresa). El usuario se obtiene del token, no de la URL."
           },
           "response": [
             {
-              "name": "200 OK - Usuario Encontrado",
+              "name": "200 OK - Perfil del Usuario Autenticado",
               "originalRequest": {
                 "method": "GET",
                 "header": [
                   {
                     "key": "Accept",
                     "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
                   }
                 ],
                 "url": {
-                  "raw": "{{base_url}}/auth/usuarios/{{usuario_id}}",
+                  "raw": "{{base_url}}/auth/usuarios/me",
                   "host": [
                     "{{base_url}}"
                   ],
                   "path": [
                     "auth",
                     "usuarios",
-                    "{{usuario_id}}"
+                    "me"
                   ]
                 }
               },
@@ -524,7 +532,7 @@
                   "pm.test('Status code es 200 OK', function () {",
                   "    pm.response.to.have.status(200);",
                   "});",
-                  "pm.test('Devuelve información del usuario por ID', function () {",
+                  "pm.test('Devuelve el perfil del usuario dueño del token', function () {",
                   "    var jsonData = pm.response.json();",
                   "    pm.expect(jsonData.success).to.be.true;",
                   "    pm.expect(jsonData.data.id).to.eql(parseInt(pm.environment.get('usuario_id')));",
@@ -536,7 +544,7 @@
           ]
         },
         {
-          "name": "1.7 Ver Perfil por ID /usuarios/{id} - Error No Encontrado (404)",
+          "name": "1.7 Ver Perfil /usuarios/me - Error Sin Token (401)",
           "request": {
             "method": "GET",
             "header": [
@@ -546,21 +554,21 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/auth/usuarios/99999",
+              "raw": "{{base_url}}/auth/usuarios/me",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "auth",
                 "usuarios",
-                "99999"
+                "me"
               ]
             },
-            "description": "Intento de consultar un usuario que no existe en el sistema."
+            "description": "Sin header Authorization la ruta protegida por auth:sanctum responde 401."
           },
           "response": [
             {
-              "name": "404 Not Found - Usuario Inexistente",
+              "name": "401 Unauthorized - Sin Token",
               "originalRequest": {
                 "method": "GET",
                 "header": [
@@ -570,19 +578,20 @@
                   }
                 ],
                 "url": {
-                  "raw": "{{base_url}}/auth/usuarios/99999",
+                  "raw": "{{base_url}}/auth/usuarios/me",
                   "host": [
                     "{{base_url}}"
                   ],
                   "path": [
                     "auth",
                     "usuarios",
-                    "99999"
+                    "me"
                   ]
-                }
+                },
+                "description": "Sin header Authorization la ruta protegida por auth:sanctum responde 401."
               },
-              "status": "Not Found",
-              "code": 404,
+              "status": "Unauthorized",
+              "code": 401,
               "_postman_previewlanguage": "json",
               "header": [
                 {
@@ -591,7 +600,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n    \"success\": false,\n    \"message\": \"El Usuario solicitado no fue encontrado.\",\n    \"error_code\": \"RESOURCE_NOT_FOUND\"\n}"
+              "body": "{\n    \"success\": false,\n    \"message\": \"No autenticado o token inválido.\",\n    \"error_code\": \"UNAUTHENTICATED\"\n}"
             }
           ],
           "event": [
@@ -599,13 +608,13 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status code es 404 Not Found', function () {",
-                  "    pm.response.to.have.status(404);",
+                  "pm.test('Status code es 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
                   "});",
-                  "pm.test('Devuelve RESOURCE_NOT_FOUND', function () {",
+                  "pm.test('Rechaza la petición sin token', function () {",
                   "    var jsonData = pm.response.json();",
                   "    pm.expect(jsonData.success).to.be.false;",
-                  "    pm.expect(jsonData.error_code).to.eql('RESOURCE_NOT_FOUND');",
+                  "    pm.expect(jsonData.error_code).to.eql('UNAUTHENTICATED');",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -625,21 +634,25 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
               }
             ],
             "url": {
-              "raw": "{{base_url}}/auth/usuarios/{{usuario_id}}/password",
+              "raw": "{{base_url}}/auth/usuarios/me/password",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "auth",
                 "usuarios",
-                "{{usuario_id}}",
+                "me",
                 "password"
               ]
             },
-            "description": "Actualiza la contraseña del usuario validando la contraseña actual.",
+            "description": "Cambia la contraseña del usuario autenticado (token). Ya no recibe el ID en la URL: un usuario solo puede cambiar SU contraseña.",
             "body": {
               "mode": "raw",
               "raw": "{\n    \"password_actual\": \"password123\",\n    \"password_nuevo\": \"nuevo_password123\",\n    \"password_nuevo_confirmation\": \"nuevo_password123\"\n}"
@@ -658,17 +671,21 @@
                   {
                     "key": "Content-Type",
                     "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
                   }
                 ],
                 "url": {
-                  "raw": "{{base_url}}/auth/usuarios/{{usuario_id}}/password",
+                  "raw": "{{base_url}}/auth/usuarios/me/password",
                   "host": [
                     "{{base_url}}"
                   ],
                   "path": [
                     "auth",
                     "usuarios",
-                    "{{usuario_id}}",
+                    "me",
                     "password"
                   ]
                 },
@@ -721,17 +738,21 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
               }
             ],
             "url": {
-              "raw": "{{base_url}}/auth/usuarios/{{usuario_id}}/password",
+              "raw": "{{base_url}}/auth/usuarios/me/password",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "auth",
                 "usuarios",
-                "{{usuario_id}}",
+                "me",
                 "password"
               ]
             },
@@ -754,17 +775,21 @@
                   {
                     "key": "Content-Type",
                     "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
                   }
                 ],
                 "url": {
-                  "raw": "{{base_url}}/auth/usuarios/{{usuario_id}}/password",
+                  "raw": "{{base_url}}/auth/usuarios/me/password",
                   "host": [
                     "{{base_url}}"
                   ],
                   "path": [
                     "auth",
                     "usuarios",
-                    "{{usuario_id}}",
+                    "me",
                     "password"
                   ]
                 },
@@ -817,17 +842,21 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
               }
             ],
             "url": {
-              "raw": "{{base_url}}/auth/usuarios/{{usuario_id}}/password",
+              "raw": "{{base_url}}/auth/usuarios/me/password",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "auth",
                 "usuarios",
-                "{{usuario_id}}",
+                "me",
                 "password"
               ]
             },
@@ -850,17 +879,21 @@
                   {
                     "key": "Content-Type",
                     "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
                   }
                 ],
                 "url": {
-                  "raw": "{{base_url}}/auth/usuarios/{{usuario_id}}/password",
+                  "raw": "{{base_url}}/auth/usuarios/me/password",
                   "host": [
                     "{{base_url}}"
                   ],
                   "path": [
                     "auth",
                     "usuarios",
-                    "{{usuario_id}}",
+                    "me",
                     "password"
                   ]
                 },
@@ -898,6 +931,103 @@
                 ],
                 "type": "text/javascript"
               }
+            }
+          ]
+        },
+        {
+          "name": "1.10.1 Cambiar Contraseña - Error Sin Token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "pm.test('Rechaza la petición sin token', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.error_code).to.eql('UNAUTHENTICATED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/usuarios/me/password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "usuarios",
+                "me",
+                "password"
+              ]
+            },
+            "description": "Sin token no se puede cambiar ninguna contraseña.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"password_actual\": \"password123\",\n    \"password_nuevo\": \"nuevo_password123\",\n    \"password_nuevo_confirmation\": \"diferente_password123\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "401 Unauthorized - Sin Token",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/usuarios/me/password",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "usuarios",
+                    "me",
+                    "password"
+                  ]
+                },
+                "description": "Sin token no se puede cambiar ninguna contraseña.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"password_actual\": \"password123\",\n    \"password_nuevo\": \"nuevo_password123\",\n    \"password_nuevo_confirmation\": \"diferente_password123\"\n}"
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": false,\n    \"message\": \"No autenticado o token inválido.\",\n    \"error_code\": \"UNAUTHENTICATED\"\n}"
             }
           ]
         },
@@ -1530,13 +1660,316 @@
           ]
         },
         {
-          "name": "2.4 Ver Perfil Candidato por ID - Éxito (200)",
+          "name": "2.4 Login Candidato - Éxito (200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Guarda token_candidato', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.environment.set('token_candidato', jsonData.data.token);",
+                  "    pm.environment.set('usuario_id', jsonData.data.usuario_id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Inicia sesión con el candidato registrado en 2.1 y guarda su token en `token_candidato`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"juan.perez@example.com\",\n    \"password\": \"password123\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2.5 Ver Mi Perfil /candidatos/me - Éxito (200 con Token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Devuelve el perfil del candidato autenticado', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data).to.have.property('dni');",
+                  "    pm.environment.set('candidato_id', jsonData.data.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "GET",
             "header": [
               {
                 "key": "Accept",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_candidato}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos",
+                "me"
+              ]
+            },
+            "description": "Perfil del candidato dueño del token, con habilidades y carreras."
+          },
+          "response": [
+            {
+              "name": "200 OK - Perfil Propio",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token_candidato}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/candidatos/me",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "candidatos",
+                    "me"
+                  ]
+                },
+                "description": "Perfil del candidato dueño del token, con habilidades y carreras."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": true,\n    \"message\": \"Perfil del candidato obtenido exitosamente\",\n    \"data\": {\n        \"id\": 1,\n        \"usuario_id\": 1,\n        \"correo\": \"juan.perez@example.com\",\n        \"nombre\": \"Juan\",\n        \"apellidos\": \"Perez Gomez\",\n        \"dni\": \"12345678\",\n        \"fecha_nacimiento\": \"1995-05-15\",\n        \"celular\": \"987654321\",\n        \"genero\": \"masculino\",\n        \"disponibilidad\": \"inmediata\",\n        \"carreras\": [],\n        \"habilidades\": []\n    }\n}"
+            }
+          ]
+        },
+        {
+          "name": "2.6 Ver Mi Perfil /candidatos/me - Error Sin Token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "pm.test('Rechaza la petición sin token', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.error_code).to.eql('UNAUTHENTICATED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos",
+                "me"
+              ]
+            },
+            "description": "Ruta protegida: sin token responde 401."
+          },
+          "response": [
+            {
+              "name": "401 Unauthorized - Sin Token",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/candidatos/me",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "candidatos",
+                    "me"
+                  ]
+                },
+                "description": "Ruta protegida: sin token responde 401."
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": false,\n    \"message\": \"No autenticado o token inválido.\",\n    \"error_code\": \"UNAUTHENTICATED\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "2.7 Ver Mi Perfil /candidatos/me - Error Token de Empresa (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 404 Not Found', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test('El usuario autenticado no tiene perfil de candidato', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.error_code).to.eql('RESOURCE_NOT_FOUND');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_empresa}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos",
+                "me"
+              ]
+            },
+            "description": "Ejecutar después de 3.4 (Login Empresa). Un usuario empresa no tiene perfil candidato."
+          },
+          "response": [
+            {
+              "name": "404 Not Found - Sin Perfil Candidato",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token_empresa}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/candidatos/me",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "candidatos",
+                    "me"
+                  ]
+                },
+                "description": "Ejecutar después de 3.4 (Login Empresa). Un usuario empresa no tiene perfil candidato."
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": false,\n    \"message\": \"El Candidato solicitado no fue encontrado.\",\n    \"error_code\": \"RESOURCE_NOT_FOUND\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "2.8 Ver Perfil Candidato por ID - Éxito (200 con Token)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_candidato}}"
               }
             ],
             "url": {
@@ -1549,7 +1982,7 @@
                 "{{candidato_id}}"
               ]
             },
-            "description": "Obtiene el perfil detallado del candidato con sus carreras y habilidades cargadas con eager loading."
+            "description": "Consulta un candidato por ID usando Route Model Binding. Requiere token."
           },
           "response": [
             {
@@ -1560,6 +1993,10 @@
                   {
                     "key": "Accept",
                     "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token_candidato}}"
                   }
                 ],
                 "url": {
@@ -1606,13 +2043,17 @@
           ]
         },
         {
-          "name": "2.5 Ver Perfil Candidato por ID - Error No Encontrado (404)",
+          "name": "2.9 Ver Perfil Candidato por ID - Error No Encontrado (404)",
           "request": {
             "method": "GET",
             "header": [
               {
                 "key": "Accept",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_candidato}}"
               }
             ],
             "url": {
@@ -1636,6 +2077,10 @@
                   {
                     "key": "Accept",
                     "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token_candidato}}"
                   }
                 ],
                 "url": {
@@ -1683,7 +2128,7 @@
           ]
         },
         {
-          "name": "2.6 Actualizar Perfil Candidato - Éxito Mismo DNI (200)",
+          "name": "2.10 Actualizar Mi Perfil /candidatos/me - Éxito Mismo DNI (200)",
           "request": {
             "method": "PUT",
             "header": [
@@ -1694,19 +2139,23 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_candidato}}"
               }
             ],
             "url": {
-              "raw": "{{base_url}}/candidatos/{{candidato_id}}",
+              "raw": "{{base_url}}/candidatos/me",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "candidatos",
-                "{{candidato_id}}"
+                "me"
               ]
             },
-            "description": "Actualiza los datos del candidato. Demuestra que la regla de validación DNI ignora al propio candidato en edición, evitando el error de unicidad al enviar su mismo DNI.",
+            "description": "Actualiza el perfil del candidato autenticado. Enviar su propio DNI no genera conflicto de unicidad.",
             "body": {
               "mode": "raw",
               "raw": "{\n    \"nombre\": \"Juan Carlos\",\n    \"apellidos\": \"Perez Gomez\",\n    \"dni\": \"12345678\",\n    \"celular\": \"911223344\",\n    \"disponibilidad\": \"1_semana\",\n    \"habilidades\": [\n        1,\n        2,\n        3\n    ]\n}"
@@ -1725,16 +2174,20 @@
                   {
                     "key": "Content-Type",
                     "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token_candidato}}"
                   }
                 ],
                 "url": {
-                  "raw": "{{base_url}}/candidatos/{{candidato_id}}",
+                  "raw": "{{base_url}}/candidatos/me",
                   "host": [
                     "{{base_url}}"
                   ],
                   "path": [
                     "candidatos",
-                    "{{candidato_id}}"
+                    "me"
                   ]
                 },
                 "body": {
@@ -1776,7 +2229,7 @@
           ]
         },
         {
-          "name": "2.7 Actualizar Perfil Candidato - Error No Encontrado (404)",
+          "name": "2.11 Actualizar Mi Perfil /candidatos/me - Error DNI Pertenece a Otro (422)",
           "request": {
             "method": "PUT",
             "header": [
@@ -1787,108 +2240,20 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_candidato}}"
               }
             ],
             "url": {
-              "raw": "{{base_url}}/candidatos/99999",
+              "raw": "{{base_url}}/candidatos/me",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "candidatos",
-                "99999"
-              ]
-            },
-            "description": "Demuestra la ventaja de Route Model Binding: si el candidato ID no existe, Laravel corta inmediatamente con 404 antes de evaluar validaciones del body.",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"nombre\": \"Inexistente\",\n    \"apellidos\": \"Test Test\",\n    \"dni\": \"12345678\",\n    \"celular\": \"911223344\",\n    \"disponibilidad\": \"1_semana\"\n}"
-            }
-          },
-          "response": [
-            {
-              "name": "404 Not Found - Candidato Inexistente",
-              "originalRequest": {
-                "method": "PUT",
-                "header": [
-                  {
-                    "key": "Accept",
-                    "value": "application/json"
-                  },
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  }
-                ],
-                "url": {
-                  "raw": "{{base_url}}/candidatos/99999",
-                  "host": [
-                    "{{base_url}}"
-                  ],
-                  "path": [
-                    "candidatos",
-                    "99999"
-                  ]
-                },
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n    \"nombre\": \"Inexistente\",\n    \"apellidos\": \"Test Test\",\n    \"dni\": \"12345678\",\n    \"celular\": \"911223344\",\n    \"disponibilidad\": \"1_semana\"\n}"
-                }
-              },
-              "status": "Not Found",
-              "code": 404,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n    \"success\": false,\n    \"message\": \"El Candidato solicitado no fue encontrado.\",\n    \"error_code\": \"RESOURCE_NOT_FOUND\"\n}"
-            }
-          ],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code es 404 Not Found', function () {",
-                  "    pm.response.to.have.status(404);",
-                  "});",
-                  "pm.test('Corta con 404 antes de validar', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.success).to.be.false;",
-                  "    pm.expect(jsonData.error_code).to.eql('RESOURCE_NOT_FOUND');",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        },
-        {
-          "name": "2.8 Actualizar Perfil Candidato - Error DNI Pertenece a Otro (422)",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/candidatos/{{candidato_id}}",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "candidatos",
-                "{{candidato_id}}"
+                "me"
               ]
             },
             "description": "Intento de actualizar el perfil de este candidato usando un DNI que ya pertenece a otro candidato registrado en la base de datos.",
@@ -1910,16 +2275,20 @@
                   {
                     "key": "Content-Type",
                     "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token_candidato}}"
                   }
                 ],
                 "url": {
-                  "raw": "{{base_url}}/candidatos/{{candidato_id}}",
+                  "raw": "{{base_url}}/candidatos/me",
                   "host": [
                     "{{base_url}}"
                   ],
                   "path": [
                     "candidatos",
-                    "{{candidato_id}}"
+                    "me"
                   ]
                 },
                 "body": {
@@ -1957,6 +2326,99 @@
                 ],
                 "type": "text/javascript"
               }
+            }
+          ]
+        },
+        {
+          "name": "2.12 Actualizar Mi Perfil /candidatos/me - Error Sin Token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "pm.test('Rechaza la petición sin token', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.error_code).to.eql('UNAUTHENTICATED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos",
+                "me"
+              ]
+            },
+            "description": "Sin token no se puede modificar ningún perfil.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Juan Carlos\",\n    \"apellidos\": \"Perez Gomez\",\n    \"dni\": \"12345678\",\n    \"celular\": \"911223344\",\n    \"disponibilidad\": \"1_semana\",\n    \"habilidades\": [\n        1,\n        2,\n        3\n    ]\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "401 Unauthorized - Sin Token",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/candidatos/me",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "candidatos",
+                    "me"
+                  ]
+                },
+                "description": "Sin token no se puede modificar ningún perfil.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"nombre\": \"Juan Carlos\",\n    \"apellidos\": \"Perez Gomez\",\n    \"dni\": \"12345678\",\n    \"celular\": \"911223344\",\n    \"disponibilidad\": \"1_semana\",\n    \"habilidades\": [\n        1,\n        2,\n        3\n    ]\n}"
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": false,\n    \"message\": \"No autenticado o token inválido.\",\n    \"error_code\": \"UNAUTHENTICATED\"\n}"
             }
           ]
         }
@@ -2790,6 +3252,10 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_empresa}}"
               }
             ],
             "url": {
@@ -2801,7 +3267,7 @@
                 "habilidades"
               ]
             },
-            "description": "Crea una nueva habilidad técnica o blanda en el catálogo. Almacena automáticamente `habilidad_id`.",
+            "description": "Crea una nueva habilidad técnica o blanda en el catálogo. Almacena automáticamente `habilidad_id`. Requiere token (se usa token_empresa).",
             "body": {
               "mode": "raw",
               "raw": "{\n    \"nombre\": \"Vue.js\",\n    \"tipo_habilidad\": \"tecnica\"\n}"
@@ -2820,6 +3286,10 @@
                   {
                     "key": "Content-Type",
                     "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token_empresa}}"
                   }
                 ],
                 "url": {
@@ -2882,6 +3352,10 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_empresa}}"
               }
             ],
             "url": {
@@ -2912,6 +3386,10 @@
                   {
                     "key": "Content-Type",
                     "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token_empresa}}"
                   }
                 ],
                 "url": {
@@ -2973,6 +3451,10 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_empresa}}"
               }
             ],
             "url": {
@@ -3003,6 +3485,10 @@
                   {
                     "key": "Content-Type",
                     "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token_empresa}}"
                   }
                 ],
                 "url": {
@@ -3063,6 +3549,10 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_empresa}}"
               }
             ],
             "url": {
@@ -3094,6 +3584,10 @@
                   {
                     "key": "Content-Type",
                     "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token_empresa}}"
                   }
                 ],
                 "url": {
@@ -3155,6 +3649,10 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_empresa}}"
               }
             ],
             "url": {
@@ -3186,6 +3684,10 @@
                   {
                     "key": "Content-Type",
                     "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token_empresa}}"
                   }
                 ],
                 "url": {
@@ -3247,6 +3749,10 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_empresa}}"
               }
             ],
             "url": {
@@ -3278,6 +3784,10 @@
                   {
                     "key": "Content-Type",
                     "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token_empresa}}"
                   }
                 ],
                 "url": {
@@ -3324,6 +3834,97 @@
                 ],
                 "type": "text/javascript"
               }
+            }
+          ]
+        },
+        {
+          "name": "4.8 Crear Habilidad - Error Sin Token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "pm.test('Rechaza la petición sin token', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.error_code).to.eql('UNAUTHENTICATED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/habilidades",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "habilidades"
+              ]
+            },
+            "description": "Crear o editar el catálogo requiere token. Listar (4.1) sigue siendo público.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Svelte\",\n    \"tipo_habilidad\": \"tecnica\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "401 Unauthorized - Sin Token",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/habilidades",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "habilidades"
+                  ]
+                },
+                "description": "Crear o editar el catálogo requiere token. Listar (4.1) sigue siendo público.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"nombre\": \"Svelte\",\n    \"tipo_habilidad\": \"tecnica\"\n}"
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": false,\n    \"message\": \"No autenticado o token inválido.\",\n    \"error_code\": \"UNAUTHENTICATED\"\n}"
             }
           ]
         }
