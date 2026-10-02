@@ -21,6 +21,7 @@ class Candidato extends Model
         'dni',
         'fecha_nacimiento',
         'genero',
+        'nivel_educativo',
         'disponibilidad',
         'celular',
     ]; 

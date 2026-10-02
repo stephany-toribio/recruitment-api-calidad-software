@@ -3,6 +3,11 @@
 namespace App\Http\Requests\Candidatos;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Exceptions\BusinessException;
+use App\Rules\PasswordSegura;
+use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Validation\Rule;
+
 
 class RegistrarCandidatoRequest extends FormRequest
 {
@@ -18,13 +23,14 @@ class RegistrarCandidatoRequest extends FormRequest
             'apellidos'                   => ['required', 'string', 'max:255'],
             'dni'                         => ['required', 'string', 'size:8', 'unique:candidatos,dni'], 
             'fecha_nacimiento'            => ['required', 'date'], 
-            'genero'                      => ['required', 'in:masculino,femenino,otro'],
+            'genero'                      => ['required', 'in:masculino,femenino,otro,prefiero no decir'],
+            'nivel_educativo'             => ['required', 'in:secundaria,tecnico,universitario,posgrado'],
             'correo'                      => ['required', 'email', 'max:120', 'unique:usuarios,correo'], 
-            'password'                    => ['required', 'confirmed', 'min:8', 'max:120'], 
+            'password'                    => ['required', 'confirmed', new PasswordSegura(),'max:120'], 
             'celular'                     => ['required', 'string', 'max:20'],
-            'disponibilidad'              => ['required', 'in:inmediata,1_semana,1_mes'],
-            'habilidades'                 => ['required', 'array','max:15'],
-            'habilidades.*'               => ['required', 'integer', 'exists:habilidades,id'],
+            'disponibilidad'              => ['required', 'in:inmediata,1_semana,1_mes'], 
+            'habilidades'                 => ['required', 'array', 'min:1', 'max:15'],
+            'habilidades.*'               => ['required', 'integer', 'distinct', Rule::exists('habilidades', 'id')->where('estado', 'activo')],
             'carreras'                    => ['nullable', 'array'],
             'carreras.*.carrera_id'       => ['required_with:carreras', 'integer', 'exists:carreras,id'],
             'carreras.*.institucion'      => ['required_with:carreras', 'string', 'max:255'],
@@ -36,6 +42,22 @@ class RegistrarCandidatoRequest extends FormRequest
         ]; 
     } 
 
+    public function failedValidation(Validator $validator)
+    {
+        $habilidades = $this->input('habilidades');
+
+        if (is_array($habilidades) && count($habilidades)>15)
+        {
+            throw new BusinessException(
+                'No puedes seleccionar mas de 15 habilidades',
+                400,
+                'MAX_HABILIDADES_EXCEDIDO'
+            );
+        }
+
+        parent::failedValidation($validator);
+    }
+
     public function messages(): array
     {
         return [
@@ -46,8 +68,10 @@ class RegistrarCandidatoRequest extends FormRequest
             'dni.unique'                  => 'El DNI ya existe en la base de datos.',
 
             'fecha_nacimiento.required'   => 'La fecha de nacimiento es obligatoria.',
+            'nivel_educativo.required' => 'El nivel educativo es obligatorio.',
+            'nivel_educativo.in'       => 'El nivel educativo no es válido.',
 
-            'genero.required'             => 'El género es obligatorio.',
+       
 
             'disponibilidad.required'     => 'La disponibilidad es obligatoria.',
             'disponibilidad.in'           => 'La disponibilidad debe ser inmediata, 1_semana o 1_mes.',
@@ -56,10 +80,12 @@ class RegistrarCandidatoRequest extends FormRequest
             'correo.unique'               => 'Este correo ya pertenece a una cuenta registrada.',
             'password.required'           => 'La contraseña es obligatoria.',
             'password.confirmed'          => 'La confirmación de la contraseña no coincide.',
-            'password.min'                => 'La contraseña debe tener al menos 8 caracteres.',
+            
             'celular.required'            => 'El número de teléfono es obligatorio.',
             'habilidades.required'        => 'Debe seleccionar al menos una habilidad.',
-            'habilidades.*.exists'        => 'Una o más habilidades seleccionadas no son válidas.',
+            'habilidades.*.exists'        => 'Una o más habilidades seleccionadas no existen o estan inactivas.',
+            'habilidades.*.distinct'   => 'No puede repetir habilidades.',
+            'habilidades.min'          => 'Debe seleccionar al menos una habilidad.',
             'habilidades.max'             => 'No puedes seleccionar más de 15 habilidades.',
             'carreras.*.carrera_id.exists'=> 'La carrera seleccionada no es válida.',
         ]; 

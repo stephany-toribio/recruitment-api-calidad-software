@@ -31,6 +31,7 @@ class CandidatoService
                 'dni'                  =>$datos['dni'],
                 'fecha_nacimiento'     =>$datos['fecha_nacimiento'],
                 'genero'               =>$datos['genero'] ?? 'prefiero no decir',
+                'nivel_educativo'      =>$datos['nivel_educativo'],
                 'disponibilidad'       =>$datos['disponibilidad'],
                 'celular'              =>$datos['celular'],
             ]); 
