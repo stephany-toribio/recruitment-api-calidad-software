@@ -29,7 +29,7 @@ class EmpresaService
                 'razon_social' => $datos['razon_social'],
                 'descripcion' => $datos['descripcion'] ?? null,
                 'ruc' => $datos['ruc'],
-                'sitio_web' => $datos['sitio_web'],
+                'sitio_web' => $datos['sitio_web'] ?? null,
             ]);
 
             return $empresa->load('usuario');
