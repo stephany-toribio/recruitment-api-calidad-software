@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Services\Auth\AuthService;
+use App\Services\Auth\UsuarioService;
 use App\Http\Requests\Auth\CambiarPasswordRequest;
 use App\Http\Requests\Auth\ForgotPasswordRequest;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Resources\Api\V1\UsuarioResource;
-use App\Models\Usuario;
-use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -16,58 +16,28 @@ use Symfony\Component\HttpFoundation\Response;
 class AuthController extends BaseApiController
 {
 
-    public function login(LoginRequest $request): JsonResponse
-    {
-        $usuario = Usuario::where('correo', $request->correo)->with('rol')->first();
+    public function login(
+        LoginRequest $request,
+        AuthService $authService
+    ): JsonResponse {
+        $resultado = $authService->autenticar(
+            $request->correo,
+            $request->password
+        );
 
-        if (!$usuario) {
-            return $this->errorResponse('Credenciales incorrectas.', Response::HTTP_UNAUTHORIZED);
-        }
-
-        // 1. Verificar si la cuenta está bloqueada temporalmente
-        if ($usuario->bloqueado_hasta && $usuario->bloqueado_hasta->isFuture()) {
+        if (!$resultado['ok']) {
             return $this->errorResponse(
-                'Cuenta bloqueada temporalmente por múltiples intentos fallidos. Intente más tarde.',
-                Response::HTTP_TOO_MANY_REQUESTS
+                $resultado['mensaje'],
+                $resultado['codigo'],
+                $resultado['errores'] ?? null
             );
         }
-
-        // 2. Validar contraseña contra hash
-        if (!Hash::check($request->password, $usuario->password)) {
-            $usuario->increment('intentos_fallidos');
-
-            if ($usuario->intentos_fallidos >= 5) {
-                $usuario->update([
-                    'bloqueado_hasta' => Carbon::now()->addMinutes(15),
-                ]);
-            }
-
-            // Misma respuesta que con correo inexistente: no revelar si la cuenta existe
-            return $this->errorResponse('Credenciales incorrectas.', Response::HTTP_UNAUTHORIZED);
-        }
-
-        // 3. Cuenta suspendida por administración: no emitir token.
-        //    Se verifica después de la contraseña para no revelar el estado a terceros.
-        if ($usuario->estado_cuenta === 'suspendido') {
-            return $this->errorResponse(
-                'Su cuenta se encuentra suspendida. Comuníquese con el administrador.',
-                Response::HTTP_FORBIDDEN
-            );
-        }
-
-        // 4. Login exitoso: reiniciar contadores
-        $usuario->update([
-            'intentos_fallidos' => 0,
-            'bloqueado_hasta'   => null,
-        ]);
-
-        $token = $usuario->createToken('auth_token')->plainTextToken;
 
         return $this->successResponse([
-            'usuario_id' => $usuario->id,
-            'correo'     => $usuario->correo,
-            'rol'        => $usuario->rol?->nombre,
-            'token'      => $token,
+            'usuario_id' => $resultado['usuario']->id,
+            'correo'     => $resultado['usuario']->correo,
+            'rol'        => $resultado['usuario']->rol?->nombre,
+            'token'      => $resultado['token'],
         ], 'Inicio de sesión exitoso.');
     }
 
@@ -100,8 +70,10 @@ class AuthController extends BaseApiController
      * PUT /api/v1/auth/usuarios/me/password
      * Cambia la contraseña del usuario autenticado verificando la contraseña actual.
      */
-    public function cambiarPassword(CambiarPasswordRequest $request): JsonResponse
-    {
+    public function cambiarPassword(
+        CambiarPasswordRequest $request,
+        UsuarioService $usuarioService
+    ): JsonResponse {
         $usuario = $request->user();
 
         if (!Hash::check($request->password_actual, $usuario->password)) {
@@ -112,9 +84,15 @@ class AuthController extends BaseApiController
             );
         }
 
-        $usuario->update(['password' => $request->password_nuevo]);
+        $usuarioService->actualizarPassword(
+            $usuario,
+            $request->password_nuevo
+        );
 
-        return $this->successResponse(null, 'Contraseña actualizada correctamente.');
+        return $this->successResponse(
+            null,
+            'Contraseña actualizada correctamente.'
+        );
     }
 
     /**

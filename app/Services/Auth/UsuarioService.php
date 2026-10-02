@@ -9,13 +9,10 @@ class UsuarioService
 {
     /**
      * Crea un registro base en la tabla `usuarios`.
-     * Este método es el único punto de escritura en `usuarios` para módulos externos.
      *
      * @param array{correo: string, password: string} $datos
-     * @param string $rol — 'candidato' | 'empresa'
+     * @param string $rol
      * @return Usuario
-     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException si el rol no existe
-     * @throws \Illuminate\Database\QueryException si el correo ya existe
      */
     public function registrar(array $datos, string $rol): Usuario
     {
@@ -23,8 +20,20 @@ class UsuarioService
 
         return Usuario::create([
             'correo'   => $datos['correo'],
-            'password' => $datos['password'], // el cast 'hashed' en el modelo lo encripta
+            'password' => $datos['password'],
             'rol_id'   => $rolModelo->id,
         ]);
+    }
+
+    /**
+     * Actualiza la contraseña y revoca todas las sesiones activas.
+     */
+    public function actualizarPassword(Usuario $u, string $password): void
+    {
+        $u->update([
+            'password' => $password,
+        ]);
+
+        $u->tokens()->delete();
     }
 }
