@@ -3,7 +3,6 @@
 namespace App\Http\Requests\Empresas;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rules\Password;
 
 class RegistrarEmpresaRequest extends FormRequest
 {
@@ -25,10 +24,10 @@ class RegistrarEmpresaRequest extends FormRequest
             'password' => [
                 'required',
                 'string',
-                Password::min(8)
-                    ->mixedCase()
-                    ->numbers()
-                    ->symbols(),
+                'min:8',
+                'regex:/[A-Z]/',
+                'regex:/[0-9]/',
+                'regex:/[@#$%&]/',
             ],
 
             'razon_social' => [
@@ -44,7 +43,7 @@ class RegistrarEmpresaRequest extends FormRequest
             ],
 
             'sitio_web' => [
-                'required',
+                'nullable',
                 'url',
                 'max:255',
             ],
@@ -65,11 +64,8 @@ class RegistrarEmpresaRequest extends FormRequest
             'correo.unique' => 'El correo ya está registrado.',
 
             'password.required' => 'La contraseña es obligatoria.',
-            'password.min'      => 'La contraseña debe tener al menos 8 caracteres.',
-            'password.mixed'    => 'La contraseña debe contener al menos una letra mayúscula y una minúscula.',
-            'password.letters'  => 'La contraseña debe contener al menos una letra.',
-            'password.symbols'  => 'La contraseña debe contener al menos un símbolo.',
-            'password.numbers'  => 'La contraseña debe contener al menos un número.',
+            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+            'password.regex' => 'La contraseña debe incluir al menos una mayúscula, un número y uno de los caracteres especiales @, #, $, % o &.',
 
             'razon_social.required' => 'La razón social es obligatoria.',
 
@@ -77,7 +73,6 @@ class RegistrarEmpresaRequest extends FormRequest
             'ruc.digits' => 'El RUC debe tener exactamente 11 dígitos.',
             'ruc.unique' => 'El RUC ya está registrado.',
 
-            'sitio_web.required' => 'El sitio web es obligatorio.',
             'sitio_web.url' => 'El sitio web debe ser una URL válida.',
         ];
     }
