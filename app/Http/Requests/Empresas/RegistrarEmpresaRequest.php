@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Empresas;
 
+use App\Rules\PasswordSegura;
 use Illuminate\Foundation\Http\FormRequest;
 
 class RegistrarEmpresaRequest extends FormRequest
@@ -24,10 +25,7 @@ class RegistrarEmpresaRequest extends FormRequest
             'password' => [
                 'required',
                 'string',
-                'min:8',
-                'regex:/[A-Z]/',
-                'regex:/[0-9]/',
-                'regex:/[@#$%&]/',
+                new PasswordSegura(),
             ],
 
             'razon_social' => [
@@ -64,8 +62,6 @@ class RegistrarEmpresaRequest extends FormRequest
             'correo.unique' => 'El correo ya está registrado.',
 
             'password.required' => 'La contraseña es obligatoria.',
-            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
-            'password.regex' => 'La contraseña debe incluir al menos una mayúscula, un número y uno de los caracteres especiales @, #, $, % o &.',
 
             'razon_social.required' => 'La razón social es obligatoria.',
 
