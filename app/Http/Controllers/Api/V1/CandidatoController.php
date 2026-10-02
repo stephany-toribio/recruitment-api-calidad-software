@@ -29,7 +29,19 @@ class CandidatoController extends BaseApiController
     }
 
 
-    // GET /api/v1/candidatos/{candidato} (Ver perfil por ID) 
+    // GET /api/v1/candidatos/me (Ver perfil del candidato autenticado)
+    public function me(Request $request): JsonResponse
+    {
+        $candidato = $this->candidatoService->obtenerPorUsuario($request->user()->id);
+
+        return $this->successResponse(
+            new CandidatoResource($candidato),
+            'Perfil de candidato obtenido exitosamente'
+        );
+    }
+
+
+    // GET /api/v1/candidatos/{candidato} (Ver perfil por ID)
     public function show(Candidato $candidato): JsonResponse
     {
         $candidato->load(['habilidades', 'carreras', 'usuario']);
@@ -40,9 +52,11 @@ class CandidatoController extends BaseApiController
     }
 
 
-    // PUT /api/v1/candidatos/{id} (Actualizar perfil por ID)
-    public function update(ActualizarCandidatoRequest $request, Candidato $candidato): JsonResponse
+    // PUT /api/v1/candidatos/me (Actualizar perfil del candidato autenticado)
+    public function update(ActualizarCandidatoRequest $request): JsonResponse
     {
+        $candidato = $this->candidatoService->obtenerPorUsuario($request->user()->id);
+
         $candidatoActualizado = $this->candidatoService->actualizar(
             $candidato,
             $request->validated()

@@ -6,21 +6,22 @@ use Illuminate\Support\Facades\Route;
 
 
 Route::prefix('auth')->group(function () {
-    // 1. POST /api/v1/auth/login
+    // Rutas públicas (sin token)
+    // POST /api/v1/auth/login
     Route::post('/login', [AuthController::class, 'login']);
 
-    // 2. GET /api/v1/auth/usuarios/{id}
-    Route::get('/usuarios/{id}', [AuthController::class, 'show']);
-
-    // 3. PUT /api/v1/auth/usuarios/{id}/password
-    Route::put('/usuarios/{id}/password', [AuthController::class, 'cambiarPassword']);
-
-    // 4. POST /api/v1/auth/forgot-password
+    // POST /api/v1/auth/forgot-password
     Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 
-    // Rutas protegidas con Sanctum
+    // Rutas protegidas con Sanctum (header Authorization: Bearer {token})
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('/me', [AuthController::class, 'me']);
         Route::post('/logout', [AuthController::class, 'logout']);
+
+        // GET /api/v1/auth/usuarios/me
+        Route::get('/usuarios/me', [AuthController::class, 'show']);
+
+        // PUT /api/v1/auth/usuarios/me/password
+        Route::put('/usuarios/me/password', [AuthController::class, 'cambiarPassword']);
     });
 });

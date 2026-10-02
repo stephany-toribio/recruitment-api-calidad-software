@@ -17,7 +17,7 @@ class ActualizarCandidatoRequest extends FormRequest
         return [
             'nombre'           => ['sometimes', 'string', 'max:120'],
             'apellidos'        => ['sometimes', 'string', 'max:255'],
-            'dni'              => ['sometimes', 'string', 'size:8', Rule::unique('candidatos', 'dni')->ignore($this->route('candidato')?->id ?? $this->route('candidato') ?? $this->route('id'))],
+            'dni'              => ['sometimes', 'string', 'size:8', Rule::unique('candidatos', 'dni')->ignore($this->user()?->id, 'usuario_id')],
             'fecha_nacimiento' => ['sometimes', 'date'],
             'genero'           => ['sometimes', 'in:masculino,femenino,otro,prefiero no decir'],
             'celular'          => ['sometimes', 'string', 'max:20'],
