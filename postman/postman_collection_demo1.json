@@ -2236,19 +2236,17 @@
           ]
         },
         {
-          "name": "2.7 Ver Mi Perfil /candidatos/me - Error Token de Empresa (404)",
+          "name": "2.7 Ver Mi Perfil /candidatos/me - Error Token de Empresa (403)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status code es 404 Not Found', function () {",
-                  "    pm.response.to.have.status(404);",
+                  "pm.test('Status code es 403 Forbidden', function () {",
+                  "    pm.response.to.have.status(403);",
                   "});",
-                  "pm.test('El usuario autenticado no tiene perfil de candidato', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.success).to.be.false;",
-                  "    pm.expect(jsonData.error_code).to.eql('RESOURCE_NOT_FOUND');",
+                  "pm.test('Rol sin permiso para esta ruta', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('FORBIDDEN');",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -2277,11 +2275,11 @@
                 "me"
               ]
             },
-            "description": "Ejecutar después de 3.4 (Login Empresa). Un usuario empresa no tiene perfil candidato."
+            "description": "Ejecutar después de 3.4 (Login Empresa). La ruta es solo para rol candidato: el middleware `rol:candidato` responde 403."
           },
           "response": [
             {
-              "name": "404 Not Found - Sin Perfil Candidato",
+              "name": "403 Forbidden - Rol Empresa",
               "originalRequest": {
                 "method": "GET",
                 "header": [
@@ -2303,11 +2301,10 @@
                     "candidatos",
                     "me"
                   ]
-                },
-                "description": "Ejecutar después de 3.4 (Login Empresa). Un usuario empresa no tiene perfil candidato."
+                }
               },
-              "status": "Not Found",
-              "code": 404,
+              "status": "Forbidden",
+              "code": 403,
               "_postman_previewlanguage": "json",
               "header": [
                 {
@@ -2316,12 +2313,12 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n    \"success\": false,\n    \"message\": \"El Candidato solicitado no fue encontrado.\",\n    \"error_code\": \"RESOURCE_NOT_FOUND\"\n}"
+              "body": "{\n    \"success\": false,\n    \"message\": \"No tienes permisos para realizar esta acción.\",\n    \"error_code\": \"FORBIDDEN\"\n}"
             }
           ]
         },
         {
-          "name": "2.8 Ver Perfil Candidato por ID - Éxito (200 con Token)",
+          "name": "2.8 Ver Perfil Candidato por ID - Éxito (200 con Token Empresa)",
           "request": {
             "method": "GET",
             "header": [
@@ -2331,7 +2328,7 @@
               },
               {
                 "key": "Authorization",
-                "value": "Bearer {{token_candidato}}"
+                "value": "Bearer {{token_empresa}}"
               }
             ],
             "url": {
@@ -2344,7 +2341,7 @@
                 "{{candidato_id}}"
               ]
             },
-            "description": "Consulta un candidato por ID usando Route Model Binding. Requiere token."
+            "description": "Ejecutar después de 3.4. Solo empresa y admin pueden ver un candidato por ID (`rol:empresa,admin`)."
           },
           "response": [
             {
@@ -2358,7 +2355,7 @@
                   },
                   {
                     "key": "Authorization",
-                    "value": "Bearer {{token_candidato}}"
+                    "value": "Bearer {{token_empresa}}"
                   }
                 ],
                 "url": {
@@ -2405,7 +2402,23 @@
           ]
         },
         {
-          "name": "2.9 Ver Perfil Candidato por ID - Error No Encontrado (404)",
+          "name": "2.8.1 Ver Perfil Candidato por ID - Error Rol Candidato (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 403 Forbidden', function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});",
+                  "pm.test('Rol sin permiso para esta ruta', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('FORBIDDEN');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "GET",
             "header": [
@@ -2416,6 +2429,72 @@
               {
                 "key": "Authorization",
                 "value": "Bearer {{token_candidato}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos/{{candidato_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos",
+                "{{candidato_id}}"
+              ]
+            },
+            "description": "Un candidato no puede consultar perfiles de otros candidatos por ID."
+          },
+          "response": [
+            {
+              "name": "403 Forbidden - Rol Candidato",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token_candidato}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/candidatos/{{candidato_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "candidatos",
+                    "{{candidato_id}}"
+                  ]
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": false,\n    \"message\": \"No tienes permisos para realizar esta acción.\",\n    \"error_code\": \"FORBIDDEN\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "2.9 Ver Perfil Candidato por ID - Error No Encontrado (404)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_empresa}}"
               }
             ],
             "url": {
@@ -2442,7 +2521,7 @@
                   },
                   {
                     "key": "Authorization",
-                    "value": "Bearer {{token_candidato}}"
+                    "value": "Bearer {{token_empresa}}"
                   }
                 ],
                 "url": {
@@ -2490,7 +2569,7 @@
           ]
         },
         {
-          "name": "2.10 Actualizar Mi Perfil /candidatos/me - Éxito Mismo DNI (200)",
+          "name": "2.10 Actualizar Mi Perfil /candidatos/me - Éxito Datos, Nivel y Carreras (200)",
           "request": {
             "method": "PUT",
             "header": [
@@ -2517,10 +2596,10 @@
                 "me"
               ]
             },
-            "description": "Actualiza el perfil del candidato autenticado. Enviar su propio DNI no genera conflicto de unicidad.",
+            "description": "HU-12: todo es editable menos el correo. Si se envía `carreras`, reemplaza la lista completa. Enviar el mismo DNI no genera conflicto.",
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"nombre\": \"Juan Carlos\",\n    \"apellidos\": \"Perez Gomez\",\n    \"dni\": \"12345678\",\n    \"celular\": \"911223344\",\n    \"disponibilidad\": \"1_semana\",\n    \"habilidades\": [\n        1,\n        2,\n        3\n    ]\n}"
+              "raw": "{\n    \"nombre\": \"Juan Carlos\",\n    \"apellidos\": \"Perez Gomez\",\n    \"dni\": \"12345678\",\n    \"celular\": \"911223344\",\n    \"disponibilidad\": \"1_semana\",\n    \"nivel_educativo\": \"posgrado\",\n    \"habilidades\": [\n        1,\n        2,\n        3\n    ],\n    \"carreras\": [\n        {\n            \"carrera_id\": 1,\n            \"institucion\": \"Universidad Nacional de Ingeniería\",\n            \"estado\": \"egresado\",\n            \"area\": \"Tecnología\"\n        },\n        {\n            \"carrera_id\": 2,\n            \"institucion\": \"Universidad de Lima\",\n            \"estado\": \"en_curso\",\n            \"ciclo_actual\": 3\n        }\n    ]\n}"
             }
           },
           "response": [
@@ -2554,7 +2633,7 @@
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n    \"nombre\": \"Juan Carlos\",\n    \"apellidos\": \"Perez Gomez\",\n    \"dni\": \"12345678\",\n    \"celular\": \"911223344\",\n    \"disponibilidad\": \"1_semana\",\n    \"habilidades\": [\n        1,\n        2,\n        3\n    ]\n}"
+                  "raw": "{\n    \"nombre\": \"Juan Carlos\",\n    \"apellidos\": \"Perez Gomez\",\n    \"dni\": \"12345678\",\n    \"celular\": \"911223344\",\n    \"disponibilidad\": \"1_semana\",\n    \"nivel_educativo\": \"posgrado\",\n    \"habilidades\": [\n        1,\n        2,\n        3\n    ],\n    \"carreras\": [\n        {\n            \"carrera_id\": 1,\n            \"institucion\": \"Universidad Nacional de Ingeniería\",\n            \"estado\": \"egresado\",\n            \"area\": \"Tecnología\"\n        },\n        {\n            \"carrera_id\": 2,\n            \"institucion\": \"Universidad de Lima\",\n            \"estado\": \"en_curso\",\n            \"ciclo_actual\": 3\n        }\n    ]\n}"
                 }
               },
               "status": "OK",
@@ -2567,7 +2646,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n    \"success\": true,\n    \"message\": \"Perfil actualizado exitosamente\",\n    \"data\": {\n        \"id\": 1,\n        \"usuario_id\": 1,\n        \"correo\": \"juan.perez@example.com\",\n        \"nombre\": \"Juan Carlos\",\n        \"apellidos\": \"Perez Gomez\",\n        \"dni\": \"12345678\",\n        \"fecha_nacimiento\": \"1995-05-15\",\n        \"celular\": \"911223344\",\n        \"genero\": \"masculino\",\n        \"disponibilidad\": \"1_semana\",\n        \"carreras\": [],\n        \"habilidades\": [\n            {\n                \"id\": 1,\n                \"nombre\": \"PHP\",\n                \"tipo_habilidad\": \"tecnica\",\n                \"estado\": \"activo\"\n            },\n            {\n                \"id\": 2,\n                \"nombre\": \"Laravel\",\n                \"tipo_habilidad\": \"tecnica\",\n                \"estado\": \"activo\"\n            },\n            {\n                \"id\": 3,\n                \"nombre\": \"Python\",\n                \"tipo_habilidad\": \"tecnica\",\n                \"estado\": \"activo\"\n            }\n        ]\n    }\n}"
+              "body": "{\n    \"success\": true,\n    \"message\": \"Perfil actualizado exitosamente\",\n    \"data\": {\n        \"id\": 1,\n        \"usuario_id\": 1,\n        \"correo\": \"juan.perez@example.com\",\n        \"nombre\": \"Juan Carlos\",\n        \"apellidos\": \"Perez Gomez\",\n        \"dni\": \"12345678\",\n        \"fecha_nacimiento\": \"1995-05-15\",\n        \"celular\": \"911223344\",\n        \"genero\": \"masculino\",\n        \"disponibilidad\": \"1_semana\",\n        \"carreras\": [],\n        \"habilidades\": [\n            {\n                \"id\": 1,\n                \"nombre\": \"PHP\",\n                \"tipo_habilidad\": \"tecnica\",\n                \"estado\": \"activo\"\n            },\n            {\n                \"id\": 2,\n                \"nombre\": \"Laravel\",\n                \"tipo_habilidad\": \"tecnica\",\n                \"estado\": \"activo\"\n            },\n            {\n                \"id\": 3,\n                \"nombre\": \"Python\",\n                \"tipo_habilidad\": \"tecnica\",\n                \"estado\": \"activo\"\n            }\n        ],\n        \"nivel_educativo\": \"posgrado\"\n    }\n}"
             }
           ],
           "event": [
@@ -2578,15 +2657,313 @@
                   "pm.test('Status code es 200 OK', function () {",
                   "    pm.response.to.have.status(200);",
                   "});",
-                  "pm.test('Perfil actualizado exitosamente', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.success).to.be.true;",
-                  "    pm.expect(jsonData.data.nombre).to.eql('Juan Carlos');",
-                  "    pm.expect(jsonData.data.celular).to.eql('911223344');",
+                  "pm.test('Perfil actualizado con nivel educativo y 2 carreras', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    pm.expect(data.nivel_educativo).to.eql('posgrado');",
+                  "    pm.expect(data.carreras).to.have.lengthOf(2);",
+                  "    pm.expect(data.habilidades).to.have.lengthOf(3);",
                   "});"
                 ],
                 "type": "text/javascript"
               }
+            }
+          ]
+        },
+        {
+          "name": "2.10.1 Actualizar Mi Perfil - Error Más de 15 Habilidades (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 400 Bad Request', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('Devuelve MAX_HABILIDADES_EXCEDIDO', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('MAX_HABILIDADES_EXCEDIDO');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_candidato}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos",
+                "me"
+              ]
+            },
+            "description": "HU-12: misma regla que el registro; más de 15 habilidades responde 400.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"habilidades\": [\n        1,\n        2,\n        3,\n        4,\n        5,\n        6,\n        7,\n        8,\n        9,\n        10,\n        11,\n        12,\n        13,\n        14,\n        15,\n        16\n    ]\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "Actualizar Mi Perfil - Error Más de 15 Habilidades (400)",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token_candidato}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/candidatos/me",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "candidatos",
+                    "me"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"habilidades\": [\n        1,\n        2,\n        3,\n        4,\n        5,\n        6,\n        7,\n        8,\n        9,\n        10,\n        11,\n        12,\n        13,\n        14,\n        15,\n        16\n    ]\n}"
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": false,\n    \"message\": \"No puedes seleccionar mas de 15 habilidades\",\n    \"error_code\": \"MAX_HABILIDADES_EXCEDIDO\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "2.10.2 Actualizar Mi Perfil - Error Sin Habilidades (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Content', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Error de validación en habilidades', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.error_code).to.eql('VALIDATION_ERROR');",
+                  "    pm.expect(jsonData.errors).to.have.property('habilidades');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_candidato}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos",
+                "me"
+              ]
+            },
+            "description": "HU-12: el perfil debe mantener al menos 1 habilidad.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"habilidades\": []\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "Actualizar Mi Perfil - Error Sin Habilidades (422)",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token_candidato}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/candidatos/me",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "candidatos",
+                    "me"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"habilidades\": []\n}"
+                }
+              },
+              "status": "Unprocessable Content",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": false,\n    \"message\": \"Los datos proporcionados no son válidos.\",\n    \"error_code\": \"VALIDATION_ERROR\",\n    \"errors\": {\n        \"habilidades\": [\n            \"Debe seleccionar al menos una habilidad.\"\n        ]\n    }\n}"
+            }
+          ]
+        },
+        {
+          "name": "2.10.3 Actualizar Mi Perfil - Error Datos Mixtos Se Rechaza Todo (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Content', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Error de validación en nivel_educativo', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.error_code).to.eql('VALIDATION_ERROR');",
+                  "    pm.expect(jsonData.errors).to.have.property('nivel_educativo');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_candidato}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos",
+                "me"
+              ]
+            },
+            "description": "HU-12: si un dato es inválido se rechaza la petición completa; el nombre válido tampoco se guarda.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Nombre Que No Se Guarda\",\n    \"nivel_educativo\": \"doctorado\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "Actualizar Mi Perfil - Error Datos Mixtos Se Rechaza Todo (422)",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token_candidato}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/candidatos/me",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "candidatos",
+                    "me"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"nombre\": \"Nombre Que No Se Guarda\",\n    \"nivel_educativo\": \"doctorado\"\n}"
+                }
+              },
+              "status": "Unprocessable Content",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": false,\n    \"message\": \"Los datos proporcionados no son válidos.\",\n    \"error_code\": \"VALIDATION_ERROR\",\n    \"errors\": {\n        \"nivel_educativo\": [\n            \"El nivel educativo no es válido.\"\n        ]\n    }\n}"
             }
           ]
         },
@@ -2785,7 +3162,56 @@
           ]
         },
         {
-          "name": "2.13 Preparar - Desactivar Habilidad 16 (200)",
+          "name": "2.13 Preparar - Candidato Agrega Habilidad 16 (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_candidato}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos",
+                "me"
+              ]
+            },
+            "description": "Paso previo: el candidato tiene la habilidad 16 antes de que se desactive.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"habilidades\": [\n        1,\n        2,\n        16\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2.14 Preparar - Desactivar Habilidad 16 (200)",
           "event": [
             {
               "listen": "test",
@@ -2794,7 +3220,7 @@
                   "pm.test('Status code es 200 OK', function () {",
                   "    pm.response.to.have.status(200);",
                   "});",
-                  "pm.test('Habilidad queda inactivo', function () {",
+                  "pm.test('Habilidad 16 queda inactivo', function () {",
                   "    pm.expect(pm.response.json().data.estado).to.eql('inactivo');",
                   "});"
                 ],
@@ -2828,7 +3254,7 @@
                 "16"
               ]
             },
-            "description": "Paso previo a 2.14. Ejecutar después de 3.4 (usa token_empresa). Cuando HU-19 restrinja el catálogo a rol:admin, cambiar al token del administrador.",
+            "description": "Ejecutar después de 3.4 (usa token_empresa). Cuando HU-19 restrinja el catálogo a rol:admin, usar el token del administrador.",
             "body": {
               "mode": "raw",
               "raw": "{\n    \"estado\": \"inactivo\"\n}"
@@ -2837,7 +3263,59 @@
           "response": []
         },
         {
-          "name": "2.14 Registrar Candidato - Error Habilidad Inactiva (422)",
+          "name": "2.15 Preparar - Desactivar Habilidad 15 (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Habilidad 15 queda inactivo', function () {",
+                  "    pm.expect(pm.response.json().data.estado).to.eql('inactivo');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_empresa}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/habilidades/15",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "habilidades",
+                "15"
+              ]
+            },
+            "description": "El candidato NO tiene la 15: sirve para probar 2.18.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"estado\": \"inactivo\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2.16 Registrar Candidato - Error Habilidad Inactiva (422)",
           "event": [
             {
               "listen": "test",
@@ -2877,7 +3355,7 @@
                 "candidatos"
               ]
             },
-            "description": "HU-01: solo se aceptan habilidades activas del catálogo. Requiere ejecutar antes 2.13.",
+            "description": "HU-01: solo se aceptan habilidades activas en el registro. Requiere 2.14.",
             "body": {
               "mode": "raw",
               "raw": "{\n    \"nombre\": \"María\",\n    \"apellidos\": \"López Díaz\",\n    \"dni\": \"45678912\",\n    \"fecha_nacimiento\": \"1995-05-15\",\n    \"genero\": \"masculino\",\n    \"nivel_educativo\": \"universitario\",\n    \"correo\": \"maria.lopez@example.com\",\n    \"password\": \"Password123@\",\n    \"password_confirmation\": \"Password123@\",\n    \"celular\": \"987654321\",\n    \"disponibilidad\": \"inmediata\",\n    \"habilidades\": [\n        1,\n        16\n    ]\n}"
@@ -2928,7 +3406,160 @@
           ]
         },
         {
-          "name": "2.15 Restaurar - Reactivar Habilidad 16 (200)",
+          "name": "2.17 Actualizar Mi Perfil - Éxito Conserva Habilidad Inactiva Que Ya Tenía (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Conserva la habilidad 16', function () {",
+                  "    var ids = pm.response.json().data.habilidades.map(function (h) { return h.id; });",
+                  "    pm.expect(ids).to.include(16);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_candidato}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos",
+                "me"
+              ]
+            },
+            "description": "HU-12: la habilidad 16 está inactiva pero el candidato ya la tenía, así que se conserva (asociación histórica).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"habilidades\": [\n        1,\n        2,\n        16\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2.18 Actualizar Mi Perfil - Error Agregar Habilidad Inactiva Nueva (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Content', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Error de validación en habilidades.3', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.error_code).to.eql('VALIDATION_ERROR');",
+                  "    pm.expect(jsonData.errors).to.have.property('habilidades.3');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_candidato}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos",
+                "me"
+              ]
+            },
+            "description": "HU-12: la habilidad 15 está inactiva y el candidato no la tenía; no se puede agregar como nueva selección.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"habilidades\": [\n        1,\n        2,\n        16,\n        15\n    ]\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "Actualizar Mi Perfil - Error Agregar Habilidad Inactiva Nueva (422)",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token_candidato}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/candidatos/me",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "candidatos",
+                    "me"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"habilidades\": [\n        1,\n        2,\n        16,\n        15\n    ]\n}"
+                }
+              },
+              "status": "Unprocessable Content",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": false,\n    \"message\": \"Los datos proporcionados no son válidos.\",\n    \"error_code\": \"VALIDATION_ERROR\",\n    \"errors\": {\n        \"habilidades.3\": [\n            \"Una o más habilidades no existen o están inactivas.\"\n        ]\n    }\n}"
+            }
+          ]
+        },
+        {
+          "name": "2.19 Restaurar - Reactivar Habilidad 16 (200)",
           "event": [
             {
               "listen": "test",
@@ -2971,7 +3602,59 @@
                 "16"
               ]
             },
-            "description": "Deja el catálogo como estaba después de 2.14.",
+            "description": "Deja el catálogo como estaba.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"estado\": \"activo\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2.20 Restaurar - Reactivar Habilidad 15 (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Habilidad 15 queda activo', function () {",
+                  "    pm.expect(pm.response.json().data.estado).to.eql('activo');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_empresa}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/habilidades/15",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "habilidades",
+                "15"
+              ]
+            },
+            "description": "Deja el catálogo como estaba.",
             "body": {
               "mode": "raw",
               "raw": "{\n    \"estado\": \"activo\"\n}"
