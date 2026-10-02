@@ -23,7 +23,7 @@ class RegistrarCandidatoRequest extends FormRequest
             'apellidos'                   => ['required', 'string', 'max:255'],
             'dni'                         => ['required', 'string', 'size:8', 'unique:candidatos,dni'], 
             'fecha_nacimiento'            => ['required', 'date'], 
-            'genero'                      => ['required', 'in:masculino,femenino,otro,prefiero no decir'],
+            'genero'                      => ['nullable', 'in:masculino,femenino,otro,prefiero no decir'],
             'nivel_educativo'             => ['required', 'in:secundaria,tecnico,universitario,posgrado'],
             'correo'                      => ['required', 'email', 'max:120', 'unique:usuarios,correo'], 
             'password'                    => ['required', 'confirmed', new PasswordSegura(),'max:120'], 
