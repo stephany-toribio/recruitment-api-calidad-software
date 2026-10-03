@@ -70,11 +70,17 @@ class CandidatoService
                 'genero'               => $datos['genero']               ?? null,
                 'disponibilidad'       => $datos['disponibilidad']       ?? null,
                 'celular'              => $datos['celular']              ?? null,
+                'nivel_educativo'      => $datos['nivel_educativo']      ?? null,
                 
             ], fn($v)=>!is_null($v)));
 
             if (isset($datos['habilidades'])) {
                 $candidato->habilidades()->sync($datos['habilidades']);
+            }
+
+            if (array_key_exists('carreras', $datos)) {
+                $candidato->carreras()->delete();
+                $candidato->carreras()->createMany($datos['carreras']);
             }
 
             return $candidato->fresh(['usuario', 'habilidades', 'carreras']);
