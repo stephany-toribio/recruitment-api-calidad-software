@@ -26,6 +26,7 @@ class CandidatoResource extends JsonResource
                                     : $this->fecha_nacimiento,
             'celular'          => $this->celular,
             'genero'           => $this->genero,
+            'nivel_educativo'  => $this->nivel_educativo,
             'disponibilidad'   => $this->disponibilidad,
             'carreras'         => $this->whenLoaded('carreras', fn() => $this->carreras->map(fn($c) => [
                 'id'           => $c->id,

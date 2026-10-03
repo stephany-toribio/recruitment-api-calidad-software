@@ -12,19 +12,12 @@ class RolMiddleware
     {
         $usuario = $request->user();
 
-        if (!$usuario || !$usuario->rol) {
+        if (!$usuario || !$usuario->rol || !in_array($usuario->rol->nombre, $roles, true)) {
+            // Mismo formato que el resto de errores 403 de la API (bootstrap/app.php)
             return response()->json([
-                'success' => false,
-                'message' => 'FORBIDDEN',
-                'errors' => null,
-            ], Response::HTTP_FORBIDDEN);
-        }
-
-        if (!in_array($usuario->rol->nombre, $roles, true)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'FORBIDDEN',
-                'errors' => null,
+                'success'    => false,
+                'message'    => 'No tienes permisos para realizar esta acción.',
+                'error_code' => 'FORBIDDEN',
             ], Response::HTTP_FORBIDDEN);
         }
 

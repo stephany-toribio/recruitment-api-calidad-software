@@ -29,7 +29,7 @@ class ActualizarEmpresaRequest extends FormRequest
             ],
 
             'sitio_web' => [
-                'required',
+                'nullable',
                 'url',
                 'max:255',
             ],

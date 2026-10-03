@@ -53,7 +53,7 @@ class EmpresaService
         $empresa->update([
             'razon_social' => $datos['razon_social'],
             'ruc' => $datos['ruc'],
-            'sitio_web' => $datos['sitio_web'],
+            'sitio_web' => $datos['sitio_web'] ?? null,
             'descripcion' => $datos['descripcion'] ?? null,
         ]);
 
