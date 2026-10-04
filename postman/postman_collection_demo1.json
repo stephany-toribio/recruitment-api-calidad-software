@@ -1,17 +1,17 @@
 {
   "info": {
     "_postman_id": "portal-empleos-demo1-collection",
-    "name": "Portal Empleos - Demo 1 (Backend Completo)",
-    "description": "Colección integral para la Demo 1 del Portal de Empleos. Incluye todos los endpoints de Dev 1 (Auth & Usuarios), Dev 2 (Candidatos) y Dev 3 (Empresas & Habilidades) con cobertura exhaustiva de casos de éxito (200, 201) y casos de fallo detallados (401, 404, 422). Actualizada en HU-10: rutas privadas usan Authorization: Bearer {{token}} / {{token_candidato}} / {{token_empresa}}.",
+    "name": "Portal Empleos - Demo 2 (Backend Completo)",
+    "description": "Colección del Portal de Empleos (API v1). ORDEN DE EJECUCIÓN: las carpetas están ordenadas por dependencias para que el Runner funcione de corrido después de `php artisan migrate:fresh --seed`: Empresas (crea la empresa y token_empresa) → Candidatos (crea a Juan; usa token_empresa) → Habilidades → Auth (usa a Juan) → Seguridad de Tokens (independiente). Las rutas privadas usan Authorization: Bearer {{token}} / {{token_candidato}} / {{token_empresa}}. La prueba 5.7 es manual y el Runner la omite.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "1. Auth & Usuarios (Dev 1)",
-      "description": "Autenticación con email/password, gestión de sesiones con tokens Sanctum, perfil del usuario y reseteo de contraseña.",
+      "name": "3. Empresas (Dev 3)",
+      "description": "Registro de empresas con RUC y contraseña segura, login empresarial, consulta de perfil de la empresa autenticada (/empresas/me) y actualización.",
       "item": [
         {
-          "name": "1.1 Login - Éxito (200 OK)",
+          "name": "3.1 Registrar Empresa - Éxito (201 Created)",
           "request": {
             "method": "POST",
             "header": [
@@ -25,24 +25,23 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/auth/login",
+              "raw": "{{base_url}}/empresas",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "auth",
-                "login"
+                "empresas"
               ]
             },
-            "description": "Inicia sesión con credenciales válidas. Devuelve usuario_id, correo, rol y el token de autenticación Sanctum. Almacena automáticamente las variables `token` y `usuario_id`.",
+            "description": "Registra una empresa creando usuario con rol 'empresa'. Requiere RUC de 11 dígitos y password robusto (min 8 car, mayúsculas, minúsculas, números y símbolos).",
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"correo\": \"juan.perez@example.com\",\n    \"password\": \"Password123@\"\n}"
+              "raw": "{\n    \"correo\": \"contacto@techinnovate.com\",\n    \"password\": \"EmpresaPass2026#\",\n    \"razon_social\": \"Tech Innovate Solutions S.A.C.\",\n    \"ruc\": \"20601234567\",\n    \"sitio_web\": \"https://techinnovate.com\",\n    \"descripcion\": \"Empresa líder especializada en arquitectura cloud y desarrollo web empresarial.\"\n}"
             }
           },
           "response": [
             {
-              "name": "200 OK - Login Exitoso",
+              "name": "201 Created - Empresa Registrada",
               "originalRequest": {
                 "method": "POST",
                 "header": [
@@ -56,22 +55,21 @@
                   }
                 ],
                 "url": {
-                  "raw": "{{base_url}}/auth/login",
+                  "raw": "{{base_url}}/empresas",
                   "host": [
                     "{{base_url}}"
                   ],
                   "path": [
-                    "auth",
-                    "login"
+                    "empresas"
                   ]
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n    \"correo\": \"juan.perez@example.com\",\n    \"password\": \"Password123@\"\n}"
+                  "raw": "{\n    \"correo\": \"contacto@techinnovate.com\",\n    \"password\": \"EmpresaPass2026#\",\n    \"razon_social\": \"Tech Innovate Solutions S.A.C.\",\n    \"ruc\": \"20601234567\",\n    \"sitio_web\": \"https://techinnovate.com\",\n    \"descripcion\": \"Empresa líder especializada en arquitectura cloud y desarrollo web empresarial.\"\n}"
                 }
               },
-              "status": "OK",
-              "code": 200,
+              "status": "Created",
+              "code": 201,
               "_postman_previewlanguage": "json",
               "header": [
                 {
@@ -80,7 +78,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n    \"success\": true,\n    \"message\": \"Inicio de sesión exitoso\",\n    \"data\": {\n        \"usuario_id\": 1,\n        \"correo\": \"juan.perez@example.com\",\n        \"rol\": \"candidato\",\n        \"token\": \"1|abcdef1234567890abcdef1234567890\"\n    }\n}"
+              "body": "{\n    \"success\": true,\n    \"message\": \"Empresa registrada correctamente\",\n    \"data\": {\n        \"id\": 1,\n        \"correo\": \"contacto@techinnovate.com\",\n        \"razon_social\": \"Tech Innovate Solutions S.A.C.\",\n        \"ruc\": \"20601234567\",\n        \"sitio_web\": \"https://techinnovate.com\",\n        \"descripcion\": \"Empresa líder especializada en arquitectura cloud y desarrollo web empresarial.\"\n    }\n}"
             }
           ],
           "event": [
@@ -88,19 +86,14 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status code es 200 OK', function () {",
-                  "    pm.response.to.have.status(200);",
+                  "pm.test('Status code es 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
                   "});",
-                  "pm.test('Respuesta exitosa con contrato estándar', function () {",
+                  "pm.test('Empresa registrada con éxito', function () {",
                   "    var jsonData = pm.response.json();",
                   "    pm.expect(jsonData.success).to.be.true;",
-                  "    pm.expect(jsonData.data).to.have.property('token');",
-                  "    pm.expect(jsonData.data).to.have.property('usuario_id');",
-                  "    if (jsonData.data && jsonData.data.token) {",
-                  "        pm.environment.set('token', jsonData.data.token);",
-                  "    }",
-                  "    if (jsonData.data && jsonData.data.usuario_id) {",
-                  "        pm.environment.set('usuario_id', jsonData.data.usuario_id);",
+                  "    if (jsonData.data && jsonData.data.id) {",
+                  "        pm.environment.set('empresa_id', jsonData.data.id);",
                   "    }",
                   "});"
                 ],
@@ -110,7 +103,7 @@
           ]
         },
         {
-          "name": "1.2 Login - Error Credenciales Incorrectas (401)",
+          "name": "3.2 Registrar Empresa - Error RUC o Correo Duplicado (422)",
           "request": {
             "method": "POST",
             "header": [
@@ -124,24 +117,23 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/auth/login",
+              "raw": "{{base_url}}/empresas",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "auth",
-                "login"
+                "empresas"
               ]
             },
-            "description": "Contraseña errónea para un correo registrado. Devuelve 401 e incrementa el contador de intentos fallidos (al 5.º intento la cuenta se bloquea 15 minutos con 429).",
+            "description": "Intento de registro con RUC o correo corporativo que ya existe en el sistema.",
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"correo\": \"juan.perez@example.com\",\n    \"password\": \"contraseña_incorrecta\"\n}"
+              "raw": "{\n    \"correo\": \"contacto@techinnovate.com\",\n    \"password\": \"EmpresaPass2026#\",\n    \"razon_social\": \"Otra Empresa S.A.C.\",\n    \"ruc\": \"20601234567\",\n    \"sitio_web\": \"https://otraempresa.com\"\n}"
             }
           },
           "response": [
             {
-              "name": "401 Unauthorized - Credenciales Incorrectas",
+              "name": "422 Unprocessable - RUC o Correo Ya Registrado",
               "originalRequest": {
                 "method": "POST",
                 "header": [
@@ -155,110 +147,17 @@
                   }
                 ],
                 "url": {
-                  "raw": "{{base_url}}/auth/login",
+                  "raw": "{{base_url}}/empresas",
                   "host": [
                     "{{base_url}}"
                   ],
                   "path": [
-                    "auth",
-                    "login"
+                    "empresas"
                   ]
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n    \"correo\": \"juan.perez@example.com\",\n    \"password\": \"contraseña_incorrecta\"\n}"
-                }
-              },
-              "status": "Unauthorized",
-              "code": 401,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n    \"success\": false,\n    \"message\": \"Credenciales incorrectas.\",\n    \"errors\": {\n        \"intentos_fallidos\": 1,\n        \"intentos_restantes\": 4\n    }\n}"
-            }
-          ],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code es 401 Unauthorized', function () {",
-                  "    pm.response.to.have.status(401);",
-                  "});",
-                  "pm.test('Mensaje genérico de credenciales incorrectas', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.success).to.be.false;",
-                  "    pm.expect(jsonData.message).to.eql('Credenciales incorrectas.');",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        },
-        {
-          "name": "1.3 Login - Error Validación Campos Vacíos (422)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/auth/login",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "auth",
-                "login"
-              ]
-            },
-            "description": "Intento de login enviando campos vacíos o con formato de correo incorrecto.",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"correo\": \"\",\n    \"password\": \"\"\n}"
-            }
-          },
-          "response": [
-            {
-              "name": "422 Unprocessable - Validación Errónea",
-              "originalRequest": {
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "Accept",
-                    "value": "application/json"
-                  },
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  }
-                ],
-                "url": {
-                  "raw": "{{base_url}}/auth/login",
-                  "host": [
-                    "{{base_url}}"
-                  ],
-                  "path": [
-                    "auth",
-                    "login"
-                  ]
-                },
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n    \"correo\": \"\",\n    \"password\": \"\"\n}"
+                  "raw": "{\n    \"correo\": \"contacto@techinnovate.com\",\n    \"password\": \"EmpresaPass2026#\",\n    \"razon_social\": \"Otra Empresa S.A.C.\",\n    \"ruc\": \"20601234567\",\n    \"sitio_web\": \"https://otraempresa.com\"\n}"
                 }
               },
               "status": "Unprocessable Entity",
@@ -271,7 +170,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n    \"success\": false,\n    \"message\": \"Los datos proporcionados no son válidos.\",\n    \"error_code\": \"VALIDATION_ERROR\",\n    \"errors\": {\n        \"correo\": [\n            \"El correo es obligatorio.\"\n        ],\n        \"password\": [\n            \"La contraseña es obligatoria.\"\n        ]\n    }\n}"
+              "body": "{\n    \"success\": false,\n    \"message\": \"Los datos proporcionados no son válidos.\",\n    \"error_code\": \"VALIDATION_ERROR\",\n    \"errors\": {\n        \"correo\": [\n            \"El correo ya está registrado.\"\n        ],\n        \"ruc\": [\n            \"El RUC ya está registrado.\"\n        ]\n    }\n}"
             }
           ],
           "event": [
@@ -282,12 +181,12 @@
                   "pm.test('Status code es 422 Unprocessable Content', function () {",
                   "    pm.response.to.have.status(422);",
                   "});",
-                  "pm.test('Devuelve error_code VALIDATION_ERROR con detalle de campos', function () {",
+                  "pm.test('Error de unicidad en correo o ruc', function () {",
                   "    var jsonData = pm.response.json();",
                   "    pm.expect(jsonData.success).to.be.false;",
-                  "    pm.expect(jsonData.error_code).to.eql('VALIDATION_ERROR');",
-                  "    pm.expect(jsonData.errors).to.have.property('correo');",
-                  "    pm.expect(jsonData.errors).to.have.property('password');",
+                  "    pm.expect(jsonData.errors).to.satisfy(function(e) {",
+                  "        return e.correo !== undefined || e.ruc !== undefined;",
+                  "    });",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -296,7 +195,194 @@
           ]
         },
         {
-          "name": "1.4 Ver Perfil /me - Éxito (200 con Token)",
+          "name": "3.3 Registrar Empresa - Error Contraseña Débil o RUC Inválido (422)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas"
+              ]
+            },
+            "description": "Validación de requisitos estrictos: RUC debe tener 11 dígitos, contraseña debe tener símbolos/mayúsculas/números, sitio web debe ser URL válida.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"empresa.invalida@tech.com\",\n    \"password\": \"123\",\n    \"razon_social\": \"Empresa Test\",\n    \"ruc\": \"12345\",\n    \"sitio_web\": \"no-es-una-url\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "422 Unprocessable - Requisitos No Cumplidos",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/empresas",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "empresas"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"correo\": \"empresa.invalida@tech.com\",\n    \"password\": \"123\",\n    \"razon_social\": \"Empresa Test\",\n    \"ruc\": \"12345\",\n    \"sitio_web\": \"no-es-una-url\"\n}"
+                }
+              },
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": false,\n    \"message\": \"Los datos proporcionados no son válidos.\",\n    \"error_code\": \"VALIDATION_ERROR\",\n    \"errors\": {\n        \"password\": [\n            \"The password field must be at least 8 characters.\",\n            \"The password field must contain at least one uppercase and one lowercase letter.\",\n            \"The password field must contain at least one symbol.\"\n        ],\n        \"ruc\": [\n            \"El RUC debe tener exactamente 11 dígitos.\"\n        ],\n        \"sitio_web\": [\n            \"El sitio web debe ser una URL válida.\"\n        ]\n    }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Content', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Errores detallados en ruc, password y sitio_web', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.errors).to.have.property('ruc');",
+                  "    pm.expect(jsonData.errors).to.have.property('password');",
+                  "    pm.expect(jsonData.errors).to.have.property('sitio_web');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.4 Login Empresa - Éxito (200 OK)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Inicia sesión con la cuenta de la empresa y guarda el token generado en `token_empresa` para las peticiones de `/empresas/me`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"contacto@techinnovate.com\",\n    \"password\": \"EmpresaPass2026#\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK - Login Empresa Exitoso",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/login",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"correo\": \"contacto@techinnovate.com\",\n    \"password\": \"EmpresaPass2026#\"\n}"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": true,\n    \"message\": \"Inicio de sesión exitoso\",\n    \"data\": {\n        \"usuario_id\": 2,\n        \"correo\": \"contacto@techinnovate.com\",\n        \"rol\": \"empresa\",\n        \"token\": \"2|empresaToken987654321abcdef\"\n    }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Guarda token_empresa en entorno', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data.rol).to.eql('empresa');",
+                  "    if (jsonData.data && jsonData.data.token) {",
+                  "        pm.environment.set('token_empresa', jsonData.data.token);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.5 Ver Perfil Empresa /me - Éxito (200 con Token Empresa)",
           "request": {
             "method": "GET",
             "header": [
@@ -306,24 +392,24 @@
               },
               {
                 "key": "Authorization",
-                "value": "Bearer {{token}}"
+                "value": "Bearer {{token_empresa}}"
               }
             ],
             "url": {
-              "raw": "{{base_url}}/auth/me",
+              "raw": "{{base_url}}/empresas/me",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "auth",
+                "empresas",
                 "me"
               ]
             },
-            "description": "Obtiene los datos del usuario autenticado a través del Bearer Token de Sanctum (Dev 3 & Auth)."
+            "description": "Devuelve los datos de la empresa vinculada al usuario autenticado mediante el token de Sanctum."
           },
           "response": [
             {
-              "name": "200 OK - Perfil /me",
+              "name": "200 OK - Perfil Empresa Obtenido",
               "originalRequest": {
                 "method": "GET",
                 "header": [
@@ -333,16 +419,16 @@
                   },
                   {
                     "key": "Authorization",
-                    "value": "Bearer {{token}}"
+                    "value": "Bearer {{token_empresa}}"
                   }
                 ],
                 "url": {
-                  "raw": "{{base_url}}/auth/me",
+                  "raw": "{{base_url}}/empresas/me",
                   "host": [
                     "{{base_url}}"
                   ],
                   "path": [
-                    "auth",
+                    "empresas",
                     "me"
                   ]
                 }
@@ -357,7 +443,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n    \"success\": true,\n    \"message\": \"Usuario obtenido correctamente\",\n    \"data\": {\n        \"id\": 1,\n        \"correo\": \"juan.perez@example.com\",\n        \"rol\": \"candidato\",\n        \"candidato\": {\n            \"id\": 1,\n            \"nombre\": \"Juan Carlos\",\n            \"apellidos\": \"Perez Gomez\",\n            \"dni\": \"12345678\"\n        }\n    }\n}"
+              "body": "{\n    \"success\": true,\n    \"message\": \"Empresa obtenida correctamente\",\n    \"data\": {\n        \"id\": 1,\n        \"correo\": \"contacto@techinnovate.com\",\n        \"razon_social\": \"Tech Innovate Solutions S.A.C.\",\n        \"ruc\": \"20601234567\",\n        \"sitio_web\": \"https://techinnovate.com\",\n        \"descripcion\": \"Empresa líder especializada en arquitectura cloud y desarrollo web empresarial.\"\n    }\n}"
             }
           ],
           "event": [
@@ -368,11 +454,11 @@
                   "pm.test('Status code es 200 OK', function () {",
                   "    pm.response.to.have.status(200);",
                   "});",
-                  "pm.test('Devuelve perfil autenticado del usuario', function () {",
+                  "pm.test('Retorna perfil de la empresa', function () {",
                   "    var jsonData = pm.response.json();",
                   "    pm.expect(jsonData.success).to.be.true;",
-                  "    pm.expect(jsonData.data).to.have.property('id');",
-                  "    pm.expect(jsonData.data).to.have.property('correo');",
+                  "    pm.expect(jsonData.data).to.have.property('ruc');",
+                  "    pm.expect(jsonData.data).to.have.property('razon_social');",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -381,7 +467,7 @@
           ]
         },
         {
-          "name": "1.5 Ver Perfil /me - Error Sin Token (401)",
+          "name": "3.6 Ver Perfil Empresa /me - Error Sin Token (401)",
           "request": {
             "method": "GET",
             "header": [
@@ -391,16 +477,16 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/auth/me",
+              "raw": "{{base_url}}/empresas/me",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "auth",
+                "empresas",
                 "me"
               ]
             },
-            "description": "Intento de consultar `/auth/me` sin enviar el header `Authorization: Bearer <token>`."
+            "description": "Intento de acceder a la ruta protegida `/empresas/me` sin enviar cabecera Authorization."
           },
           "response": [
             {
@@ -414,12 +500,12 @@
                   }
                 ],
                 "url": {
-                  "raw": "{{base_url}}/auth/me",
+                  "raw": "{{base_url}}/empresas/me",
                   "host": [
                     "{{base_url}}"
                   ],
                   "path": [
-                    "auth",
+                    "empresas",
                     "me"
                   ]
                 }
@@ -457,57 +543,71 @@
           ]
         },
         {
-          "name": "1.6 Ver Perfil /usuarios/me - Éxito (200 con Token)",
+          "name": "3.7 Actualizar Empresa /me - Éxito (200 OK)",
           "request": {
-            "method": "GET",
+            "method": "PUT",
             "header": [
               {
                 "key": "Accept",
                 "value": "application/json"
               },
               {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
                 "key": "Authorization",
-                "value": "Bearer {{token}}"
+                "value": "Bearer {{token_empresa}}"
               }
             ],
             "url": {
-              "raw": "{{base_url}}/auth/usuarios/me",
+              "raw": "{{base_url}}/empresas/me",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "auth",
-                "usuarios",
+                "empresas",
                 "me"
               ]
             },
-            "description": "Devuelve el perfil completo del usuario autenticado (rol y perfil candidato/empresa). El usuario se obtiene del token, no de la URL."
+            "description": "Actualiza los datos de la empresa autenticada. La validación comprueba que el RUC puede ser el mismo de la propia empresa sin colisionar.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"razon_social\": \"Tech Innovate Global Solutions S.A.C.\",\n    \"ruc\": \"20601234567\",\n    \"sitio_web\": \"https://techinnovate.global\",\n    \"descripcion\": \"Empresa global líder en consultoría de arquitectura cloud y desarrollo moderno.\"\n}"
+            }
           },
           "response": [
             {
-              "name": "200 OK - Perfil del Usuario Autenticado",
+              "name": "200 OK - Empresa Actualizada",
               "originalRequest": {
-                "method": "GET",
+                "method": "PUT",
                 "header": [
                   {
                     "key": "Accept",
                     "value": "application/json"
                   },
                   {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
                     "key": "Authorization",
-                    "value": "Bearer {{token}}"
+                    "value": "Bearer {{token_empresa}}"
                   }
                 ],
                 "url": {
-                  "raw": "{{base_url}}/auth/usuarios/me",
+                  "raw": "{{base_url}}/empresas/me",
                   "host": [
                     "{{base_url}}"
                   ],
                   "path": [
-                    "auth",
-                    "usuarios",
+                    "empresas",
                     "me"
                   ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"razon_social\": \"Tech Innovate Global Solutions S.A.C.\",\n    \"ruc\": \"20601234567\",\n    \"sitio_web\": \"https://techinnovate.global\",\n    \"descripcion\": \"Empresa global líder en consultoría de arquitectura cloud y desarrollo moderno.\"\n}"
                 }
               },
               "status": "OK",
@@ -520,7 +620,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n    \"success\": true,\n    \"message\": \"Usuario obtenido correctamente\",\n    \"data\": {\n        \"id\": 1,\n        \"correo\": \"juan.perez@example.com\",\n        \"rol\": \"candidato\",\n        \"candidato\": {\n            \"id\": 1,\n            \"nombre\": \"Juan Carlos\",\n            \"apellido_paterno\": \"Perez\"\n        }\n    }\n}"
+              "body": "{\n    \"success\": true,\n    \"message\": \"Empresa actualizada correctamente\",\n    \"data\": {\n        \"id\": 1,\n        \"correo\": \"contacto@techinnovate.com\",\n        \"razon_social\": \"Tech Innovate Global Solutions S.A.C.\",\n        \"ruc\": \"20601234567\",\n        \"sitio_web\": \"https://techinnovate.global\",\n        \"descripcion\": \"Empresa global líder en consultoría de arquitectura cloud y desarrollo moderno.\"\n    }\n}"
             }
           ],
           "event": [
@@ -531,10 +631,10 @@
                   "pm.test('Status code es 200 OK', function () {",
                   "    pm.response.to.have.status(200);",
                   "});",
-                  "pm.test('Devuelve el perfil del usuario dueño del token', function () {",
+                  "pm.test('Empresa actualizada correctamente', function () {",
                   "    var jsonData = pm.response.json();",
                   "    pm.expect(jsonData.success).to.be.true;",
-                  "    pm.expect(jsonData.data.id).to.eql(parseInt(pm.environment.get('usuario_id')));",
+                  "    pm.expect(jsonData.data.razon_social).to.eql('Tech Innovate Global Solutions S.A.C.');",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -543,258 +643,71 @@
           ]
         },
         {
-          "name": "1.7 Ver Perfil /usuarios/me - Error Sin Token (401)",
+          "name": "3.8 Actualizar Empresa /me - Error Sitio Web Inválido (422)",
           "request": {
-            "method": "GET",
+            "method": "PUT",
             "header": [
               {
                 "key": "Accept",
                 "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_empresa}}"
               }
             ],
             "url": {
-              "raw": "{{base_url}}/auth/usuarios/me",
+              "raw": "{{base_url}}/empresas/me",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "auth",
-                "usuarios",
+                "empresas",
                 "me"
               ]
             },
-            "description": "Sin header Authorization la ruta protegida por auth:sanctum responde 401."
+            "description": "Validación de actualización con datos incorrectos (URL inválida en sitio_web).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"razon_social\": \"Tech Innovate\",\n    \"ruc\": \"20601234567\",\n    \"sitio_web\": \"sitio-web-invalido\",\n    \"descripcion\": \"Descripción de prueba\"\n}"
+            }
           },
           "response": [
             {
-              "name": "401 Unauthorized - Sin Token",
+              "name": "422 Unprocessable - URL Inválida",
               "originalRequest": {
-                "method": "GET",
+                "method": "PUT",
                 "header": [
                   {
                     "key": "Accept",
                     "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token_empresa}}"
                   }
                 ],
                 "url": {
-                  "raw": "{{base_url}}/auth/usuarios/me",
+                  "raw": "{{base_url}}/empresas/me",
                   "host": [
                     "{{base_url}}"
                   ],
                   "path": [
-                    "auth",
-                    "usuarios",
+                    "empresas",
                     "me"
                   ]
                 },
-                "description": "Sin header Authorization la ruta protegida por auth:sanctum responde 401."
-              },
-              "status": "Unauthorized",
-              "code": 401,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n    \"success\": false,\n    \"message\": \"No autenticado o token inválido.\",\n    \"error_code\": \"UNAUTHENTICATED\"\n}"
-            }
-          ],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code es 401 Unauthorized', function () {",
-                  "    pm.response.to.have.status(401);",
-                  "});",
-                  "pm.test('Rechaza la petición sin token', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.success).to.be.false;",
-                  "    pm.expect(jsonData.error_code).to.eql('UNAUTHENTICATED');",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        },
-        {
-          "name": "1.8 Cambiar Contraseña - Éxito (200)",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/auth/usuarios/me/password",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "auth",
-                "usuarios",
-                "me",
-                "password"
-              ]
-            },
-            "description": "Cambia la contraseña del usuario autenticado. La nueva debe cumplir PasswordSegura (8+ caracteres, mayúscula, número y uno de @ # $ % &). Revoca todas las sesiones: después hay que volver a hacer login.",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"password_actual\": \"Password123@\",\n    \"password_nuevo\": \"NuevoPass123#\",\n    \"password_nuevo_confirmation\": \"NuevoPass123#\"\n}"
-            }
-          },
-          "response": [
-            {
-              "name": "200 OK - Contraseña Cambiada",
-              "originalRequest": {
-                "method": "PUT",
-                "header": [
-                  {
-                    "key": "Accept",
-                    "value": "application/json"
-                  },
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  },
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{token}}"
-                  }
-                ],
-                "url": {
-                  "raw": "{{base_url}}/auth/usuarios/me/password",
-                  "host": [
-                    "{{base_url}}"
-                  ],
-                  "path": [
-                    "auth",
-                    "usuarios",
-                    "me",
-                    "password"
-                  ]
-                },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n    \"password_actual\": \"Password123@\",\n    \"password_nuevo\": \"NuevoPass123#\",\n    \"password_nuevo_confirmation\": \"NuevoPass123#\"\n}"
-                }
-              },
-              "status": "OK",
-              "code": 200,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n    \"success\": true,\n    \"message\": \"Contraseña actualizada exitosamente\",\n    \"data\": null\n}"
-            }
-          ],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code es 200 OK', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "pm.test('Mensaje de éxito', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.success).to.be.true;",
-                  "    pm.expect(jsonData.message).to.eql('Contraseña actualizada exitosamente');",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        },
-        {
-          "name": "1.9 Cambiar Contraseña - Error Contraseña Actual Incorrecta (422)",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/auth/usuarios/me/password",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "auth",
-                "usuarios",
-                "me",
-                "password"
-              ]
-            },
-            "description": "Fallo de verificación al intentar cambiar la contraseña con una contraseña actual incorrecta.",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"password_actual\": \"Incorrecta123#\",\n    \"password_nuevo\": \"OtroPass123#\",\n    \"password_nuevo_confirmation\": \"OtroPass123#\"\n}"
-            }
-          },
-          "response": [
-            {
-              "name": "422 Unprocessable - Password Actual Errónea",
-              "originalRequest": {
-                "method": "PUT",
-                "header": [
-                  {
-                    "key": "Accept",
-                    "value": "application/json"
-                  },
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  },
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{token}}"
-                  }
-                ],
-                "url": {
-                  "raw": "{{base_url}}/auth/usuarios/me/password",
-                  "host": [
-                    "{{base_url}}"
-                  ],
-                  "path": [
-                    "auth",
-                    "usuarios",
-                    "me",
-                    "password"
-                  ]
-                },
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n    \"password_actual\": \"Incorrecta123#\",\n    \"password_nuevo\": \"OtroPass123#\",\n    \"password_nuevo_confirmation\": \"OtroPass123#\"\n}"
+                  "raw": "{\n    \"razon_social\": \"Tech Innovate\",\n    \"ruc\": \"20601234567\",\n    \"sitio_web\": \"sitio-web-invalido\",\n    \"descripcion\": \"Descripción de prueba\"\n}"
                 }
               },
               "status": "Unprocessable Entity",
@@ -807,7 +720,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n    \"success\": false,\n    \"message\": \"Los datos proporcionados no son válidos.\",\n    \"error_code\": \"VALIDATION_ERROR\",\n    \"errors\": {\n        \"password_actual\": [\n            \"La contraseña actual es incorrecta.\"\n        ]\n    }\n}"
+              "body": "{\n    \"success\": false,\n    \"message\": \"Los datos proporcionados no son válidos.\",\n    \"error_code\": \"VALIDATION_ERROR\",\n    \"errors\": {\n        \"sitio_web\": [\n            \"El sitio web debe ser una URL válida.\"\n        ]\n    }\n}"
             }
           ],
           "event": [
@@ -818,553 +731,10 @@
                   "pm.test('Status code es 422 Unprocessable Content', function () {",
                   "    pm.response.to.have.status(422);",
                   "});",
-                  "pm.test('Error específico en password_actual', function () {",
+                  "pm.test('Error en campo sitio_web', function () {",
                   "    var jsonData = pm.response.json();",
                   "    pm.expect(jsonData.success).to.be.false;",
-                  "    pm.expect(jsonData.errors).to.have.property('password_actual');",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        },
-        {
-          "name": "1.10 Cambiar Contraseña - Error Confirmación No Coincide (422)",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/auth/usuarios/me/password",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "auth",
-                "usuarios",
-                "me",
-                "password"
-              ]
-            },
-            "description": "Fallo de validación cuando `password_nuevo_confirmation` no coincide exactamente con `password_nuevo`.",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"password_actual\": \"Password123@\",\n    \"password_nuevo\": \"NuevoPass123#\",\n    \"password_nuevo_confirmation\": \"Diferente123#\"\n}"
-            }
-          },
-          "response": [
-            {
-              "name": "422 Unprocessable - Confirmación No Coincide",
-              "originalRequest": {
-                "method": "PUT",
-                "header": [
-                  {
-                    "key": "Accept",
-                    "value": "application/json"
-                  },
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  },
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{token}}"
-                  }
-                ],
-                "url": {
-                  "raw": "{{base_url}}/auth/usuarios/me/password",
-                  "host": [
-                    "{{base_url}}"
-                  ],
-                  "path": [
-                    "auth",
-                    "usuarios",
-                    "me",
-                    "password"
-                  ]
-                },
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n    \"password_actual\": \"Password123@\",\n    \"password_nuevo\": \"NuevoPass123#\",\n    \"password_nuevo_confirmation\": \"Diferente123#\"\n}"
-                }
-              },
-              "status": "Unprocessable Entity",
-              "code": 422,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n    \"success\": false,\n    \"message\": \"Los datos proporcionados no son válidos.\",\n    \"error_code\": \"VALIDATION_ERROR\",\n    \"errors\": {\n        \"password_nuevo\": [\n            \"La confirmación de la contraseña no coincide.\"\n        ]\n    }\n}"
-            }
-          ],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code es 422 Unprocessable Content', function () {",
-                  "    pm.response.to.have.status(422);",
-                  "});",
-                  "pm.test('Error en password_nuevo por confirmación', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.success).to.be.false;",
-                  "    pm.expect(jsonData.errors).to.have.property('password_nuevo');",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        },
-        {
-          "name": "1.10.1 Cambiar Contraseña - Error Sin Token (401)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code es 401 Unauthorized', function () {",
-                  "    pm.response.to.have.status(401);",
-                  "});",
-                  "pm.test('Rechaza la petición sin token', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.success).to.be.false;",
-                  "    pm.expect(jsonData.error_code).to.eql('UNAUTHENTICATED');",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/auth/usuarios/me/password",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "auth",
-                "usuarios",
-                "me",
-                "password"
-              ]
-            },
-            "description": "Sin token no se puede cambiar ninguna contraseña.",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"password_actual\": \"Password123@\",\n    \"password_nuevo\": \"NuevoPass123#\",\n    \"password_nuevo_confirmation\": \"Diferente123#\"\n}"
-            }
-          },
-          "response": [
-            {
-              "name": "401 Unauthorized - Sin Token",
-              "originalRequest": {
-                "method": "PUT",
-                "header": [
-                  {
-                    "key": "Accept",
-                    "value": "application/json"
-                  },
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  }
-                ],
-                "url": {
-                  "raw": "{{base_url}}/auth/usuarios/me/password",
-                  "host": [
-                    "{{base_url}}"
-                  ],
-                  "path": [
-                    "auth",
-                    "usuarios",
-                    "me",
-                    "password"
-                  ]
-                },
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n    \"password_actual\": \"Password123@\",\n    \"password_nuevo\": \"NuevoPass123#\",\n    \"password_nuevo_confirmation\": \"Diferente123#\"\n}"
-                }
-              },
-              "status": "Unauthorized",
-              "code": 401,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n    \"success\": false,\n    \"message\": \"No autenticado o token inválido.\",\n    \"error_code\": \"UNAUTHENTICATED\"\n}"
-            }
-          ]
-        },
-        {
-          "name": "1.11 Recuperar Contraseña (Forgot Password) - Éxito (200)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/auth/forgot-password",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "auth",
-                "forgot-password"
-              ]
-            },
-            "description": "Solicita el restablecimiento de contraseña enviando correo registrado.",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"correo\": \"juan.perez@example.com\"\n}"
-            }
-          },
-          "response": [
-            {
-              "name": "200 OK - Solicitud de Recuperación Enviada",
-              "originalRequest": {
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "Accept",
-                    "value": "application/json"
-                  },
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  }
-                ],
-                "url": {
-                  "raw": "{{base_url}}/auth/forgot-password",
-                  "host": [
-                    "{{base_url}}"
-                  ],
-                  "path": [
-                    "auth",
-                    "forgot-password"
-                  ]
-                },
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n    \"correo\": \"juan.perez@example.com\"\n}"
-                }
-              },
-              "status": "OK",
-              "code": 200,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n    \"success\": true,\n    \"message\": \"Si el correo existe en el sistema, recibirás un enlace de recuperación.\",\n    \"data\": null\n}"
-            }
-          ],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code es 200 OK', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "pm.test('Mensaje de confirmación neutro/seguro', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.success).to.be.true;",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        },
-        {
-          "name": "1.12 Recuperar Contraseña - Error Correo Inválido (422)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/auth/forgot-password",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "auth",
-                "forgot-password"
-              ]
-            },
-            "description": "Envío de correo con sintaxis no válida o campo ausente.",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"correo\": \"formato-invalido-de-correo\"\n}"
-            }
-          },
-          "response": [
-            {
-              "name": "422 Unprocessable - Formato de Correo Inválido",
-              "originalRequest": {
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "Accept",
-                    "value": "application/json"
-                  },
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  }
-                ],
-                "url": {
-                  "raw": "{{base_url}}/auth/forgot-password",
-                  "host": [
-                    "{{base_url}}"
-                  ],
-                  "path": [
-                    "auth",
-                    "forgot-password"
-                  ]
-                },
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n    \"correo\": \"formato-invalido-de-correo\"\n}"
-                }
-              },
-              "status": "Unprocessable Entity",
-              "code": 422,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n    \"success\": false,\n    \"message\": \"Los datos proporcionados no son válidos.\",\n    \"error_code\": \"VALIDATION_ERROR\",\n    \"errors\": {\n        \"correo\": [\n            \"El correo debe tener un formato válido.\"\n        ]\n    }\n}"
-            }
-          ],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code es 422 Unprocessable Content', function () {",
-                  "    pm.response.to.have.status(422);",
-                  "});",
-                  "pm.test('Error en campo correo', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.success).to.be.false;",
-                  "    pm.expect(jsonData.errors).to.have.property('correo');",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        },
-        {
-          "name": "1.13 Cerrar Sesión (Logout) - Éxito (200)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/auth/logout",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "auth",
-                "logout"
-              ]
-            },
-            "description": "Cierra la sesión del usuario revocando el token Sanctum activo."
-          },
-          "response": [
-            {
-              "name": "200 OK - Logout Exitoso",
-              "originalRequest": {
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "Accept",
-                    "value": "application/json"
-                  },
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{token}}"
-                  }
-                ],
-                "url": {
-                  "raw": "{{base_url}}/auth/logout",
-                  "host": [
-                    "{{base_url}}"
-                  ],
-                  "path": [
-                    "auth",
-                    "logout"
-                  ]
-                }
-              },
-              "status": "OK",
-              "code": 200,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n    \"success\": true,\n    \"message\": \"Sesión cerrada exitosamente\",\n    \"data\": null\n}"
-            }
-          ],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code es 200 OK', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "pm.test('Sesión cerrada con éxito', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.success).to.be.true;",
-                  "    pm.expect(jsonData.message).to.eql('Sesión cerrada exitosamente');",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        },
-        {
-          "name": "1.14 Cerrar Sesión (Logout) - Error Sin Token (401)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/auth/logout",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "auth",
-                "logout"
-              ]
-            },
-            "description": "Intento de logout sin Authorization header."
-          },
-          "response": [
-            {
-              "name": "401 Unauthorized - No Autenticado",
-              "originalRequest": {
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "Accept",
-                    "value": "application/json"
-                  }
-                ],
-                "url": {
-                  "raw": "{{base_url}}/auth/logout",
-                  "host": [
-                    "{{base_url}}"
-                  ],
-                  "path": [
-                    "auth",
-                    "logout"
-                  ]
-                }
-              },
-              "status": "Unauthorized",
-              "code": 401,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n    \"success\": false,\n    \"message\": \"No autenticado o token inválido.\",\n    \"error_code\": \"UNAUTHENTICATED\"\n}"
-            }
-          ],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code es 401 Unauthorized', function () {",
-                  "    pm.response.to.have.status(401);",
-                  "});",
-                  "pm.test('UNAUTHENTICATED al no enviar token', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.success).to.be.false;",
-                  "    pm.expect(jsonData.error_code).to.eql('UNAUTHENTICATED');",
+                  "    pm.expect(jsonData.errors).to.have.property('sitio_web');",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -1567,7 +937,7 @@
           ]
         },
         {
-          "name": "2.3 Registrar Candidato - Error Formato DNI o Celular Inválido (422)",
+          "name": "2.3 Registrar Candidato - Error Formato DNI y Contraseña (422)",
           "request": {
             "method": "POST",
             "header": [
@@ -1645,11 +1015,11 @@
                   "pm.test('Status code es 422 Unprocessable Content', function () {",
                   "    pm.response.to.have.status(422);",
                   "});",
-                  "pm.test('Errores en campos dni y celular', function () {",
+                  "pm.test('Errores en dni y password', function () {",
                   "    var jsonData = pm.response.json();",
                   "    pm.expect(jsonData.success).to.be.false;",
                   "    pm.expect(jsonData.errors).to.have.property('dni');",
-                  "    pm.expect(jsonData.errors).to.have.property('celular');",
+                  "    pm.expect(jsonData.errors).to.have.property('password');",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -3665,744 +3035,6 @@
       ]
     },
     {
-      "name": "3. Empresas (Dev 3)",
-      "description": "Registro de empresas con RUC y contraseña segura, login empresarial, consulta de perfil de la empresa autenticada (/empresas/me) y actualización.",
-      "item": [
-        {
-          "name": "3.1 Registrar Empresa - Éxito (201 Created)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/empresas",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "empresas"
-              ]
-            },
-            "description": "Registra una empresa creando usuario con rol 'empresa'. Requiere RUC de 11 dígitos y password robusto (min 8 car, mayúsculas, minúsculas, números y símbolos).",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"correo\": \"contacto@techinnovate.com\",\n    \"password\": \"EmpresaPass2026#\",\n    \"razon_social\": \"Tech Innovate Solutions S.A.C.\",\n    \"ruc\": \"20601234567\",\n    \"sitio_web\": \"https://techinnovate.com\",\n    \"descripcion\": \"Empresa líder especializada en arquitectura cloud y desarrollo web empresarial.\"\n}"
-            }
-          },
-          "response": [
-            {
-              "name": "201 Created - Empresa Registrada",
-              "originalRequest": {
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "Accept",
-                    "value": "application/json"
-                  },
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  }
-                ],
-                "url": {
-                  "raw": "{{base_url}}/empresas",
-                  "host": [
-                    "{{base_url}}"
-                  ],
-                  "path": [
-                    "empresas"
-                  ]
-                },
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n    \"correo\": \"contacto@techinnovate.com\",\n    \"password\": \"EmpresaPass2026#\",\n    \"razon_social\": \"Tech Innovate Solutions S.A.C.\",\n    \"ruc\": \"20601234567\",\n    \"sitio_web\": \"https://techinnovate.com\",\n    \"descripcion\": \"Empresa líder especializada en arquitectura cloud y desarrollo web empresarial.\"\n}"
-                }
-              },
-              "status": "Created",
-              "code": 201,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n    \"success\": true,\n    \"message\": \"Empresa registrada correctamente\",\n    \"data\": {\n        \"id\": 1,\n        \"correo\": \"contacto@techinnovate.com\",\n        \"razon_social\": \"Tech Innovate Solutions S.A.C.\",\n        \"ruc\": \"20601234567\",\n        \"sitio_web\": \"https://techinnovate.com\",\n        \"descripcion\": \"Empresa líder especializada en arquitectura cloud y desarrollo web empresarial.\"\n    }\n}"
-            }
-          ],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code es 201 Created', function () {",
-                  "    pm.response.to.have.status(201);",
-                  "});",
-                  "pm.test('Empresa registrada con éxito', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.success).to.be.true;",
-                  "    if (jsonData.data && jsonData.data.id) {",
-                  "        pm.environment.set('empresa_id', jsonData.data.id);",
-                  "    }",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        },
-        {
-          "name": "3.2 Registrar Empresa - Error RUC o Correo Duplicado (422)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/empresas",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "empresas"
-              ]
-            },
-            "description": "Intento de registro con RUC o correo corporativo que ya existe en el sistema.",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"correo\": \"contacto@techinnovate.com\",\n    \"password\": \"EmpresaPass2026#\",\n    \"razon_social\": \"Otra Empresa S.A.C.\",\n    \"ruc\": \"20601234567\",\n    \"sitio_web\": \"https://otraempresa.com\"\n}"
-            }
-          },
-          "response": [
-            {
-              "name": "422 Unprocessable - RUC o Correo Ya Registrado",
-              "originalRequest": {
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "Accept",
-                    "value": "application/json"
-                  },
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  }
-                ],
-                "url": {
-                  "raw": "{{base_url}}/empresas",
-                  "host": [
-                    "{{base_url}}"
-                  ],
-                  "path": [
-                    "empresas"
-                  ]
-                },
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n    \"correo\": \"contacto@techinnovate.com\",\n    \"password\": \"EmpresaPass2026#\",\n    \"razon_social\": \"Otra Empresa S.A.C.\",\n    \"ruc\": \"20601234567\",\n    \"sitio_web\": \"https://otraempresa.com\"\n}"
-                }
-              },
-              "status": "Unprocessable Entity",
-              "code": 422,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n    \"success\": false,\n    \"message\": \"Los datos proporcionados no son válidos.\",\n    \"error_code\": \"VALIDATION_ERROR\",\n    \"errors\": {\n        \"correo\": [\n            \"El correo ya está registrado.\"\n        ],\n        \"ruc\": [\n            \"El RUC ya está registrado.\"\n        ]\n    }\n}"
-            }
-          ],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code es 422 Unprocessable Content', function () {",
-                  "    pm.response.to.have.status(422);",
-                  "});",
-                  "pm.test('Error de unicidad en correo o ruc', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.success).to.be.false;",
-                  "    pm.expect(jsonData.errors).to.satisfy(function(e) {",
-                  "        return e.correo !== undefined || e.ruc !== undefined;",
-                  "    });",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        },
-        {
-          "name": "3.3 Registrar Empresa - Error Contraseña Débil o RUC Inválido (422)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/empresas",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "empresas"
-              ]
-            },
-            "description": "Validación de requisitos estrictos: RUC debe tener 11 dígitos, contraseña debe tener símbolos/mayúsculas/números, sitio web debe ser URL válida.",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"correo\": \"empresa.invalida@tech.com\",\n    \"password\": \"123\",\n    \"razon_social\": \"Empresa Test\",\n    \"ruc\": \"12345\",\n    \"sitio_web\": \"no-es-una-url\"\n}"
-            }
-          },
-          "response": [
-            {
-              "name": "422 Unprocessable - Requisitos No Cumplidos",
-              "originalRequest": {
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "Accept",
-                    "value": "application/json"
-                  },
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  }
-                ],
-                "url": {
-                  "raw": "{{base_url}}/empresas",
-                  "host": [
-                    "{{base_url}}"
-                  ],
-                  "path": [
-                    "empresas"
-                  ]
-                },
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n    \"correo\": \"empresa.invalida@tech.com\",\n    \"password\": \"123\",\n    \"razon_social\": \"Empresa Test\",\n    \"ruc\": \"12345\",\n    \"sitio_web\": \"no-es-una-url\"\n}"
-                }
-              },
-              "status": "Unprocessable Entity",
-              "code": 422,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n    \"success\": false,\n    \"message\": \"Los datos proporcionados no son válidos.\",\n    \"error_code\": \"VALIDATION_ERROR\",\n    \"errors\": {\n        \"password\": [\n            \"The password field must be at least 8 characters.\",\n            \"The password field must contain at least one uppercase and one lowercase letter.\",\n            \"The password field must contain at least one symbol.\"\n        ],\n        \"ruc\": [\n            \"El RUC debe tener exactamente 11 dígitos.\"\n        ],\n        \"sitio_web\": [\n            \"El sitio web debe ser una URL válida.\"\n        ]\n    }\n}"
-            }
-          ],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code es 422 Unprocessable Content', function () {",
-                  "    pm.response.to.have.status(422);",
-                  "});",
-                  "pm.test('Errores detallados en ruc, password y sitio_web', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.success).to.be.false;",
-                  "    pm.expect(jsonData.errors).to.have.property('ruc');",
-                  "    pm.expect(jsonData.errors).to.have.property('password');",
-                  "    pm.expect(jsonData.errors).to.have.property('sitio_web');",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        },
-        {
-          "name": "3.4 Login Empresa - Éxito (200 OK)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/auth/login",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "auth",
-                "login"
-              ]
-            },
-            "description": "Inicia sesión con la cuenta de la empresa y guarda el token generado en `token_empresa` para las peticiones de `/empresas/me`.",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"correo\": \"contacto@techinnovate.com\",\n    \"password\": \"EmpresaPass2026#\"\n}"
-            }
-          },
-          "response": [
-            {
-              "name": "200 OK - Login Empresa Exitoso",
-              "originalRequest": {
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "Accept",
-                    "value": "application/json"
-                  },
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  }
-                ],
-                "url": {
-                  "raw": "{{base_url}}/auth/login",
-                  "host": [
-                    "{{base_url}}"
-                  ],
-                  "path": [
-                    "auth",
-                    "login"
-                  ]
-                },
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n    \"correo\": \"contacto@techinnovate.com\",\n    \"password\": \"EmpresaPass2026#\"\n}"
-                }
-              },
-              "status": "OK",
-              "code": 200,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n    \"success\": true,\n    \"message\": \"Inicio de sesión exitoso\",\n    \"data\": {\n        \"usuario_id\": 2,\n        \"correo\": \"contacto@techinnovate.com\",\n        \"rol\": \"empresa\",\n        \"token\": \"2|empresaToken987654321abcdef\"\n    }\n}"
-            }
-          ],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code es 200 OK', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "pm.test('Guarda token_empresa en entorno', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.success).to.be.true;",
-                  "    pm.expect(jsonData.data.rol).to.eql('empresa');",
-                  "    if (jsonData.data && jsonData.data.token) {",
-                  "        pm.environment.set('token_empresa', jsonData.data.token);",
-                  "    }",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        },
-        {
-          "name": "3.5 Ver Perfil Empresa /me - Éxito (200 con Token Empresa)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token_empresa}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/empresas/me",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "empresas",
-                "me"
-              ]
-            },
-            "description": "Devuelve los datos de la empresa vinculada al usuario autenticado mediante el token de Sanctum."
-          },
-          "response": [
-            {
-              "name": "200 OK - Perfil Empresa Obtenido",
-              "originalRequest": {
-                "method": "GET",
-                "header": [
-                  {
-                    "key": "Accept",
-                    "value": "application/json"
-                  },
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{token_empresa}}"
-                  }
-                ],
-                "url": {
-                  "raw": "{{base_url}}/empresas/me",
-                  "host": [
-                    "{{base_url}}"
-                  ],
-                  "path": [
-                    "empresas",
-                    "me"
-                  ]
-                }
-              },
-              "status": "OK",
-              "code": 200,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n    \"success\": true,\n    \"message\": \"Empresa obtenida correctamente\",\n    \"data\": {\n        \"id\": 1,\n        \"correo\": \"contacto@techinnovate.com\",\n        \"razon_social\": \"Tech Innovate Solutions S.A.C.\",\n        \"ruc\": \"20601234567\",\n        \"sitio_web\": \"https://techinnovate.com\",\n        \"descripcion\": \"Empresa líder especializada en arquitectura cloud y desarrollo web empresarial.\"\n    }\n}"
-            }
-          ],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code es 200 OK', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "pm.test('Retorna perfil de la empresa', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.success).to.be.true;",
-                  "    pm.expect(jsonData.data).to.have.property('ruc');",
-                  "    pm.expect(jsonData.data).to.have.property('razon_social');",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        },
-        {
-          "name": "3.6 Ver Perfil Empresa /me - Error Sin Token (401)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/empresas/me",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "empresas",
-                "me"
-              ]
-            },
-            "description": "Intento de acceder a la ruta protegida `/empresas/me` sin enviar cabecera Authorization."
-          },
-          "response": [
-            {
-              "name": "401 Unauthorized - Sin Token",
-              "originalRequest": {
-                "method": "GET",
-                "header": [
-                  {
-                    "key": "Accept",
-                    "value": "application/json"
-                  }
-                ],
-                "url": {
-                  "raw": "{{base_url}}/empresas/me",
-                  "host": [
-                    "{{base_url}}"
-                  ],
-                  "path": [
-                    "empresas",
-                    "me"
-                  ]
-                }
-              },
-              "status": "Unauthorized",
-              "code": 401,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n    \"success\": false,\n    \"message\": \"No autenticado o token inválido.\",\n    \"error_code\": \"UNAUTHENTICATED\"\n}"
-            }
-          ],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code es 401 Unauthorized', function () {",
-                  "    pm.response.to.have.status(401);",
-                  "});",
-                  "pm.test('Devuelve error_code UNAUTHENTICATED', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.success).to.be.false;",
-                  "    pm.expect(jsonData.error_code).to.eql('UNAUTHENTICATED');",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        },
-        {
-          "name": "3.7 Actualizar Empresa /me - Éxito (200 OK)",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token_empresa}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/empresas/me",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "empresas",
-                "me"
-              ]
-            },
-            "description": "Actualiza los datos de la empresa autenticada. La validación comprueba que el RUC puede ser el mismo de la propia empresa sin colisionar.",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"razon_social\": \"Tech Innovate Global Solutions S.A.C.\",\n    \"ruc\": \"20601234567\",\n    \"sitio_web\": \"https://techinnovate.global\",\n    \"descripcion\": \"Empresa global líder en consultoría de arquitectura cloud y desarrollo moderno.\"\n}"
-            }
-          },
-          "response": [
-            {
-              "name": "200 OK - Empresa Actualizada",
-              "originalRequest": {
-                "method": "PUT",
-                "header": [
-                  {
-                    "key": "Accept",
-                    "value": "application/json"
-                  },
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  },
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{token_empresa}}"
-                  }
-                ],
-                "url": {
-                  "raw": "{{base_url}}/empresas/me",
-                  "host": [
-                    "{{base_url}}"
-                  ],
-                  "path": [
-                    "empresas",
-                    "me"
-                  ]
-                },
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n    \"razon_social\": \"Tech Innovate Global Solutions S.A.C.\",\n    \"ruc\": \"20601234567\",\n    \"sitio_web\": \"https://techinnovate.global\",\n    \"descripcion\": \"Empresa global líder en consultoría de arquitectura cloud y desarrollo moderno.\"\n}"
-                }
-              },
-              "status": "OK",
-              "code": 200,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n    \"success\": true,\n    \"message\": \"Empresa actualizada correctamente\",\n    \"data\": {\n        \"id\": 1,\n        \"correo\": \"contacto@techinnovate.com\",\n        \"razon_social\": \"Tech Innovate Global Solutions S.A.C.\",\n        \"ruc\": \"20601234567\",\n        \"sitio_web\": \"https://techinnovate.global\",\n        \"descripcion\": \"Empresa global líder en consultoría de arquitectura cloud y desarrollo moderno.\"\n    }\n}"
-            }
-          ],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code es 200 OK', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "pm.test('Empresa actualizada correctamente', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.success).to.be.true;",
-                  "    pm.expect(jsonData.data.razon_social).to.eql('Tech Innovate Global Solutions S.A.C.');",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        },
-        {
-          "name": "3.8 Actualizar Empresa /me - Error Sitio Web Inválido (422)",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token_empresa}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/empresas/me",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "empresas",
-                "me"
-              ]
-            },
-            "description": "Validación de actualización con datos incorrectos (URL inválida en sitio_web).",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"razon_social\": \"Tech Innovate\",\n    \"ruc\": \"20601234567\",\n    \"sitio_web\": \"sitio-web-invalido\",\n    \"descripcion\": \"Descripción de prueba\"\n}"
-            }
-          },
-          "response": [
-            {
-              "name": "422 Unprocessable - URL Inválida",
-              "originalRequest": {
-                "method": "PUT",
-                "header": [
-                  {
-                    "key": "Accept",
-                    "value": "application/json"
-                  },
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  },
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{token_empresa}}"
-                  }
-                ],
-                "url": {
-                  "raw": "{{base_url}}/empresas/me",
-                  "host": [
-                    "{{base_url}}"
-                  ],
-                  "path": [
-                    "empresas",
-                    "me"
-                  ]
-                },
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n    \"razon_social\": \"Tech Innovate\",\n    \"ruc\": \"20601234567\",\n    \"sitio_web\": \"sitio-web-invalido\",\n    \"descripcion\": \"Descripción de prueba\"\n}"
-                }
-              },
-              "status": "Unprocessable Entity",
-              "code": 422,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n    \"success\": false,\n    \"message\": \"Los datos proporcionados no son válidos.\",\n    \"error_code\": \"VALIDATION_ERROR\",\n    \"errors\": {\n        \"sitio_web\": [\n            \"El sitio web debe ser una URL válida.\"\n        ]\n    }\n}"
-            }
-          ],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code es 422 Unprocessable Content', function () {",
-                  "    pm.response.to.have.status(422);",
-                  "});",
-                  "pm.test('Error en campo sitio_web', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.success).to.be.false;",
-                  "    pm.expect(jsonData.errors).to.have.property('sitio_web');",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
       "name": "4. Habilidades - Catálogo (Dev 3)",
       "description": "Catálogo central de habilidades técnicas y blandas. Listado de activas, alta con validación de tipo y unicidad, y actualización/cambio de estado.",
       "item": [
@@ -4507,10 +3139,10 @@
                 "habilidades"
               ]
             },
-            "description": "Crea una nueva habilidad técnica o blanda en el catálogo. Almacena automáticamente `habilidad_id`. Requiere token (se usa token_empresa).",
+            "description": "Crea una habilidad nueva. El nombre lleva {{$timestamp}} para que no choque con el seeder ni con ejecuciones anteriores.",
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"nombre\": \"Vue.js\",\n    \"tipo_habilidad\": \"tecnica\"\n}"
+              "raw": "{\n    \"nombre\": \"Kotlin {{$timestamp}}\",\n    \"tipo_habilidad\": \"tecnica\"\n}"
             }
           },
           "response": [
@@ -4543,7 +3175,7 @@
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n    \"nombre\": \"Vue.js\",\n    \"tipo_habilidad\": \"tecnica\"\n}"
+                  "raw": "{\n    \"nombre\": \"Kotlin {{$timestamp}}\",\n    \"tipo_habilidad\": \"tecnica\"\n}"
                 }
               },
               "status": "Created",
@@ -4808,7 +3440,7 @@
             "description": "Actualiza el nombre, tipo o estado (activo/inactivo) de una habilidad existente.",
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"nombre\": \"Vue.js 3\",\n    \"tipo_habilidad\": \"tecnica\",\n    \"estado\": \"activo\"\n}"
+              "raw": "{\n    \"nombre\": \"Kotlin Actualizado {{$timestamp}}\",\n    \"tipo_habilidad\": \"tecnica\",\n    \"estado\": \"activo\"\n}"
             }
           },
           "response": [
@@ -4842,7 +3474,7 @@
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n    \"nombre\": \"Vue.js 3\",\n    \"tipo_habilidad\": \"tecnica\",\n    \"estado\": \"activo\"\n}"
+                  "raw": "{\n    \"nombre\": \"Kotlin Actualizado {{$timestamp}}\",\n    \"tipo_habilidad\": \"tecnica\",\n    \"estado\": \"activo\"\n}"
                 }
               },
               "status": "OK",
@@ -4869,7 +3501,7 @@
                   "pm.test('Habilidad actualizada correctamente', function () {",
                   "    var jsonData = pm.response.json();",
                   "    pm.expect(jsonData.success).to.be.true;",
-                  "    pm.expect(jsonData.data.nombre).to.eql('Vue.js 3');",
+                  "    pm.expect(jsonData.data.nombre).to.include('Kotlin Actualizado');",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -5167,6 +3799,2653 @@
               "body": "{\n    \"success\": false,\n    \"message\": \"No autenticado o token inválido.\",\n    \"error_code\": \"UNAUTHENTICATED\"\n}"
             }
           ]
+        }
+      ]
+    },
+    {
+      "name": "1. Auth & Usuarios (Dev 1)",
+      "description": "Autenticación con email/password, gestión de sesiones con tokens Sanctum, perfil del usuario y reseteo de contraseña.",
+      "item": [
+        {
+          "name": "1.1 Login - Éxito (200 OK)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Inicia sesión con credenciales válidas. Devuelve usuario_id, correo, rol y el token de autenticación Sanctum. Almacena automáticamente las variables `token` y `usuario_id`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"juan.perez@example.com\",\n    \"password\": \"Password123@\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK - Login Exitoso",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/login",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"correo\": \"juan.perez@example.com\",\n    \"password\": \"Password123@\"\n}"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": true,\n    \"message\": \"Inicio de sesión exitoso\",\n    \"data\": {\n        \"usuario_id\": 1,\n        \"correo\": \"juan.perez@example.com\",\n        \"rol\": \"candidato\",\n        \"token\": \"1|abcdef1234567890abcdef1234567890\"\n    }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Respuesta exitosa con contrato estándar', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data).to.have.property('token');",
+                  "    pm.expect(jsonData.data).to.have.property('usuario_id');",
+                  "    if (jsonData.data && jsonData.data.token) {",
+                  "        pm.environment.set('token', jsonData.data.token);",
+                  "    }",
+                  "    if (jsonData.data && jsonData.data.usuario_id) {",
+                  "        pm.environment.set('usuario_id', jsonData.data.usuario_id);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.2 Login - Error Credenciales Incorrectas (401)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Contraseña errónea para un correo registrado. Devuelve 401 e incrementa el contador de intentos fallidos (al 5.º intento la cuenta se bloquea 15 minutos con 429).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"juan.perez@example.com\",\n    \"password\": \"contraseña_incorrecta\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "401 Unauthorized - Credenciales Incorrectas",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/login",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"correo\": \"juan.perez@example.com\",\n    \"password\": \"contraseña_incorrecta\"\n}"
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": false,\n    \"message\": \"Credenciales incorrectas.\",\n    \"errors\": {\n        \"intentos_fallidos\": 1,\n        \"intentos_restantes\": 4\n    }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "pm.test('Mensaje genérico de credenciales incorrectas', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.message).to.eql('Credenciales incorrectas.');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.3 Login - Error Validación Campos Vacíos (422)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Intento de login enviando campos vacíos o con formato de correo incorrecto.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"\",\n    \"password\": \"\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "422 Unprocessable - Validación Errónea",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/login",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"correo\": \"\",\n    \"password\": \"\"\n}"
+                }
+              },
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": false,\n    \"message\": \"Los datos proporcionados no son válidos.\",\n    \"error_code\": \"VALIDATION_ERROR\",\n    \"errors\": {\n        \"correo\": [\n            \"El correo es obligatorio.\"\n        ],\n        \"password\": [\n            \"La contraseña es obligatoria.\"\n        ]\n    }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Content', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Devuelve error_code VALIDATION_ERROR con detalle de campos', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.error_code).to.eql('VALIDATION_ERROR');",
+                  "    pm.expect(jsonData.errors).to.have.property('correo');",
+                  "    pm.expect(jsonData.errors).to.have.property('password');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.4 Ver Perfil /me - Éxito (200 con Token)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Obtiene los datos del usuario autenticado a través del Bearer Token de Sanctum (Dev 3 & Auth)."
+          },
+          "response": [
+            {
+              "name": "200 OK - Perfil /me",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/me",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "me"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": true,\n    \"message\": \"Usuario obtenido correctamente\",\n    \"data\": {\n        \"id\": 1,\n        \"correo\": \"juan.perez@example.com\",\n        \"rol\": \"candidato\",\n        \"candidato\": {\n            \"id\": 1,\n            \"nombre\": \"Juan Carlos\",\n            \"apellidos\": \"Perez Gomez\",\n            \"dni\": \"12345678\"\n        }\n    }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Devuelve perfil autenticado del usuario', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data).to.have.property('id');",
+                  "    pm.expect(jsonData.data).to.have.property('correo');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.5 Ver Perfil /me - Error Sin Token (401)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Intento de consultar `/auth/me` sin enviar el header `Authorization: Bearer <token>`."
+          },
+          "response": [
+            {
+              "name": "401 Unauthorized - Sin Token",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/me",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "me"
+                  ]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": false,\n    \"message\": \"No autenticado o token inválido.\",\n    \"error_code\": \"UNAUTHENTICATED\"\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "pm.test('Devuelve error_code UNAUTHENTICATED', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.error_code).to.eql('UNAUTHENTICATED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.6 Ver Perfil /usuarios/me - Éxito (200 con Token)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/usuarios/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "usuarios",
+                "me"
+              ]
+            },
+            "description": "Devuelve el perfil completo del usuario autenticado (rol y perfil candidato/empresa). El usuario se obtiene del token, no de la URL."
+          },
+          "response": [
+            {
+              "name": "200 OK - Perfil del Usuario Autenticado",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/usuarios/me",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "usuarios",
+                    "me"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": true,\n    \"message\": \"Usuario obtenido correctamente\",\n    \"data\": {\n        \"id\": 1,\n        \"correo\": \"juan.perez@example.com\",\n        \"rol\": \"candidato\",\n        \"candidato\": {\n            \"id\": 1,\n            \"nombre\": \"Juan Carlos\",\n            \"apellido_paterno\": \"Perez\"\n        }\n    }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Devuelve el perfil del usuario dueño del token', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data.id).to.eql(parseInt(pm.environment.get('usuario_id')));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.7 Ver Perfil /usuarios/me - Error Sin Token (401)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/usuarios/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "usuarios",
+                "me"
+              ]
+            },
+            "description": "Sin header Authorization la ruta protegida por auth:sanctum responde 401."
+          },
+          "response": [
+            {
+              "name": "401 Unauthorized - Sin Token",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/usuarios/me",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "usuarios",
+                    "me"
+                  ]
+                },
+                "description": "Sin header Authorization la ruta protegida por auth:sanctum responde 401."
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": false,\n    \"message\": \"No autenticado o token inválido.\",\n    \"error_code\": \"UNAUTHENTICATED\"\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "pm.test('Rechaza la petición sin token', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.error_code).to.eql('UNAUTHENTICATED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.8 Cambiar Contraseña - Error Contraseña Actual Incorrecta (422)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/usuarios/me/password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "usuarios",
+                "me",
+                "password"
+              ]
+            },
+            "description": "Fallo de verificación al intentar cambiar la contraseña con una contraseña actual incorrecta.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"password_actual\": \"Incorrecta123#\",\n    \"password_nuevo\": \"OtroPass123#\",\n    \"password_nuevo_confirmation\": \"OtroPass123#\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "422 Unprocessable - Password Actual Errónea",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/usuarios/me/password",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "usuarios",
+                    "me",
+                    "password"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"password_actual\": \"Incorrecta123#\",\n    \"password_nuevo\": \"OtroPass123#\",\n    \"password_nuevo_confirmation\": \"OtroPass123#\"\n}"
+                }
+              },
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": false,\n    \"message\": \"Los datos proporcionados no son válidos.\",\n    \"error_code\": \"VALIDATION_ERROR\",\n    \"errors\": {\n        \"password_actual\": [\n            \"La contraseña actual es incorrecta.\"\n        ]\n    }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Content', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Error específico en password_actual', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.errors).to.have.property('password_actual');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.9 Cambiar Contraseña - Error Confirmación No Coincide (422)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/usuarios/me/password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "usuarios",
+                "me",
+                "password"
+              ]
+            },
+            "description": "Fallo de validación cuando `password_nuevo_confirmation` no coincide exactamente con `password_nuevo`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"password_actual\": \"Password123@\",\n    \"password_nuevo\": \"NuevoPass123#\",\n    \"password_nuevo_confirmation\": \"Diferente123#\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "422 Unprocessable - Confirmación No Coincide",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/usuarios/me/password",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "usuarios",
+                    "me",
+                    "password"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"password_actual\": \"Password123@\",\n    \"password_nuevo\": \"NuevoPass123#\",\n    \"password_nuevo_confirmation\": \"Diferente123#\"\n}"
+                }
+              },
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": false,\n    \"message\": \"Los datos proporcionados no son válidos.\",\n    \"error_code\": \"VALIDATION_ERROR\",\n    \"errors\": {\n        \"password_nuevo\": [\n            \"La confirmación de la contraseña no coincide.\"\n        ]\n    }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Content', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Error en password_nuevo por confirmación', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.errors).to.have.property('password_nuevo');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.10 Cambiar Contraseña - Error Sin Token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "pm.test('Rechaza la petición sin token', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.error_code).to.eql('UNAUTHENTICATED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/usuarios/me/password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "usuarios",
+                "me",
+                "password"
+              ]
+            },
+            "description": "Sin token no se puede cambiar ninguna contraseña.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"password_actual\": \"Password123@\",\n    \"password_nuevo\": \"NuevoPass123#\",\n    \"password_nuevo_confirmation\": \"Diferente123#\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "401 Unauthorized - Sin Token",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/usuarios/me/password",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "usuarios",
+                    "me",
+                    "password"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"password_actual\": \"Password123@\",\n    \"password_nuevo\": \"NuevoPass123#\",\n    \"password_nuevo_confirmation\": \"Diferente123#\"\n}"
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": false,\n    \"message\": \"No autenticado o token inválido.\",\n    \"error_code\": \"UNAUTHENTICATED\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "1.11 Recuperar Contraseña (Forgot Password) - Éxito (200)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/forgot-password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "forgot-password"
+              ]
+            },
+            "description": "Solicita el restablecimiento de contraseña enviando correo registrado.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"juan.perez@example.com\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK - Solicitud de Recuperación Enviada",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/forgot-password",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "forgot-password"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"correo\": \"juan.perez@example.com\"\n}"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": true,\n    \"message\": \"Si el correo existe en el sistema, recibirás un enlace de recuperación.\",\n    \"data\": null\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Mensaje de confirmación neutro/seguro', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.12 Recuperar Contraseña - Error Correo Inválido (422)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/forgot-password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "forgot-password"
+              ]
+            },
+            "description": "Envío de correo con sintaxis no válida o campo ausente.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"formato-invalido-de-correo\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "422 Unprocessable - Formato de Correo Inválido",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/forgot-password",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "forgot-password"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"correo\": \"formato-invalido-de-correo\"\n}"
+                }
+              },
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": false,\n    \"message\": \"Los datos proporcionados no son válidos.\",\n    \"error_code\": \"VALIDATION_ERROR\",\n    \"errors\": {\n        \"correo\": [\n            \"El correo debe tener un formato válido.\"\n        ]\n    }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Content', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Error en campo correo', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.errors).to.have.property('correo');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.13 Cerrar Sesión (Logout) - Éxito (200)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/logout",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "logout"
+              ]
+            },
+            "description": "Cierra la sesión del usuario revocando el token Sanctum activo."
+          },
+          "response": [
+            {
+              "name": "200 OK - Logout Exitoso",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/logout",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "logout"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": true,\n    \"message\": \"Sesión cerrada exitosamente\",\n    \"data\": null\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Sesión cerrada con éxito', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.message).to.eql('Sesión cerrada exitosamente');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.14 Cerrar Sesión (Logout) - Error Sin Token (401)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/logout",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "logout"
+              ]
+            },
+            "description": "Intento de logout sin Authorization header."
+          },
+          "response": [
+            {
+              "name": "401 Unauthorized - No Autenticado",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/logout",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "logout"
+                  ]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": false,\n    \"message\": \"No autenticado o token inválido.\",\n    \"error_code\": \"UNAUTHENTICATED\"\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "pm.test('UNAUTHENTICATED al no enviar token', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.error_code).to.eql('UNAUTHENTICATED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.15 Login Nuevamente Antes de Cambiar Contraseña (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.environment.set('token', pm.response.json().data.token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "El logout anterior revocó el token; se inicia sesión otra vez.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"juan.perez@example.com\",\n    \"password\": \"Password123@\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "1.16 Cambiar Contraseña - Éxito (200)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/usuarios/me/password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "usuarios",
+                "me",
+                "password"
+              ]
+            },
+            "description": "Cambia la contraseña. Revoca TODAS las sesiones del usuario (actualizarPassword), por eso va al final de la carpeta.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"password_actual\": \"Password123@\",\n    \"password_nuevo\": \"NuevoPass123#\",\n    \"password_nuevo_confirmation\": \"NuevoPass123#\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK - Contraseña Cambiada",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/usuarios/me/password",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "usuarios",
+                    "me",
+                    "password"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"password_actual\": \"Password123@\",\n    \"password_nuevo\": \"NuevoPass123#\",\n    \"password_nuevo_confirmation\": \"NuevoPass123#\"\n}"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": true,\n    \"message\": \"Contraseña actualizada exitosamente\",\n    \"data\": null\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Mensaje de éxito', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.message).to.eql('Contraseña actualizada exitosamente');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.17 Token Revocado Tras Cambiar Contraseña (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "pm.test('El token fue revocado', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('UNAUTHENTICATED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "description": "El token usado para cambiar la contraseña ya no sirve: cambiar la contraseña cierra todas las sesiones."
+          },
+          "response": []
+        },
+        {
+          "name": "1.18 Login con la Nueva Contraseña (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.environment.set('token', pm.response.json().data.token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "La nueva contraseña funciona.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"juan.perez@example.com\",\n    \"password\": \"NuevoPass123#\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "1.19 Restaurar Contraseña Original (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/usuarios/me/password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "usuarios",
+                "me",
+                "password"
+              ]
+            },
+            "description": "Deja la contraseña como estaba (Password123@) para poder volver a ejecutar la colección.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"password_actual\": \"NuevoPass123#\",\n    \"password_nuevo\": \"Password123@\",\n    \"password_nuevo_confirmation\": \"Password123@\"\n}"
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "5. Seguridad de Tokens (Sanctum)",
+      "description": "Pruebas del comportamiento de los tokens: reutilización en varios endpoints, token pegado a mano, tokens mal formados o falsificados, permisos por rol y revocación (logout y cambio de contraseña). Usa su propio usuario, así que se puede ejecutar sola y repetir.",
+      "item": [
+        {
+          "name": "5.1 Preparar - Registrar Usuario de Pruebas (201)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.environment.set('seg_correo', 'seguridad.' + Date.now() + '@example.com');",
+                  "pm.environment.set('seg_dni', String(Math.floor(10000000 + Math.random() * 89999999)));"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.environment.set('seg_candidato_id', pm.response.json().data.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos"
+              ]
+            },
+            "description": "Crea un candidato propio para esta carpeta, con correo y DNI aleatorios, así no interfiere con las demás y se puede repetir.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Prueba\",\n    \"apellidos\": \"Seguridad Tokens\",\n    \"dni\": \"{{seg_dni}}\",\n    \"fecha_nacimiento\": \"1998-03-10\",\n    \"nivel_educativo\": \"universitario\",\n    \"correo\": \"{{seg_correo}}\",\n    \"password\": \"Password123@\",\n    \"password_confirmation\": \"Password123@\",\n    \"celular\": \"999888777\",\n    \"disponibilidad\": \"inmediata\",\n    \"habilidades\": [\n        1,\n        2\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5.2 Login - Sesión A (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var token = pm.response.json().data.token;",
+                  "pm.environment.set('token_seg_a', token);",
+                  "console.log('token_seg_a:', token);  // visible en la Consola de Postman (Ctrl+Alt+C)"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Primera sesión. El token se guarda en token_seg_a y se imprime en la Consola de Postman para poder copiarlo.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"{{seg_correo}}\",\n    \"password\": \"Password123@\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5.3 Login - Sesión B, Mismo Usuario (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var token = pm.response.json().data.token;",
+                  "pm.environment.set('token_seg_b', token);",
+                  "console.log('token_seg_b:', token);  // visible en la Consola de Postman (Ctrl+Alt+C)"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Segunda sesión del mismo usuario (por ejemplo, otro dispositivo). Se permiten varias sesiones a la vez.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"{{seg_correo}}\",\n    \"password\": \"Password123@\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5.4 Token A en /auth/me (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Devuelve al dueño del token', function () {",
+                  "    pm.expect(pm.response.json().data.correo).to.eql(pm.environment.get('seg_correo'));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_seg_a}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "description": "El token identifica al usuario: devuelve SU correo."
+          },
+          "response": []
+        },
+        {
+          "name": "5.5 Mismo Token A en Otro Endpoint /auth/usuarios/me (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Mismo usuario en otro endpoint', function () {",
+                  "    pm.expect(pm.response.json().data.correo).to.eql(pm.environment.get('seg_correo'));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_seg_a}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/usuarios/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "usuarios",
+                "me"
+              ]
+            },
+            "description": "El mismo token se reutiliza en otro endpoint protegido sin volver a hacer login."
+          },
+          "response": []
+        },
+        {
+          "name": "5.6 Mismo Token A en Otro Módulo /candidatos/me (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Perfil del candidato dueño del token', function () {",
+                  "    pm.expect(String(pm.response.json().data.id)).to.eql(String(pm.environment.get('seg_candidato_id')));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_seg_a}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos",
+                "me"
+              ]
+            },
+            "description": "El token no está atado a un módulo: funciona en cualquier ruta donde el rol tenga permiso."
+          },
+          "response": []
+        },
+        {
+          "name": "5.7 Token Pegado Manualmente en el Header (200) [MANUAL]",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "if (pm.request.headers.get('Authorization').indexOf('PEGA_AQUI') !== -1) {",
+                  "    console.log('5.7 omitida: pega un token real en el header Authorization para probarla.');",
+                  "    if (pm.execution && pm.execution.skipRequest) { pm.execution.skipRequest(); }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('El token pegado a mano identifica al usuario', function () {",
+                  "    pm.expect(pm.response.json().data.correo).to.eql(pm.environment.get('seg_correo'));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer PEGA_AQUI_EL_TOKEN"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "description": "PRUEBA MANUAL. 1) Ejecuta 5.2 y copia el token desde la respuesta o la Consola. 2) En la pestaña Headers reemplaza PEGA_AQUI_EL_TOKEN por el token (deja \"Bearer \" delante). 3) Send. Debe responder 200 con el correo del usuario de pruebas. Demuestra que la variable {{token}} es solo una comodidad: lo que viaja es el texto del header. En el Runner se omite automáticamente."
+          },
+          "response": []
+        },
+        {
+          "name": "5.8 Token Sin la Palabra Bearer (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "pm.test('Sin esquema Bearer no autentica', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('UNAUTHENTICATED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "{{token_seg_a}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Mismo token válido, pero el header no dice \"Bearer \". Laravel no lo reconoce como token."
+          },
+          "response": []
+        },
+        {
+          "name": "5.9 Token Alterado en un Carácter (401)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "var t = pm.environment.get('token_seg_a');",
+                  "var ultimo = t.slice(-1) === 'a' ? 'b' : 'a';",
+                  "pm.environment.set('token_seg_alterado', t.slice(0, -1) + ultimo);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "pm.test('Token manipulado rechazado', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('UNAUTHENTICATED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_seg_alterado}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Se cambia el último carácter de un token válido. El hash ya no coincide con el guardado en personal_access_tokens."
+          },
+          "response": []
+        },
+        {
+          "name": "5.10 Token Inventado (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "pm.test('Token inexistente rechazado', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('UNAUTHENTICATED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer 1|EsteTokenNoExisteEnLaBaseDeDatos123"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Un token con formato correcto pero que nunca fue emitido."
+          },
+          "response": []
+        },
+        {
+          "name": "5.11 ID de la Sesión B con el Secreto de la Sesión A (401)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "var a = pm.environment.get('token_seg_a').split('|');",
+                  "var b = pm.environment.get('token_seg_b').split('|');",
+                  "pm.environment.set('token_seg_mezclado', b[0] + '|' + a[1]);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "pm.test('Tokens mezclados rechazados', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('UNAUTHENTICATED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_seg_mezclado}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Combina el ID (antes de \"|\") de un token con la parte secreta de otro. Sanctum busca la fila por ID y compara el hash: no coincide."
+          },
+          "response": []
+        },
+        {
+          "name": "5.12 Solo la Parte Secreta, Sin el ID (200)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.environment.set('token_seg_sin_id', pm.environment.get('token_seg_a').split('|')[1]);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('La parte secreta basta para identificar el token', function () {",
+                  "    pm.expect(pm.response.json().data.correo).to.eql(pm.environment.get('seg_correo'));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_seg_sin_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Dato curioso: Sanctum también acepta el token sin el prefijo \"ID|\"; en ese caso busca directamente por el hash. El ID solo acelera la búsqueda. No es una vulnerabilidad: la parte secreta sigue siendo obligatoria."
+          },
+          "response": []
+        },
+        {
+          "name": "5.13 Token de Candidato en Ruta de Empresa/Admin (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 403 Forbidden', function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});",
+                  "pm.test('Rol sin permiso', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('FORBIDDEN');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_seg_a}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos/{{seg_candidato_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos",
+                "{{seg_candidato_id}}"
+              ]
+            },
+            "description": "Token válido (401 no aplica) pero el rol candidato no tiene permiso: el middleware rol:empresa,admin responde 403."
+          },
+          "response": []
+        },
+        {
+          "name": "5.14 Token de Candidato en /empresas/me (403 o 404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Rechaza a un candidato (403 ideal, 404 actual)', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([403, 404]);",
+                  "    pm.expect(pm.response.json().success).to.be.false;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_seg_a}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me"
+              ]
+            },
+            "description": "Hoy /empresas/me solo exige token (sin rol:empresa), así que un candidato llega al controlador y recibe 404 porque no tiene empresa. Lo ideal es 403: pendiente de agregar rol:empresa en routes/api_v1/empresas.php (módulo de Steph)."
+          },
+          "response": []
+        },
+        {
+          "name": "5.15 Logout de la Sesión B (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_seg_b}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/logout",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "logout"
+              ]
+            },
+            "description": "Cierra únicamente la sesión B (currentAccessToken()->delete())."
+          },
+          "response": []
+        },
+        {
+          "name": "5.16 Token B Después del Logout (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "pm.test('Token B revocado', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('UNAUTHENTICATED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_seg_b}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "description": "La fila del token B ya no existe en personal_access_tokens."
+          },
+          "response": []
+        },
+        {
+          "name": "5.17 Token A Sigue Activo Tras el Logout de B (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('La sesión A sigue viva', function () {",
+                  "    pm.expect(pm.response.json().data.correo).to.eql(pm.environment.get('seg_correo'));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_seg_a}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Las sesiones son independientes: cerrar B no afecta a A."
+          },
+          "response": []
+        },
+        {
+          "name": "5.18 Login - Sesión C (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var token = pm.response.json().data.token;",
+                  "pm.environment.set('token_seg_c', token);",
+                  "console.log('token_seg_c:', token);  // visible en la Consola de Postman (Ctrl+Alt+C)"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Tercera sesión, para comprobar que el cambio de contraseña cierra TODAS.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"{{seg_correo}}\",\n    \"password\": \"Password123@\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5.19 Cambiar Contraseña con el Token A (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_seg_a}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/usuarios/me/password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "usuarios",
+                "me",
+                "password"
+              ]
+            },
+            "description": "actualizarPassword() guarda la nueva contraseña y revoca todos los tokens del usuario.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"password_actual\": \"Password123@\",\n    \"password_nuevo\": \"NuevoPass123#\",\n    \"password_nuevo_confirmation\": \"NuevoPass123#\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5.20 Token A Tras el Cambio de Contraseña (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "pm.test('Token A revocado', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('UNAUTHENTICATED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_seg_a}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Incluso el token que hizo el cambio queda revocado."
+          },
+          "response": []
+        },
+        {
+          "name": "5.21 Token C Tras el Cambio de Contraseña (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "pm.test('Token C revocado', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('UNAUTHENTICATED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_seg_c}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Otra sesión abierta del mismo usuario también queda revocada."
+          },
+          "response": []
+        },
+        {
+          "name": "5.22 Login con la Contraseña Anterior (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "La contraseña vieja ya no sirve.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"{{seg_correo}}\",\n    \"password\": \"Password123@\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5.23 Login con la Contraseña Nueva (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Entrega un token nuevo', function () {",
+                  "    pm.expect(pm.response.json().data.token).to.include(\"|\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Con la contraseña nueva se obtiene un token nuevo y válido.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"{{seg_correo}}\",\n    \"password\": \"NuevoPass123#\"\n}"
+            }
+          },
+          "response": []
         }
       ]
     }
