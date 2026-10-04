@@ -18,7 +18,9 @@ class EmpresaResource extends JsonResource
                 'usuario',
                 fn () => $this->usuario->correo
             ),
+            'encargado_empresa' => $this->encargado_empresa,
             'razon_social' => $this->razon_social,
+            'sector' => $this->sector,
             'ruc' => $this->ruc,
             'sitio_web' => $this->sitio_web,
             'descripcion' => $this->descripcion,
