@@ -11,13 +11,18 @@ class Habilidad extends Model
     use HasFactory;
 
     protected $table = 'habilidades';
-    protected $fillable = ['area_estudio_id', 'nombre', 'tipo_habilidad', 'activo'];
+
+    protected $fillable = [
+        'area_estudio_id',
+        'nombre',
+        'tipo_habilidad',
+        'activo',
+    ];
 
     protected $casts = [
         'activo' => 'boolean',
     ];
 
-    // Técnica: tiene área. Blanda: area_estudio_id es NULL
     public function areaEstudio(): BelongsTo
     {
         return $this->belongsTo(AreaEstudio::class, 'area_estudio_id');
