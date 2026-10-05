@@ -103,6 +103,60 @@
       "value": "",
       "type": "secret",
       "enabled": true
+    },
+    {
+      "key": "admin_correo",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "admin_password",
+      "value": "",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "token_admin",
+      "value": "",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "area_prueba_id",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "habilidad_prueba_id",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "nombre_area_prueba",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "nombre_habilidad_prueba",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "habilidad_docencia_id",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "area_docencia_id",
+      "value": "",
+      "type": "default",
+      "enabled": true
     }
   ],
   "_postman_variable_scope": "environment",

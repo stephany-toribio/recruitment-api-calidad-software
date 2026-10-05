@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Requests\Habilidades\ActualizarHabilidadRequest;
 use App\Http\Requests\Habilidades\CrearHabilidadRequest;
+use App\Http\Requests\Habilidades\FiltrarHabilidadesRequest;
 use App\Http\Resources\Api\V1\HabilidadResource;
 use App\Models\Habilidad;
 use App\Services\Habilidades\HabilidadService;
@@ -16,9 +17,12 @@ class HabilidadController extends BaseApiController
     ) {
     }
 
-    public function index(): JsonResponse
+    // GET /api/v1/habilidades?areas[]= (filtro opcional: técnicas de esas áreas + todas las blandas)
+    public function index(FiltrarHabilidadesRequest $request): JsonResponse
     {
-        $habilidades = $this->habilidadService->listarSeleccionables();
+        $habilidades = $this->habilidadService->listarSeleccionables(
+            $request->validated('areas', [])
+        );
 
         return $this->successResponse(
             HabilidadResource::collection($habilidades),

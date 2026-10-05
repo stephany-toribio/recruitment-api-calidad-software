@@ -42,12 +42,34 @@ class ActualizarCandidatoRequest extends FormRequest
         return [
             fn (Validator $validator) => $this->validarConsistencia($validator),
             fn (Validator $validator) => $this->validarEstadoFinalExperiencias($validator),
+            fn (Validator $validator) => $this->validarHabilidadesSegunAreasFinales($validator),
         ];
     }
 
     private function habilidadesActuales(): array
     {
         return $this->user()?->candidato?->habilidades()->pluck('habilidades.id')->all() ?? [];
+    }
+
+    // Regla C combinando lo enviado con lo guardado: si cambian los estudios o las habilidades, las técnicas finales
+    // deben seguir perteneciendo a las áreas de los estudios finales
+    private function validarHabilidadesSegunAreasFinales(Validator $validator): void
+    {
+        if (! $this->has('habilidades') && ! $this->has('estudios')) {
+            return;
+        }
+
+        $candidato = $this->user()?->candidato;
+
+        $habilidades = $this->has('habilidades')
+            ? (is_array($this->input('habilidades')) ? $this->input('habilidades') : null)
+            : $this->habilidadesActuales();
+
+        $areas = $this->has('estudios')
+            ? $this->areasDeEstudiosEnviados()
+            : $candidato?->estudios()->pluck('area_estudio_id')->map(fn ($id) => (int) $id)->unique()->values()->all();
+
+        $this->validarHabilidadesSegunAreas($validator, $habilidades, $areas, $this->has('habilidades'));
     }
 
     // Combina lo enviado con lo guardado: sin primer empleo debe quedar al menos una experiencia

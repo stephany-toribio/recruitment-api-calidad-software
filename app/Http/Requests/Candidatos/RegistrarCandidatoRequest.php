@@ -44,6 +44,12 @@ class RegistrarCandidatoRequest extends FormRequest
     {
         return [
             fn (Validator $validator) => $this->validarConsistencia($validator),
+            // Regla C. En el paso de habilidades de Precognition el frontend debe enviar también "estudios" en el body
+            fn (Validator $validator) => $this->validarHabilidadesSegunAreas(
+                $validator,
+                is_array($this->input('habilidades')) ? $this->input('habilidades') : null,
+                $this->areasDeEstudiosEnviados()
+            ),
         ];
     }
 

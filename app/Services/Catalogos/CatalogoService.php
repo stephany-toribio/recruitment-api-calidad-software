@@ -2,7 +2,6 @@
 
 namespace App\Services\Catalogos;
 
-use App\Models\AreaEstudio;
 use App\Models\Idioma;
 use App\Models\Institucion;
 use App\Models\Organizacion;
@@ -23,13 +22,6 @@ class CatalogoService
     public function tiposEstudio(): Collection
     {
         return TipoEstudio::orderBy('id')->get(['id', 'nombre']);
-    }
-
-    public function areasEstudio(): Collection
-    {
-        return AreaEstudio::where('activo', true)
-            ->orderBy('nombre')
-            ->get(['id', 'nombre']);
     }
 
     public function instituciones(?int $paisId): Collection

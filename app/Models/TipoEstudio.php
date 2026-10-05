@@ -20,6 +20,12 @@ class TipoEstudio extends Model
         'nombre',
     ];
 
+    
+    public function requiereCarrera(): bool
+    {
+        return in_array($this->nombre, self::CON_CARRERA, true);
+    }
+
     public function carreras(): HasMany
     {
         return $this->hasMany(Carrera::class, 'tipo_estudio_id');

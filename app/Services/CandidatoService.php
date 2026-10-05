@@ -13,7 +13,7 @@ class CandidatoService
     // Relaciones que forman el perfil completo del candidato
     private const RELACIONES = [
         'usuario',
-        'habilidades',
+        'habilidades.areaEstudio', // HabilidadResource muestra el área: se carga aquí para evitar N+1
         'estudios.tipoEstudio',
         'estudios.areaEstudio',
         'estudios.pais',

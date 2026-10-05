@@ -16,17 +16,19 @@ class HabilidadService
             ->get();
     }
 
-    public function listarSeleccionables(): Collection
+    
+    public function listarSeleccionables(array $areas = []): Collection
     {
         return Habilidad::query()
             ->with('areaEstudio')
             ->where('activo', true)
-            ->where(function ($query) {
+            ->where(function ($query) use ($areas) {
                 $query
                     ->where('tipo_habilidad', 'blanda')
-                    ->orWhere(function ($query) {
+                    ->orWhere(function ($query) use ($areas) {
                         $query
                             ->where('tipo_habilidad', 'tecnica')
+                            ->when($areas, fn ($query) => $query->whereIn('area_estudio_id', $areas))
                             ->whereHas('areaEstudio', function ($query) {
                                 $query->where('activo', true);
                             });

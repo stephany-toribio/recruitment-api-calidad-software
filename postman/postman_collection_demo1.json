@@ -2,10 +2,77 @@
   "info": {
     "_postman_id": "portal-empleos-demo1-collection",
     "name": "Portal Empleos - Demo 2 (Backend Completo)",
-    "description": "Colección del Portal de Empleos (API v1). ORDEN DE EJECUCIÓN: las carpetas están ordenadas por dependencias para que el Runner funcione de corrido después de `php artisan migrate:fresh --seed`: Empresas (crea la empresa y token_empresa) → Candidatos (crea a Juan, María y Luis; usa token_empresa) → Habilidades → Auth (usa a Juan) → Seguridad de Tokens (independiente) → Catálogos de Registro (solo lectura). Las rutas privadas usan Authorization: Bearer {{token}} / {{token_candidato}} / {{token_empresa}}. La prueba 5.7 es manual y el Runner la omite.\n\n`POST /candidatos` usa Laravel Precognition (validación por pasos).\n\nLos IDs de catálogos (países, tipos de estudio, carreras, instituciones, puestos, organizaciones) son los que crean los seeders tras `migrate:fresh --seed`.",
+    "description": "Colección del Portal de Empleos (API v1). ORDEN DE EJECUCIÓN: las carpetas están ordenadas por dependencias para que el Runner funcione de corrido después de `php artisan migrate:fresh --seed`: Login Admin (token_admin) → Empresas (crea la empresa y token_empresa) → Candidatos (crea a Juan, María y Luis; usa token_empresa) → Habilidades → Auth (usa a Juan) → Seguridad de Tokens (independiente) → Catálogos de Registro (solo lectura). Las rutas privadas usan Authorization: Bearer {{token}} / {{token_candidato}} / {{token_empresa}}. La prueba 5.7 es manual y el Runner la omite.\n\n`POST /candidatos` usa Laravel Precognition (validación por pasos).\n\nLos IDs de catálogos (países, tipos de estudio, carreras, instituciones, puestos, organizaciones) son los que crean los seeders tras `migrate:fresh --seed`.\n\nAntes de correr: llenar `admin_correo` y `admin_password` en el \"Current value\" del environment (mismos valores que ADMIN_CORREO y ADMIN_PASSWORD del .env). En el repositorio quedan vacíos.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
+    {
+      "name": "0. Preparar - Login Admin (Dev 1)",
+      "description": "Obtiene `token_admin` para las rutas `/admin/*` (rol:admin). El admin lo crea `AdminSeeder` con `ADMIN_CORREO` y `ADMIN_PASSWORD` del `.env`. Llenar `admin_correo` y `admin_password` en el \"Current value\" del environment local: en el repositorio quedan vacíos (no subir credenciales).",
+      "item": [
+        {
+          "name": "0.1 Login Admin - Éxito (200 OK)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "if (!pm.environment.get('admin_correo') || !pm.environment.get('admin_password')) {",
+                  "    console.warn('Faltan admin_correo / admin_password en el environment (mismos valores que ADMIN_CORREO y ADMIN_PASSWORD del .env).');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Es admin y guarda token_admin', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    pm.expect(data.rol).to.eql('admin');",
+                  "    pm.environment.set('token_admin', data.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Usa las variables de environment admin_correo / admin_password.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"{{admin_correo}}\",\n    \"password\": \"{{admin_password}}\"\n}"
+            }
+          },
+          "response": []
+        }
+      ]
+    },
     {
       "name": "3. Empresas (Dev 3)",
       "description": "Registro de empresas con RUC y contraseña segura, login empresarial, consulta de perfil de la empresa autenticada (/empresas/me) y actualización.",
@@ -903,10 +970,10 @@
                     "candidatos"
                   ]
                 },
-                "description": "HU-01. \"Busco mi primer empleo\": `busca_primer_empleo = true` y sin `experiencias`. Estudio de tipo Master con carrera del catálogo de Master (49 Maestría en Ciencia de Datos, área 4, Perú). María se usa en 2.40 (DNI de otro).",
+                "description": "HU-01. \"Busco mi primer empleo\": `busca_primer_empleo = true` y sin `experiencias`. Estudio de tipo Master con carrera del catálogo de Master (49 Maestría en Ciencia de Datos, área 4, Perú). María se usa en 2.40 (DNI de otro). Habilidades: Excel (13, técnica de Investigación y Datos, el área de su estudio; regla C) y una blanda.",
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n    \"nombre\": \"María\",\n    \"apellidos\": \"López Díaz\",\n    \"dni\": \"45678912\",\n    \"fecha_nacimiento\": \"1998-08-20\",\n    \"genero\": \"femenino\",\n    \"celular\": \"912345678\",\n    \"correo\": \"maria.lopez@example.com\",\n    \"password\": \"Password123@\",\n    \"password_confirmation\": \"Password123@\",\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": 4,\n            \"area_estudio_id\": 4,\n            \"pais_id\": 1,\n            \"institucion_id\": 3,\n            \"carrera_id\": 49,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2021-03-01\",\n            \"fecha_fin\": \"2022-12-01\"\n        }\n    ],\n    \"idiomas\": [\n        {\n            \"idioma_id\": 2,\n            \"nivel_escrito\": \"nativo\",\n            \"nivel_oral\": \"nativo\"\n        }\n    ],\n    \"busca_primer_empleo\": true,\n    \"habilidades\": [\n        3,\n        15\n    ]\n}"
+                  "raw": "{\n    \"nombre\": \"María\",\n    \"apellidos\": \"López Díaz\",\n    \"dni\": \"45678912\",\n    \"fecha_nacimiento\": \"1998-08-20\",\n    \"genero\": \"femenino\",\n    \"celular\": \"912345678\",\n    \"correo\": \"maria.lopez@example.com\",\n    \"password\": \"Password123@\",\n    \"password_confirmation\": \"Password123@\",\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": 4,\n            \"area_estudio_id\": 4,\n            \"pais_id\": 1,\n            \"institucion_id\": 3,\n            \"carrera_id\": 49,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2021-03-01\",\n            \"fecha_fin\": \"2022-12-01\"\n        }\n    ],\n    \"idiomas\": [\n        {\n            \"idioma_id\": 2,\n            \"nivel_escrito\": \"nativo\",\n            \"nivel_oral\": \"nativo\"\n        }\n    ],\n    \"busca_primer_empleo\": true,\n    \"habilidades\": [\n        13,\n        15\n    ]\n}"
                 }
               },
               "response": []
@@ -3274,7 +3341,7 @@
         },
         {
           "name": "2.D Habilidades Inactivas",
-          "description": "Conservar una habilidad inactiva que ya se tenía, pero no agregar una nueva inactiva.",
+          "description": "Conservar una habilidad no seleccionable que ya se tenía, pero no agregar una nueva; y rechazar técnicas de un área inactiva. Requiere token_admin (0.1). Incluye la regla C: las técnicas deben ser de las áreas de los estudios (2.57–2.59).",
           "item": [
             {
               "name": "2.45 Preparar - Candidato Agrega Habilidad 16 (200)",
@@ -3317,7 +3384,7 @@
                     "me"
                   ]
                 },
-                "description": "Paso previo: Juan tiene la habilidad 16 antes de que se desactive.",
+                "description": "Juan tiene la habilidad 16 antes de que se desactive.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n    \"habilidades\": [\n        1,\n        2,\n        16\n    ]\n}"
@@ -3335,8 +3402,8 @@
                       "pm.test('Status code es 200 OK', function () {",
                       "    pm.response.to.have.status(200);",
                       "});",
-                      "pm.test('Habilidad 16 queda inactivo', function () {",
-                      "    pm.expect(pm.response.json().data.estado).to.eql('inactivo');",
+                      "pm.test('Queda activo = false', function () {",
+                      "    pm.expect(pm.response.json().data.activo).to.eql(false);",
                       "});"
                     ],
                     "type": "text/javascript"
@@ -3351,29 +3418,23 @@
                     "value": "application/json"
                   },
                   {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  },
-                  {
                     "key": "Authorization",
-                    "value": "Bearer {{token_empresa}}"
+                    "value": "Bearer {{token_admin}}"
                   }
                 ],
                 "url": {
-                  "raw": "{{base_url}}/habilidades/16",
+                  "raw": "{{base_url}}/admin/habilidades/16/desactivar",
                   "host": [
                     "{{base_url}}"
                   ],
                   "path": [
+                    "admin",
                     "habilidades",
-                    "16"
+                    "16",
+                    "desactivar"
                   ]
                 },
-                "description": "Usa token_empresa (3.4). Cuando HU-19 restrinja el catálogo a rol:admin, usar el token del administrador.",
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n    \"estado\": \"inactivo\"\n}"
-                }
+                "description": "Usa token_admin (0.1)."
               },
               "response": []
             },
@@ -3387,8 +3448,8 @@
                       "pm.test('Status code es 200 OK', function () {",
                       "    pm.response.to.have.status(200);",
                       "});",
-                      "pm.test('Habilidad 15 queda inactivo', function () {",
-                      "    pm.expect(pm.response.json().data.estado).to.eql('inactivo');",
+                      "pm.test('Queda activo = false', function () {",
+                      "    pm.expect(pm.response.json().data.activo).to.eql(false);",
                       "});"
                     ],
                     "type": "text/javascript"
@@ -3403,29 +3464,23 @@
                     "value": "application/json"
                   },
                   {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  },
-                  {
                     "key": "Authorization",
-                    "value": "Bearer {{token_empresa}}"
+                    "value": "Bearer {{token_admin}}"
                   }
                 ],
                 "url": {
-                  "raw": "{{base_url}}/habilidades/15",
+                  "raw": "{{base_url}}/admin/habilidades/15/desactivar",
                   "host": [
                     "{{base_url}}"
                   ],
                   "path": [
+                    "admin",
                     "habilidades",
-                    "15"
+                    "15",
+                    "desactivar"
                   ]
                 },
-                "description": "Usa token_empresa (3.4). Cuando HU-19 restrinja el catálogo a rol:admin, usar el token del administrador.",
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n    \"estado\": \"inactivo\"\n}"
-                }
+                "description": "Usa token_admin (0.1)."
               },
               "response": []
             },
@@ -3441,7 +3496,6 @@
                       "});",
                       "pm.test('Errores de validación en los campos esperados', function () {",
                       "    var jsonData = pm.response.json();",
-                      "    pm.expect(jsonData.success).to.be.false;",
                       "    pm.expect(jsonData.error_code).to.eql('VALIDATION_ERROR');",
                       "    pm.expect(jsonData.errors).to.have.property('habilidades.1');",
                       "});"
@@ -3471,10 +3525,10 @@
                     "candidatos"
                   ]
                 },
-                "description": "HU-01: solo se aceptan habilidades activas en el registro. Requiere 2.46.",
+                "description": "HU-01: solo se aceptan habilidades seleccionables. Requiere 2.46.",
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n    \"nombre\": \"Prueba\",\n    \"apellidos\": \"Error 48\",\n    \"dni\": \"70000048\",\n    \"fecha_nacimiento\": \"1995-05-15\",\n    \"genero\": \"masculino\",\n    \"celular\": \"987654321\",\n    \"correo\": \"prueba.error48@example.com\",\n    \"password\": \"Password123@\",\n    \"password_confirmation\": \"Password123@\",\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": 1,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 3,\n            \"estado\": \"en_curso\",\n            \"ciclo_actual\": 8,\n            \"fecha_inicio\": \"2019-03-01\",\n            \"fecha_fin\": null\n        }\n    ],\n    \"idiomas\": [\n        {\n            \"idioma_id\": 1,\n            \"nivel_escrito\": \"intermedio\",\n            \"nivel_oral\": \"basico\"\n        }\n    ],\n    \"busca_primer_empleo\": false,\n    \"experiencias\": [\n        {\n            \"puesto_id\": 1,\n            \"organizacion_id\": 2,\n            \"pais_id\": 1,\n            \"nivel\": \"junior\",\n            \"fecha_inicio\": \"2023-01-01\",\n            \"fecha_fin\": null,\n            \"descripcion\": \"Desarrollo de APIs REST con Laravel.\"\n        }\n    ],\n    \"habilidades\": [\n        1,\n        16\n    ]\n}"
+                  "raw": "{\n    \"nombre\": \"Prueba\",\n    \"apellidos\": \"Error 48\",\n    \"dni\": \"70000048\",\n    \"fecha_nacimiento\": \"1995-05-15\",\n    \"genero\": \"masculino\",\n    \"celular\": \"987654321\",\n    \"correo\": \"prueba.error48@example.com\",\n    \"password\": \"Password123@\",\n    \"password_confirmation\": \"Password123@\",\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": 1,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 3,\n            \"estado\": \"en_curso\",\n            \"ciclo_actual\": 8,\n            \"fecha_inicio\": \"2019-03-01\",\n            \"fecha_fin\": null\n        }\n    ],\n    \"idiomas\": [\n        {\n            \"idioma_id\": 1,\n            \"nivel_escrito\": \"intermedio\",\n            \"nivel_oral\": \"basico\"\n        }\n    ],\n    \"busca_primer_empleo\": true,\n    \"habilidades\": [1, 16]\n}"
                 }
               },
               "response": []
@@ -3544,7 +3598,6 @@
                       "});",
                       "pm.test('Errores de validación en los campos esperados', function () {",
                       "    var jsonData = pm.response.json();",
-                      "    pm.expect(jsonData.success).to.be.false;",
                       "    pm.expect(jsonData.error_code).to.eql('VALIDATION_ERROR');",
                       "    pm.expect(jsonData.errors).to.have.property('habilidades.3');",
                       "});"
@@ -3597,8 +3650,8 @@
                       "pm.test('Status code es 200 OK', function () {",
                       "    pm.response.to.have.status(200);",
                       "});",
-                      "pm.test('Habilidad 16 queda activo', function () {",
-                      "    pm.expect(pm.response.json().data.estado).to.eql('activo');",
+                      "pm.test('Queda activo = true', function () {",
+                      "    pm.expect(pm.response.json().data.activo).to.eql(true);",
                       "});"
                     ],
                     "type": "text/javascript"
@@ -3613,29 +3666,23 @@
                     "value": "application/json"
                   },
                   {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  },
-                  {
                     "key": "Authorization",
-                    "value": "Bearer {{token_empresa}}"
+                    "value": "Bearer {{token_admin}}"
                   }
                 ],
                 "url": {
-                  "raw": "{{base_url}}/habilidades/16",
+                  "raw": "{{base_url}}/admin/habilidades/16/reactivar",
                   "host": [
                     "{{base_url}}"
                   ],
                   "path": [
+                    "admin",
                     "habilidades",
-                    "16"
+                    "16",
+                    "reactivar"
                   ]
                 },
-                "description": "Usa token_empresa (3.4). Cuando HU-19 restrinja el catálogo a rol:admin, usar el token del administrador.",
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n    \"estado\": \"activo\"\n}"
-                }
+                "description": "Usa token_admin (0.1)."
               },
               "response": []
             },
@@ -3649,8 +3696,8 @@
                       "pm.test('Status code es 200 OK', function () {",
                       "    pm.response.to.have.status(200);",
                       "});",
-                      "pm.test('Habilidad 15 queda activo', function () {",
-                      "    pm.expect(pm.response.json().data.estado).to.eql('activo');",
+                      "pm.test('Queda activo = true', function () {",
+                      "    pm.expect(pm.response.json().data.activo).to.eql(true);",
                       "});"
                     ],
                     "type": "text/javascript"
@@ -3665,28 +3712,362 @@
                     "value": "application/json"
                   },
                   {
+                    "key": "Authorization",
+                    "value": "Bearer {{token_admin}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/admin/habilidades/15/reactivar",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "habilidades",
+                    "15",
+                    "reactivar"
+                  ]
+                },
+                "description": "Usa token_admin (0.1)."
+              },
+              "response": []
+            },
+            {
+              "name": "2.53 Preparar - Buscar Habilidad Técnica Docencia (200)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status code es 200 OK', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "pm.test('Encuentra Docencia con su área', function () {",
+                      "    var h = pm.response.json().data.find(function (e) { return e.nombre === 'Docencia'; });",
+                      "    pm.expect(h).to.exist;",
+                      "    pm.environment.set('habilidad_docencia_id', h.id);",
+                      "    pm.environment.set('area_docencia_id', h.area_estudio.id);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/habilidades",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "habilidades"
+                  ]
+                },
+                "description": "Guarda el id de \"Docencia\" y de su área para la prueba siguiente."
+              },
+              "response": []
+            },
+            {
+              "name": "2.54 Preparar - Desactivar Área de Docencia (200)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status code es 200 OK', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "pm.test('Queda activo = false', function () {",
+                      "    pm.expect(pm.response.json().data.activo).to.eql(false);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token_admin}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/admin/areas-estudio/{{area_docencia_id}}/desactivar",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "areas-estudio",
+                    "{{area_docencia_id}}",
+                    "desactivar"
+                  ]
+                },
+                "description": "Usa token_admin (0.1)."
+              },
+              "response": []
+            },
+            {
+              "name": "2.55 Registrar Candidato - Error Técnica de Área Inactiva (422)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status code es 422 Unprocessable Content', function () {",
+                      "    pm.response.to.have.status(422);",
+                      "});",
+                      "pm.test('Errores de validación en los campos esperados', function () {",
+                      "    var jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.error_code).to.eql('VALIDATION_ERROR');",
+                      "    pm.expect(jsonData.errors).to.have.property('habilidades.2');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/candidatos",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "candidatos"
+                  ]
+                },
+                "description": "Criterio de HU-19: una técnica solo es seleccionable si su área está activa.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"nombre\": \"Prueba\",\n    \"apellidos\": \"Error 55\",\n    \"dni\": \"70000055\",\n    \"fecha_nacimiento\": \"1995-05-15\",\n    \"genero\": \"masculino\",\n    \"celular\": \"987654321\",\n    \"correo\": \"prueba.error55@example.com\",\n    \"password\": \"Password123@\",\n    \"password_confirmation\": \"Password123@\",\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": 1,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 3,\n            \"estado\": \"en_curso\",\n            \"ciclo_actual\": 8,\n            \"fecha_inicio\": \"2019-03-01\",\n            \"fecha_fin\": null\n        }\n    ],\n    \"idiomas\": [\n        {\n            \"idioma_id\": 1,\n            \"nivel_escrito\": \"intermedio\",\n            \"nivel_oral\": \"basico\"\n        }\n    ],\n    \"busca_primer_empleo\": true,\n    \"habilidades\": [1, 2, {{habilidad_docencia_id}}]\n}"
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "2.56 Restaurar - Reactivar Área de Docencia (200)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status code es 200 OK', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "pm.test('Queda activo = true', function () {",
+                      "    pm.expect(pm.response.json().data.activo).to.eql(true);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token_admin}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/admin/areas-estudio/{{area_docencia_id}}/reactivar",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "areas-estudio",
+                    "{{area_docencia_id}}",
+                    "reactivar"
+                  ]
+                },
+                "description": "Deja el catálogo como estaba."
+              },
+              "response": []
+            },
+            {
+              "name": "2.57 Registrar Candidato - Error Técnica de un Área No Estudiada (422)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status code es 422 Unprocessable Content', function () {",
+                      "    pm.response.to.have.status(422);",
+                      "});",
+                      "pm.test('Errores de validación esperados', function () {",
+                      "    var j = pm.response.json();",
+                      "    pm.expect(j.error_code).to.eql('VALIDATION_ERROR');",
+                      "    pm.expect(j.errors).to.have.property('habilidades.2');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/candidatos",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "candidatos"
+                  ]
+                },
+                "description": "Regla C: el estudio es de Tecnología (área 1) y \"Docencia\" es de Ciencias Sociales y Educación.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"nombre\": \"Prueba\",\n    \"apellidos\": \"Error 57\",\n    \"dni\": \"70000057\",\n    \"fecha_nacimiento\": \"1995-05-15\",\n    \"genero\": \"masculino\",\n    \"celular\": \"987654321\",\n    \"correo\": \"prueba.error57@example.com\",\n    \"password\": \"Password123@\",\n    \"password_confirmation\": \"Password123@\",\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": 1,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 3,\n            \"estado\": \"en_curso\",\n            \"ciclo_actual\": 8,\n            \"fecha_inicio\": \"2019-03-01\",\n            \"fecha_fin\": null\n        }\n    ],\n    \"idiomas\": [\n        {\n            \"idioma_id\": 1,\n            \"nivel_escrito\": \"intermedio\",\n            \"nivel_oral\": \"basico\"\n        }\n    ],\n    \"busca_primer_empleo\": true,\n    \"habilidades\": [1, 2, {{habilidad_docencia_id}}]\n}"
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "2.58 Actualizar Mi Perfil - Error Técnica de un Área No Estudiada (422)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status code es 422 Unprocessable Content', function () {",
+                      "    pm.response.to.have.status(422);",
+                      "});",
+                      "pm.test('Errores de validación esperados', function () {",
+                      "    var j = pm.response.json();",
+                      "    pm.expect(j.error_code).to.eql('VALIDATION_ERROR');",
+                      "    pm.expect(j.errors).to.have.property('habilidades.1');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
                     "key": "Content-Type",
                     "value": "application/json"
                   },
                   {
                     "key": "Authorization",
-                    "value": "Bearer {{token_empresa}}"
+                    "value": "Bearer {{token_candidato}}"
                   }
                 ],
                 "url": {
-                  "raw": "{{base_url}}/habilidades/15",
+                  "raw": "{{base_url}}/candidatos/me",
                   "host": [
                     "{{base_url}}"
                   ],
                   "path": [
-                    "habilidades",
-                    "15"
+                    "candidatos",
+                    "me"
                   ]
                 },
-                "description": "Usa token_empresa (3.4). Cuando HU-19 restrinja el catálogo a rol:admin, usar el token del administrador.",
+                "description": "Regla C con los estudios guardados de Juan (Tecnología y Negocios).",
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n    \"estado\": \"activo\"\n}"
+                  "raw": "{\n    \"habilidades\": [1, {{habilidad_docencia_id}}]\n}"
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "2.59 Actualizar Mi Perfil - Error Cambiar Estudios Sin Actualizar Habilidades (422)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status code es 422 Unprocessable Content', function () {",
+                      "    pm.response.to.have.status(422);",
+                      "});",
+                      "pm.test('Errores de validación esperados', function () {",
+                      "    var j = pm.response.json();",
+                      "    pm.expect(j.error_code).to.eql('VALIDATION_ERROR');",
+                      "    pm.expect(j.errors).to.have.property('habilidades');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token_candidato}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/candidatos/me",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "candidatos",
+                    "me"
+                  ]
+                },
+                "description": "Regla C combinando lo enviado con lo guardado: con un solo estudio de Salud, sus técnicas de Tecnología (PHP, Laravel) ya no corresponden. Se rechaza todo y no se guarda nada.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": 6,\n            \"area_estudio_id\": 3,\n            \"pais_id\": 1,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2013-03-01\",\n            \"fecha_fin\": \"2017-12-01\"\n        }\n    ]\n}"
                 }
               },
               "response": []
@@ -3696,11 +4077,31 @@
       ]
     },
     {
-      "name": "4. Habilidades - Catálogo (Dev 3)",
-      "description": "Catálogo central de habilidades técnicas y blandas. Listado de activas, alta con validación de tipo y unicidad, y actualización/cambio de estado.",
+      "name": "4. Habilidades y Áreas de Estudio - Catálogo (Dev 3)",
+      "description": "HU-19. Público: GET /habilidades (seleccionables: activas y, si son técnicas, con área activa) y GET /areas-estudio (activas). Admin (`rol:admin`, requiere 0.1): CRUD con baja lógica mediante /desactivar y /reactivar. Técnica = área obligatoria; blanda = sin área. Los nombres de prueba se generan con Date.now() para poder repetir el Runner. GET /habilidades acepta ?areas[]= (regla C).",
       "item": [
         {
-          "name": "4.1 Listar Habilidades Activas - Éxito (200 OK)",
+          "name": "4.1 Listar Habilidades Seleccionables (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Técnicas con área y blandas sin área, todas activas', function () {",
+                  "    pm.response.json().data.forEach(function (h) {",
+                  "        pm.expect(h.activo).to.be.true;",
+                  "        if (h.tipo_habilidad === 'tecnica') { pm.expect(h.area_estudio).to.not.be.null; }",
+                  "        if (h.tipo_habilidad === 'blanda') { pm.expect(h.area_estudio).to.be.null; }",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "GET",
             "header": [
@@ -3718,42 +4119,12 @@
                 "habilidades"
               ]
             },
-            "description": "Obtiene el catálogo de todas las habilidades con estado 'activo' ordenadas alfabéticamente."
+            "description": "Catálogo público: técnicas con su área y blandas sin área."
           },
-          "response": [
-            {
-              "name": "200 OK - Catálogo de Habilidades",
-              "originalRequest": {
-                "method": "GET",
-                "header": [
-                  {
-                    "key": "Accept",
-                    "value": "application/json"
-                  }
-                ],
-                "url": {
-                  "raw": "{{base_url}}/habilidades",
-                  "host": [
-                    "{{base_url}}"
-                  ],
-                  "path": [
-                    "habilidades"
-                  ]
-                }
-              },
-              "status": "OK",
-              "code": 200,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n    \"success\": true,\n    \"message\": \"Catálogo de habilidades obtenido correctamente\",\n    \"data\": [\n        {\n            \"id\": 1,\n            \"nombre\": \"PHP\",\n            \"tipo_habilidad\": \"tecnica\",\n            \"estado\": \"activo\"\n        },\n        {\n            \"id\": 2,\n            \"nombre\": \"Laravel\",\n            \"tipo_habilidad\": \"tecnica\",\n            \"estado\": \"activo\"\n        },\n        {\n            \"id\": 3,\n            \"nombre\": \"Python\",\n            \"tipo_habilidad\": \"tecnica\",\n            \"estado\": \"activo\"\n        }\n    ]\n}"
-            }
-          ],
+          "response": []
+        },
+        {
+          "name": "4.2 Listar Áreas de Estudio Activas (200)",
           "event": [
             {
               "listen": "test",
@@ -3762,97 +4133,134 @@
                   "pm.test('Status code es 200 OK', function () {",
                   "    pm.response.to.have.status(200);",
                   "});",
-                  "pm.test('Respuesta contiene lista de habilidades', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.success).to.be.true;",
-                  "    pm.expect(Array.isArray(jsonData.data)).to.be.true;",
+                  "pm.test('Al menos 7 áreas, todas activas', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    pm.expect(data.length).to.be.at.least(7);",
+                  "    data.forEach(function (a) { pm.expect(a.activo).to.be.true; });",
                   "});"
                 ],
                 "type": "text/javascript"
               }
             }
-          ]
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/areas-estudio",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "areas-estudio"
+              ]
+            },
+            "description": "Público. Lo usa el select de área del registro de candidato."
+          },
+          "response": []
         },
         {
-          "name": "4.2 Crear Habilidad - Éxito (201 Created)",
+          "name": "4.3 Admin - Listar Todas las Habilidades (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Devuelve el catálogo completo', function () {",
+                  "    pm.expect(pm.response.json().data.length).to.be.at.least(150);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
-            "method": "POST",
+            "method": "GET",
             "header": [
               {
                 "key": "Accept",
                 "value": "application/json"
               },
               {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
                 "key": "Authorization",
-                "value": "Bearer {{token_empresa}}"
+                "value": "Bearer {{token_admin}}"
               }
             ],
             "url": {
-              "raw": "{{base_url}}/habilidades",
+              "raw": "{{base_url}}/admin/habilidades",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
+                "admin",
                 "habilidades"
               ]
             },
-            "description": "Crea una habilidad nueva. El nombre lleva {{$timestamp}} para que no choque con el seeder ni con ejecuciones anteriores.",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"nombre\": \"Kotlin {{$timestamp}}\",\n    \"tipo_habilidad\": \"tecnica\"\n}"
-            }
+            "description": "Incluye inactivas."
           },
-          "response": [
+          "response": []
+        },
+        {
+          "name": "4.4 Admin - Listar Todas las Áreas (200)",
+          "event": [
             {
-              "name": "201 Created - Habilidad Creada",
-              "originalRequest": {
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "Accept",
-                    "value": "application/json"
-                  },
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  },
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{token_empresa}}"
-                  }
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
                 ],
-                "url": {
-                  "raw": "{{base_url}}/habilidades",
-                  "host": [
-                    "{{base_url}}"
-                  ],
-                  "path": [
-                    "habilidades"
-                  ]
-                },
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n    \"nombre\": \"Kotlin {{$timestamp}}\",\n    \"tipo_habilidad\": \"tecnica\"\n}"
-                }
-              },
-              "status": "Created",
-              "code": 201,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n    \"success\": true,\n    \"message\": \"Habilidad creada correctamente\",\n    \"data\": {\n        \"id\": 11,\n        \"nombre\": \"Vue.js\",\n        \"tipo_habilidad\": \"tecnica\",\n        \"estado\": \"activo\"\n    }\n}"
+                "type": "text/javascript"
+              }
             }
           ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/areas-estudio",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "areas-estudio"
+              ]
+            },
+            "description": "Incluye inactivas."
+          },
+          "response": []
+        },
+        {
+          "name": "4.5 Admin - Crear Área de Estudio (201)",
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.environment.set('nombre_area_prueba', 'Área Prueba ' + Date.now());"
+                ],
+                "type": "text/javascript"
+              }
+            },
             {
               "listen": "test",
               "script": {
@@ -3860,21 +4268,16 @@
                   "pm.test('Status code es 201 Created', function () {",
                   "    pm.response.to.have.status(201);",
                   "});",
-                  "pm.test('Habilidad creada y guarda habilidad_id', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.success).to.be.true;",
-                  "    if (jsonData.data && jsonData.data.id) {",
-                  "        pm.environment.set('habilidad_id', jsonData.data.id);",
-                  "    }",
+                  "pm.test('Área creada activa', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    pm.expect(data.activo).to.be.true;",
+                  "    pm.environment.set('area_prueba_id', data.id);",
                   "});"
                 ],
                 "type": "text/javascript"
               }
             }
-          ]
-        },
-        {
-          "name": "4.3 Crear Habilidad - Error Nombre Duplicado (422)",
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -3888,70 +4291,29 @@
               },
               {
                 "key": "Authorization",
-                "value": "Bearer {{token_empresa}}"
+                "value": "Bearer {{token_admin}}"
               }
             ],
             "url": {
-              "raw": "{{base_url}}/habilidades",
+              "raw": "{{base_url}}/admin/areas-estudio",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "habilidades"
+                "admin",
+                "areas-estudio"
               ]
             },
-            "description": "Fallo de validación de unicidad cuando se intenta registrar una habilidad con un nombre que ya existe.",
+            "description": "Crea un área de prueba (nombre único con Date.now()) y guarda `area_prueba_id`.",
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"nombre\": \"PHP\",\n    \"tipo_habilidad\": \"tecnica\"\n}"
+              "raw": "{\n    \"nombre\": \"{{nombre_area_prueba}}\"\n}"
             }
           },
-          "response": [
-            {
-              "name": "422 Unprocessable - Nombre Duplicado",
-              "originalRequest": {
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "Accept",
-                    "value": "application/json"
-                  },
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  },
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{token_empresa}}"
-                  }
-                ],
-                "url": {
-                  "raw": "{{base_url}}/habilidades",
-                  "host": [
-                    "{{base_url}}"
-                  ],
-                  "path": [
-                    "habilidades"
-                  ]
-                },
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n    \"nombre\": \"PHP\",\n    \"tipo_habilidad\": \"tecnica\"\n}"
-                }
-              },
-              "status": "Unprocessable Entity",
-              "code": 422,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n    \"success\": false,\n    \"message\": \"Los datos proporcionados no son válidos.\",\n    \"error_code\": \"VALIDATION_ERROR\",\n    \"errors\": {\n        \"nombre\": [\n            \"La habilidad ya existe.\"\n        ]\n    }\n}"
-            }
-          ],
+          "response": []
+        },
+        {
+          "name": "4.6 Admin - Crear Área - Error Nombre Duplicado (422)",
           "event": [
             {
               "listen": "test",
@@ -3960,20 +4322,16 @@
                   "pm.test('Status code es 422 Unprocessable Content', function () {",
                   "    pm.response.to.have.status(422);",
                   "});",
-                  "pm.test('Error específico La habilidad ya existe', function () {",
+                  "pm.test('Errores de validación en los campos esperados', function () {",
                   "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.error_code).to.eql('VALIDATION_ERROR');",
                   "    pm.expect(jsonData.errors).to.have.property('nombre');",
-                  "    pm.expect(jsonData.errors.nombre[0]).to.eql('La habilidad ya existe.');",
                   "});"
                 ],
                 "type": "text/javascript"
               }
             }
-          ]
-        },
-        {
-          "name": "4.4 Crear Habilidad - Error Tipo Inválido (422)",
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -3987,171 +4345,39 @@
               },
               {
                 "key": "Authorization",
-                "value": "Bearer {{token_empresa}}"
+                "value": "Bearer {{token_admin}}"
               }
             ],
             "url": {
-              "raw": "{{base_url}}/habilidades",
+              "raw": "{{base_url}}/admin/areas-estudio",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "habilidades"
+                "admin",
+                "areas-estudio"
               ]
             },
-            "description": "Fallo de validación en regla `in:tecnica,blanda` para el campo `tipo_habilidad`.",
+            "description": "Mismo nombre que 4.5.",
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"nombre\": \"React Native\",\n    \"tipo_habilidad\": \"otra_categoria\"\n}"
+              "raw": "{\n    \"nombre\": \"{{nombre_area_prueba}}\"\n}"
             }
           },
-          "response": [
-            {
-              "name": "422 Unprocessable - Tipo Inválido",
-              "originalRequest": {
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "Accept",
-                    "value": "application/json"
-                  },
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  },
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{token_empresa}}"
-                  }
-                ],
-                "url": {
-                  "raw": "{{base_url}}/habilidades",
-                  "host": [
-                    "{{base_url}}"
-                  ],
-                  "path": [
-                    "habilidades"
-                  ]
-                },
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n    \"nombre\": \"React Native\",\n    \"tipo_habilidad\": \"otra_categoria\"\n}"
-                }
-              },
-              "status": "Unprocessable Entity",
-              "code": 422,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n    \"success\": false,\n    \"message\": \"Los datos proporcionados no son válidos.\",\n    \"error_code\": \"VALIDATION_ERROR\",\n    \"errors\": {\n        \"tipo_habilidad\": [\n            \"El tipo de habilidad debe ser tecnica o blanda.\"\n        ]\n    }\n}"
-            }
-          ],
+          "response": []
+        },
+        {
+          "name": "4.7 Admin - Editar Área de Estudio (200)",
           "event": [
             {
-              "listen": "test",
+              "listen": "prerequest",
               "script": {
                 "exec": [
-                  "pm.test('Status code es 422 Unprocessable Content', function () {",
-                  "    pm.response.to.have.status(422);",
-                  "});",
-                  "pm.test('Error en tipo_habilidad', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.success).to.be.false;",
-                  "    pm.expect(jsonData.errors).to.have.property('tipo_habilidad');",
-                  "});"
+                  "pm.environment.set('nombre_area_prueba', 'Área Prueba ' + Date.now());"
                 ],
                 "type": "text/javascript"
               }
-            }
-          ]
-        },
-        {
-          "name": "4.5 Actualizar Habilidad - Éxito (200 OK)",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token_empresa}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/habilidades/{{habilidad_id}}",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "habilidades",
-                "{{habilidad_id}}"
-              ]
             },
-            "description": "Actualiza el nombre, tipo o estado (activo/inactivo) de una habilidad existente.",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"nombre\": \"Kotlin Actualizado {{$timestamp}}\",\n    \"tipo_habilidad\": \"tecnica\",\n    \"estado\": \"activo\"\n}"
-            }
-          },
-          "response": [
-            {
-              "name": "200 OK - Habilidad Actualizada",
-              "originalRequest": {
-                "method": "PATCH",
-                "header": [
-                  {
-                    "key": "Accept",
-                    "value": "application/json"
-                  },
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  },
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{token_empresa}}"
-                  }
-                ],
-                "url": {
-                  "raw": "{{base_url}}/habilidades/{{habilidad_id}}",
-                  "host": [
-                    "{{base_url}}"
-                  ],
-                  "path": [
-                    "habilidades",
-                    "{{habilidad_id}}"
-                  ]
-                },
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n    \"nombre\": \"Kotlin Actualizado {{$timestamp}}\",\n    \"tipo_habilidad\": \"tecnica\",\n    \"estado\": \"activo\"\n}"
-                }
-              },
-              "status": "OK",
-              "code": 200,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n    \"success\": true,\n    \"message\": \"Habilidad actualizada correctamente\",\n    \"data\": {\n        \"id\": 11,\n        \"nombre\": \"Vue.js 3\",\n        \"tipo_habilidad\": \"tecnica\",\n        \"estado\": \"activo\"\n    }\n}"
-            }
-          ],
-          "event": [
             {
               "listen": "test",
               "script": {
@@ -4159,19 +4385,14 @@
                   "pm.test('Status code es 200 OK', function () {",
                   "    pm.response.to.have.status(200);",
                   "});",
-                  "pm.test('Habilidad actualizada correctamente', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.success).to.be.true;",
-                  "    pm.expect(jsonData.data.nombre).to.include('Kotlin Actualizado');",
+                  "pm.test('Nombre actualizado', function () {",
+                  "    pm.expect(pm.response.json().data.nombre).to.eql(pm.environment.get('nombre_area_prueba'));",
                   "});"
                 ],
                 "type": "text/javascript"
               }
             }
-          ]
-        },
-        {
-          "name": "4.6 Actualizar Habilidad - Error No Encontrada (404)",
+          ],
           "request": {
             "method": "PATCH",
             "header": [
@@ -4185,95 +4406,60 @@
               },
               {
                 "key": "Authorization",
-                "value": "Bearer {{token_empresa}}"
+                "value": "Bearer {{token_admin}}"
               }
             ],
             "url": {
-              "raw": "{{base_url}}/habilidades/99999",
+              "raw": "{{base_url}}/admin/areas-estudio/{{area_prueba_id}}",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "habilidades",
-                "99999"
+                "admin",
+                "areas-estudio",
+                "{{area_prueba_id}}"
               ]
             },
-            "description": "Intento de actualizar una habilidad inexistente por ID.",
+            "description": "Cambia el nombre del área de prueba.",
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"nombre\": \"No Existe\"\n}"
+              "raw": "{\n    \"nombre\": \"{{nombre_area_prueba}}\"\n}"
             }
           },
-          "response": [
-            {
-              "name": "404 Not Found - Habilidad No Encontrada",
-              "originalRequest": {
-                "method": "PATCH",
-                "header": [
-                  {
-                    "key": "Accept",
-                    "value": "application/json"
-                  },
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  },
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{token_empresa}}"
-                  }
-                ],
-                "url": {
-                  "raw": "{{base_url}}/habilidades/99999",
-                  "host": [
-                    "{{base_url}}"
-                  ],
-                  "path": [
-                    "habilidades",
-                    "99999"
-                  ]
-                },
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n    \"nombre\": \"No Existe\"\n}"
-                }
-              },
-              "status": "Not Found",
-              "code": 404,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n    \"success\": false,\n    \"message\": \"El Habilidad solicitado no fue encontrado.\",\n    \"error_code\": \"RESOURCE_NOT_FOUND\"\n}"
-            }
-          ],
+          "response": []
+        },
+        {
+          "name": "4.8 Admin - Crear Habilidad Técnica (201)",
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.environment.set('nombre_habilidad_prueba', 'Habilidad Prueba ' + Date.now());"
+                ],
+                "type": "text/javascript"
+              }
+            },
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status code es 404 Not Found', function () {",
-                  "    pm.response.to.have.status(404);",
+                  "pm.test('Status code es 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
                   "});",
-                  "pm.test('RESOURCE_NOT_FOUND para Habilidad', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.success).to.be.false;",
-                  "    pm.expect(jsonData.error_code).to.eql('RESOURCE_NOT_FOUND');",
+                  "pm.test('Técnica creada con su área', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    pm.expect(data.activo).to.be.true;",
+                  "    pm.expect(data.area_estudio.id).to.eql(Number(pm.environment.get('area_prueba_id')));",
+                  "    pm.environment.set('habilidad_prueba_id', data.id);",
                   "});"
                 ],
                 "type": "text/javascript"
               }
             }
-          ]
-        },
-        {
-          "name": "4.7 Actualizar Habilidad - Error Estado Inválido (422)",
+          ],
           "request": {
-            "method": "PATCH",
+            "method": "POST",
             "header": [
               {
                 "key": "Accept",
@@ -4285,72 +4471,29 @@
               },
               {
                 "key": "Authorization",
-                "value": "Bearer {{token_empresa}}"
+                "value": "Bearer {{token_admin}}"
               }
             ],
             "url": {
-              "raw": "{{base_url}}/habilidades/{{habilidad_id}}",
+              "raw": "{{base_url}}/admin/habilidades",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "habilidades",
-                "{{habilidad_id}}"
+                "admin",
+                "habilidades"
               ]
             },
-            "description": "Validación de restricción `in:activo,inactivo` para el estado de la habilidad.",
+            "description": "Técnica en el área de prueba. Guarda `habilidad_prueba_id`.",
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"estado\": \"desactivado_erroneo\"\n}"
+              "raw": "{\n    \"nombre\": \"{{nombre_habilidad_prueba}}\",\n    \"tipo_habilidad\": \"tecnica\",\n    \"area_estudio_id\": {{area_prueba_id}}\n}"
             }
           },
-          "response": [
-            {
-              "name": "422 Unprocessable - Estado Inválido",
-              "originalRequest": {
-                "method": "PATCH",
-                "header": [
-                  {
-                    "key": "Accept",
-                    "value": "application/json"
-                  },
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  },
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{token_empresa}}"
-                  }
-                ],
-                "url": {
-                  "raw": "{{base_url}}/habilidades/{{habilidad_id}}",
-                  "host": [
-                    "{{base_url}}"
-                  ],
-                  "path": [
-                    "habilidades",
-                    "{{habilidad_id}}"
-                  ]
-                },
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n    \"estado\": \"desactivado_erroneo\"\n}"
-                }
-              },
-              "status": "Unprocessable Entity",
-              "code": 422,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n    \"success\": false,\n    \"message\": \"Los datos proporcionados no son válidos.\",\n    \"error_code\": \"VALIDATION_ERROR\",\n    \"errors\": {\n        \"estado\": [\n            \"El estado debe ser activo o inactivo.\"\n        ]\n    }\n}"
-            }
-          ],
+          "response": []
+        },
+        {
+          "name": "4.9 Admin - Crear Técnica Sin Área (422)",
           "event": [
             {
               "listen": "test",
@@ -4359,19 +4502,266 @@
                   "pm.test('Status code es 422 Unprocessable Content', function () {",
                   "    pm.response.to.have.status(422);",
                   "});",
-                  "pm.test('Error en campo estado', function () {",
+                  "pm.test('Errores de validación en los campos esperados', function () {",
                   "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.success).to.be.false;",
-                  "    pm.expect(jsonData.errors).to.have.property('estado');",
+                  "    pm.expect(jsonData.error_code).to.eql('VALIDATION_ERROR');",
+                  "    pm.expect(jsonData.errors).to.have.property('area_estudio_id');",
                   "});"
                 ],
                 "type": "text/javascript"
               }
             }
-          ]
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/habilidades",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "habilidades"
+              ]
+            },
+            "description": "Una técnica debe pertenecer a un área.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Técnica Sin Área Prueba\",\n    \"tipo_habilidad\": \"tecnica\"\n}"
+            }
+          },
+          "response": []
         },
         {
-          "name": "4.8 Crear Habilidad - Error Sin Token (401)",
+          "name": "4.10 Admin - Crear Blanda Con Área (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Content', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Errores de validación en los campos esperados', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.error_code).to.eql('VALIDATION_ERROR');",
+                  "    pm.expect(jsonData.errors).to.have.property('area_estudio_id');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/habilidades",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "habilidades"
+              ]
+            },
+            "description": "Una blanda no tiene área.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Blanda Con Área Prueba\",\n    \"tipo_habilidad\": \"blanda\",\n    \"area_estudio_id\": 1\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4.11 Admin - Crear Habilidad - Error Nombre Duplicado (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Content', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Errores de validación en los campos esperados', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.error_code).to.eql('VALIDATION_ERROR');",
+                  "    pm.expect(jsonData.errors).to.have.property('nombre');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/habilidades",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "habilidades"
+              ]
+            },
+            "description": "Mismo nombre que 4.8.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"{{nombre_habilidad_prueba}}\",\n    \"tipo_habilidad\": \"blanda\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4.12 Admin - Crear Habilidad - Error Enviar activo (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Content', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Errores de validación en los campos esperados', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.error_code).to.eql('VALIDATION_ERROR');",
+                  "    pm.expect(jsonData.errors).to.have.property('activo');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/habilidades",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "habilidades"
+              ]
+            },
+            "description": "`activo` solo cambia con /desactivar y /reactivar.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Blanda Activo Prueba\",\n    \"tipo_habilidad\": \"blanda\",\n    \"activo\": false\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4.13 Admin - Crear Habilidad - Error Token de Empresa (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 403 Forbidden', function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});",
+                  "pm.test('Devuelve FORBIDDEN', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('FORBIDDEN');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_empresa}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/habilidades",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "habilidades"
+              ]
+            },
+            "description": "Solo el admin gestiona el catálogo (requiere 3.4).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Habilidad Empresa\",\n    \"tipo_habilidad\": \"blanda\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4.14 Admin - Crear Habilidad - Error Sin Token (401)",
           "event": [
             {
               "listen": "test",
@@ -4380,10 +4770,8 @@
                   "pm.test('Status code es 401 Unauthorized', function () {",
                   "    pm.response.to.have.status(401);",
                   "});",
-                  "pm.test('Rechaza la petición sin token', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.success).to.be.false;",
-                  "    pm.expect(jsonData.error_code).to.eql('UNAUTHENTICATED');",
+                  "pm.test('Devuelve UNAUTHENTICATED', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('UNAUTHENTICATED');",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -4403,6 +4791,58 @@
               }
             ],
             "url": {
+              "raw": "{{base_url}}/admin/habilidades",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "habilidades"
+              ]
+            },
+            "description": "Ruta protegida.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Habilidad Sin Token\",\n    \"tipo_habilidad\": \"blanda\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4.15 Ruta Antigua POST /habilidades - Error Método No Permitido (405)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 405 Method Not Allowed', function () {",
+                  "    pm.response.to.have.status(405);",
+                  "});",
+                  "pm.test('Devuelve METHOD_NOT_ALLOWED', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('METHOD_NOT_ALLOWED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
               "raw": "{{base_url}}/habilidades",
               "host": [
                 "{{base_url}}"
@@ -4411,55 +4851,688 @@
                 "habilidades"
               ]
             },
-            "description": "Crear o editar el catálogo requiere token. Listar (4.1) sigue siendo público.",
+            "description": "La creación pública se eliminó: ahora es POST /admin/habilidades.",
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"nombre\": \"Svelte\",\n    \"tipo_habilidad\": \"tecnica\"\n}"
+              "raw": "{\n    \"nombre\": \"Ruta Antigua\",\n    \"tipo_habilidad\": \"blanda\"\n}"
             }
           },
-          "response": [
+          "response": []
+        },
+        {
+          "name": "4.16 Admin - Editar Habilidad (200)",
+          "event": [
             {
-              "name": "401 Unauthorized - Sin Token",
-              "originalRequest": {
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "Accept",
-                    "value": "application/json"
-                  },
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  }
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.environment.set('nombre_habilidad_prueba', 'Habilidad Prueba ' + Date.now());"
                 ],
-                "url": {
-                  "raw": "{{base_url}}/habilidades",
-                  "host": [
-                    "{{base_url}}"
-                  ],
-                  "path": [
-                    "habilidades"
-                  ]
-                },
-                "description": "Crear o editar el catálogo requiere token. Listar (4.1) sigue siendo público.",
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n    \"nombre\": \"Svelte\",\n    \"tipo_habilidad\": \"tecnica\"\n}"
-                }
-              },
-              "status": "Unauthorized",
-              "code": 401,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n    \"success\": false,\n    \"message\": \"No autenticado o token inválido.\",\n    \"error_code\": \"UNAUTHENTICATED\"\n}"
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Nombre actualizado', function () {",
+                  "    pm.expect(pm.response.json().data.nombre).to.eql(pm.environment.get('nombre_habilidad_prueba'));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
             }
-          ]
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/habilidades/{{habilidad_prueba_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "habilidades",
+                "{{habilidad_prueba_id}}"
+              ]
+            },
+            "description": "Cambia el nombre.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"{{nombre_habilidad_prueba}}\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4.17 Admin - Editar - Error Cambiar a Blanda Sin Quitar Área (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Content', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Errores de validación en los campos esperados', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.error_code).to.eql('VALIDATION_ERROR');",
+                  "    pm.expect(jsonData.errors).to.have.property('area_estudio_id');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/habilidades/{{habilidad_prueba_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "habilidades",
+                "{{habilidad_prueba_id}}"
+              ]
+            },
+            "description": "Se combina lo enviado con lo guardado: quedaría blanda con área.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"tipo_habilidad\": \"blanda\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4.18 Admin - Editar Habilidad - Error No Encontrada (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 404 Not Found', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test('Devuelve RESOURCE_NOT_FOUND', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('RESOURCE_NOT_FOUND');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/habilidades/99999",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "habilidades",
+                "99999"
+              ]
+            },
+            "description": "Route Model Binding.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"No Existe\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4.19 Admin - Desactivar Habilidad (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Queda activo = false', function () {",
+                  "    pm.expect(pm.response.json().data.activo).to.eql(false);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/habilidades/{{habilidad_prueba_id}}/desactivar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "habilidades",
+                "{{habilidad_prueba_id}}",
+                "desactivar"
+              ]
+            },
+            "description": "Baja lógica."
+          },
+          "response": []
+        },
+        {
+          "name": "4.20 Admin - Desactivar Habilidad Ya Inactiva (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 409 Conflict', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "pm.test('Devuelve SKILL_ALREADY_INACTIVE', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('SKILL_ALREADY_INACTIVE');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/habilidades/{{habilidad_prueba_id}}/desactivar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "habilidades",
+                "{{habilidad_prueba_id}}",
+                "desactivar"
+              ]
+            },
+            "description": "Regla de negocio."
+          },
+          "response": []
+        },
+        {
+          "name": "4.21 Habilidad Inactiva No Aparece en el Catálogo Público (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('No incluye la habilidad desactivada', function () {",
+                  "    var ids = pm.response.json().data.map(function (h) { return h.id; });",
+                  "    pm.expect(ids).to.not.include(Number(pm.environment.get('habilidad_prueba_id')));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/habilidades",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "habilidades"
+              ]
+            },
+            "description": "Ya no es seleccionable."
+          },
+          "response": []
+        },
+        {
+          "name": "4.22 Admin - Desactivar Área de Estudio (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Queda activo = false', function () {",
+                  "    pm.expect(pm.response.json().data.activo).to.eql(false);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/areas-estudio/{{area_prueba_id}}/desactivar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "areas-estudio",
+                "{{area_prueba_id}}",
+                "desactivar"
+              ]
+            },
+            "description": "Baja lógica del área."
+          },
+          "response": []
+        },
+        {
+          "name": "4.23 Admin - Desactivar Área Ya Inactiva (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 409 Conflict', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "pm.test('Devuelve AREA_ALREADY_INACTIVE', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('AREA_ALREADY_INACTIVE');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/areas-estudio/{{area_prueba_id}}/desactivar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "areas-estudio",
+                "{{area_prueba_id}}",
+                "desactivar"
+              ]
+            },
+            "description": "Regla de negocio."
+          },
+          "response": []
+        },
+        {
+          "name": "4.24 Admin - Reactivar Técnica Con Área Inactiva (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 409 Conflict', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "pm.test('Devuelve SKILL_AREA_INACTIVE', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('SKILL_AREA_INACTIVE');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/habilidades/{{habilidad_prueba_id}}/reactivar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "habilidades",
+                "{{habilidad_prueba_id}}",
+                "reactivar"
+              ]
+            },
+            "description": "No se reactiva una técnica si su área está inactiva."
+          },
+          "response": []
+        },
+        {
+          "name": "4.25 Admin - Reactivar Área de Estudio (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Queda activo = true', function () {",
+                  "    pm.expect(pm.response.json().data.activo).to.eql(true);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/areas-estudio/{{area_prueba_id}}/reactivar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "areas-estudio",
+                "{{area_prueba_id}}",
+                "reactivar"
+              ]
+            },
+            "description": "Restaura el área."
+          },
+          "response": []
+        },
+        {
+          "name": "4.26 Admin - Reactivar Habilidad (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Queda activo = true', function () {",
+                  "    pm.expect(pm.response.json().data.activo).to.eql(true);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/habilidades/{{habilidad_prueba_id}}/reactivar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "habilidades",
+                "{{habilidad_prueba_id}}",
+                "reactivar"
+              ]
+            },
+            "description": "Con el área activa ya se puede."
+          },
+          "response": []
+        },
+        {
+          "name": "4.27 Admin - Reactivar Habilidad Ya Activa (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 409 Conflict', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "pm.test('Devuelve SKILL_ALREADY_ACTIVE', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('SKILL_ALREADY_ACTIVE');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/habilidades/{{habilidad_prueba_id}}/reactivar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "habilidades",
+                "{{habilidad_prueba_id}}",
+                "reactivar"
+              ]
+            },
+            "description": "Regla de negocio."
+          },
+          "response": []
+        },
+        {
+          "name": "4.28 Listar Habilidades por Áreas de Estudio (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Técnicas solo del área 1 y además las blandas', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    var blandas = data.filter(function (h) { return h.tipo_habilidad === 'blanda'; });",
+                  "    pm.expect(blandas.length).to.be.above(0);",
+                  "    data.filter(function (h) { return h.tipo_habilidad === 'tecnica'; }).forEach(function (h) {",
+                  "        pm.expect(h.area_estudio.id).to.eql(1);",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/habilidades?areas[]=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "habilidades"
+              ],
+              "query": [
+                {
+                  "key": "areas[]",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Regla C: técnicas de las áreas indicadas + todas las blandas (para el picker del registro)."
+          },
+          "response": []
+        },
+        {
+          "name": "4.29 Listar Habilidades por Áreas - Error Área Inexistente (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Content', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Errores de validación esperados', function () {",
+                  "    var j = pm.response.json();",
+                  "    pm.expect(j.error_code).to.eql('VALIDATION_ERROR');",
+                  "    pm.expect(j.errors).to.have.property('areas.0');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/habilidades?areas[]=999",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "habilidades"
+              ],
+              "query": [
+                {
+                  "key": "areas[]",
+                  "value": "999"
+                }
+              ]
+            },
+            "description": "El filtro se valida con FiltrarHabilidadesRequest."
+          },
+          "response": []
         }
       ]
     },
@@ -7112,7 +8185,7 @@
     },
     {
       "name": "6. Catálogos de Registro (Dev 2)",
-      "description": "Catálogos públicos (sin token) para los selects del formulario de registro del candidato. Solo devuelven lo seleccionable: áreas e instituciones activas; puestos y organizaciones activos y aprobados (las propuestas pendientes de los candidatos no se muestran). Carreras y habilidades son del módulo de Dev 3 (GET /carreras, GET /habilidades).",
+      "description": "Catálogos públicos (sin token) para los selects del formulario de registro del candidato. Solo devuelven lo seleccionable: instituciones activas; puestos y organizaciones activos y aprobados (las propuestas pendientes de los candidatos no se muestran). Áreas de estudio y habilidades: carpeta 4 (Dev 3). GET /carreras (módulo de carreras, Dev 3) se prueba aquí porque alimenta el select de carrera del registro.",
       "item": [
         {
           "name": "6.1 Listar Países (200)",
@@ -7182,6 +8255,14 @@
                   "    var nombres = pm.response.json().data.map(function (e) { return e.nombre; });",
                   "    pm.expect(nombres[0]).to.eql('Universitario');",
                   "    pm.expect(nombres).to.not.include('Otro');",
+                  "});",
+                  "pm.test('requiere_carrera según el tipo', function () {",
+                  "    var porNombre = {};",
+                  "    pm.response.json().data.forEach(function (t) { porNombre[t.nombre] = t.requiere_carrera; });",
+                  "    pm.expect(porNombre['Universitario']).to.be.true;",
+                  "    pm.expect(porNombre['Master']).to.be.true;",
+                  "    pm.expect(porNombre['Secundario']).to.be.false;",
+                  "    pm.expect(porNombre['Terciario']).to.be.false;",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -7210,52 +8291,7 @@
           "response": []
         },
         {
-          "name": "6.3 Listar Áreas de Estudio Activas (200)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code es 200 OK', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "pm.test('Devuelve al menos 7 elementos con id y nombre', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.success).to.be.true;",
-                  "    pm.expect(jsonData.data.length).to.be.at.least(7);",
-                  "    jsonData.data.forEach(function (e) {",
-                  "        pm.expect(e).to.have.property('id');",
-                  "        pm.expect(e).to.have.property('nombre');",
-                  "    });",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/areas-estudio",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "areas-estudio"
-              ]
-            },
-            "description": "Las 7 áreas de CAREER_TAXONOMY."
-          },
-          "response": []
-        },
-        {
-          "name": "6.4 Listar Instituciones (200)",
+          "name": "6.3 Listar Instituciones (200)",
           "event": [
             {
               "listen": "test",
@@ -7303,7 +8339,7 @@
           "response": []
         },
         {
-          "name": "6.5 Listar Instituciones de Chile (200)",
+          "name": "6.4 Listar Instituciones de Chile (200)",
           "event": [
             {
               "listen": "test",
@@ -7359,7 +8395,7 @@
           "response": []
         },
         {
-          "name": "6.6 Listar Instituciones - Error País Inexistente (422)",
+          "name": "6.5 Listar Instituciones - Error País Inexistente (422)",
           "event": [
             {
               "listen": "test",
@@ -7406,7 +8442,7 @@
           "response": []
         },
         {
-          "name": "6.7 Listar Idiomas (200)",
+          "name": "6.6 Listar Idiomas (200)",
           "event": [
             {
               "listen": "test",
@@ -7451,7 +8487,7 @@
           "response": []
         },
         {
-          "name": "6.8 Listar Puestos Aprobados (200)",
+          "name": "6.7 Listar Puestos Aprobados (200)",
           "event": [
             {
               "listen": "test",
@@ -7500,7 +8536,7 @@
           "response": []
         },
         {
-          "name": "6.9 Listar Organizaciones de Perú (200)",
+          "name": "6.8 Listar Organizaciones de Perú (200)",
           "event": [
             {
               "listen": "test",
@@ -7560,7 +8596,7 @@
           "response": []
         },
         {
-          "name": "6.10 Listar Organizaciones - Error País No Numérico (422)",
+          "name": "6.9 Listar Organizaciones - Error País No Numérico (422)",
           "event": [
             {
               "listen": "test",
@@ -7603,6 +8639,167 @@
               ]
             },
             "description": "pais_id debe ser numérico."
+          },
+          "response": []
+        },
+        {
+          "name": "6.10 Listar Carreras Universitarias de Tecnología en Perú (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Todas cumplen los 3 filtros', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    pm.expect(data.map(function (c) { return c.nombre; })).to.include('Ingeniería de Sistemas');",
+                  "    data.forEach(function (c) {",
+                  "        pm.expect(c.tipo_estudio_id).to.eql(1);",
+                  "        pm.expect(c.area_estudio_id).to.eql(1);",
+                  "        pm.expect(c.pais_id).to.eql(1);",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/carreras?tipo_estudio_id=1&area_estudio_id=1&pais_id=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "carreras"
+              ],
+              "query": [
+                {
+                  "key": "tipo_estudio_id",
+                  "value": "1"
+                },
+                {
+                  "key": "area_estudio_id",
+                  "value": "1"
+                },
+                {
+                  "key": "pais_id",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Select dependiente: tipo + área + país."
+          },
+          "response": []
+        },
+        {
+          "name": "6.11 Listar Carreras de Master en Tecnología en Perú (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Solo maestrías, sin carreras universitarias', function () {",
+                  "    var nombres = pm.response.json().data.map(function (c) { return c.nombre; });",
+                  "    pm.expect(nombres).to.include('Maestría en Ciencias de la Computación');",
+                  "    pm.expect(nombres).to.not.include('Ingeniería de Sistemas');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/carreras?tipo_estudio_id=4&area_estudio_id=1&pais_id=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "carreras"
+              ],
+              "query": [
+                {
+                  "key": "tipo_estudio_id",
+                  "value": "4"
+                },
+                {
+                  "key": "area_estudio_id",
+                  "value": "1"
+                },
+                {
+                  "key": "pais_id",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Al cambiar el tipo de estudio cambian las carreras."
+          },
+          "response": []
+        },
+        {
+          "name": "6.12 Listar Carreras - Error País Inexistente (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Content', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Errores de validación esperados', function () {",
+                  "    var j = pm.response.json();",
+                  "    pm.expect(j.error_code).to.eql('VALIDATION_ERROR');",
+                  "    pm.expect(j.errors).to.have.property('pais_id');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/carreras?pais_id=999",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "carreras"
+              ],
+              "query": [
+                {
+                  "key": "pais_id",
+                  "value": "999"
+                }
+              ]
+            },
+            "description": "Los filtros se validan con FiltrarCarrerasRequest."
           },
           "response": []
         }

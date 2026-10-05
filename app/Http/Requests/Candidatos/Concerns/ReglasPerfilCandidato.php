@@ -3,10 +3,12 @@
 namespace App\Http\Requests\Candidatos\Concerns;
 
 use App\Models\Carrera;
+use App\Models\Habilidad;
 use App\Models\Institucion;
 use App\Models\Organizacion;
 use App\Models\TipoEstudio;
 use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Validation\Rule;
 
 /**
@@ -63,14 +65,34 @@ trait ReglasPerfilCandidato
     }
 
     /**
-     * @param array $inactivasPermitidas habilidades inactivas que el candidato ya tenía y puede conservar
+     * Seleccionable si está activa y, si es técnica, su área de estudio también lo está.
      */
     protected function reglasHabilidades(bool $parcial = false, array $inactivasPermitidas = []): array
     {
         return [
             'habilidades'   => [$parcial ? 'sometimes' : 'required', 'array', 'min:1', 'max:15'],
             'habilidades.*' => ['required', 'integer', 'distinct', Rule::exists('habilidades', 'id')->where(
-                fn ($q) => $q->where('activo', true)->orWhereIn('id', $inactivasPermitidas)
+                function (Builder $query) use ($inactivasPermitidas) {
+                    $query->where(function (Builder $query) {
+                        $query->where('activo', true)
+                            ->where(function (Builder $query) {
+                                $query->where('tipo_habilidad', 'blanda')
+                                    ->orWhere(function (Builder $query) {
+                                        $query->where('tipo_habilidad', 'tecnica')
+                                            ->whereExists(function (Builder $query) {
+                                                $query->selectRaw('1')
+                                                    ->from('areas_estudio')
+                                                    ->whereColumn('areas_estudio.id', 'habilidades.area_estudio_id')
+                                                    ->where('areas_estudio.activo', true);
+                                            });
+                                    });
+                            });
+                    });
+
+                    if (! empty($inactivasPermitidas)) {
+                        $query->orWhereIn('id', $inactivasPermitidas);
+                    }
+                }
             )],
         ];
     }
@@ -185,6 +207,50 @@ trait ReglasPerfilCandidato
         }
     }
 
+    /**
+     * Regla C: cada habilidad técnica debe pertenecer a un área de los estudios del candidato (las blandas no tienen área).
+     * Si faltan las habilidades o las áreas (p. ej. un paso de Precognition sin estudios en el body) no se valida aquí;
+     * el registro final siempre trae ambos.
+     *
+     * @param array|null $habilidades ids de las habilidades finales
+     * @param array|null $areas       ids de las áreas de los estudios finales
+     * @param bool       $enviadas    true: llegaron en la petición (error por índice); false: son las ya guardadas
+     */
+    protected function validarHabilidadesSegunAreas(Validator $validator, ?array $habilidades, ?array $areas, bool $enviadas = true): void
+    {
+        if ($habilidades === null || $areas === null || $validator->errors()->has('habilidades')) {
+            return;
+        }
+
+        $areasPorTecnica = Habilidad::whereIn('id', collect($habilidades)->map(fn ($id) => $this->entero($id))->filter()->all())
+            ->where('tipo_habilidad', 'tecnica')
+            ->pluck('area_estudio_id', 'id');
+
+        foreach ($habilidades as $i => $id) {
+            $id = $this->entero($id);
+
+            // Blandas o inexistentes: no aplica (las inexistentes ya las reporta rules())
+            if ($id === null || ! $areasPorTecnica->has($id) || in_array((int) $areasPorTecnica[$id], $areas, true)) {
+                continue;
+            }
+
+            if (! $enviadas) {
+                $this->agregarError($validator, 'habilidades', 'Tus habilidades técnicas actuales no corresponden a las áreas de los nuevos estudios. Actualiza también tus habilidades.');
+                return;
+            }
+
+            $this->agregarError($validator, "habilidades.$i", 'La habilidad técnica seleccionada no corresponde a ninguna de las áreas de tus estudios.');
+        }
+    }
+
+    // Áreas de los estudios que llegaron en la petición, o null si no llegaron estudios
+    protected function areasDeEstudiosEnviados(): ?array
+    {
+        $estudios = $this->input('estudios');
+
+        return is_array($estudios) ? $this->idsDe($estudios, 'area_estudio_id') : null;
+    }
+
     // No duplica el error si rules() ya reportó ese campo
     private function agregarError(Validator $validator, string $campo, string $mensaje): void
     {
@@ -266,7 +332,7 @@ trait ReglasPerfilCandidato
             'habilidades.min'                    => 'Debe seleccionar al menos una habilidad.',
             'habilidades.max'                    => 'No puedes seleccionar más de 15 habilidades.',
             'habilidades.*.distinct'             => 'No puede repetir habilidades.',
-            'habilidades.*.exists'               => 'Una o más habilidades seleccionadas no existen o están inactivas.',
+            'habilidades.*.exists'               => 'Una o más habilidades seleccionadas no existen o no están disponibles.',
         ];
     }
 }

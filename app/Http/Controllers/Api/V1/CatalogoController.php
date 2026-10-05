@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Requests\Catalogos\FiltrarPorPaisRequest;
 use App\Http\Resources\Api\V1\CatalogoResource;
+use App\Http\Resources\Api\V1\TipoEstudioResource;
 use App\Services\Catalogos\CatalogoService;
 use Illuminate\Http\JsonResponse;
 
@@ -26,18 +27,8 @@ class CatalogoController extends BaseApiController
     public function tiposEstudio(): JsonResponse
     {
         return $this->successResponse(
-            CatalogoResource::collection($this->catalogoService->tiposEstudio()),
+            TipoEstudioResource::collection($this->catalogoService->tiposEstudio()),
             'Catálogo de tipos de estudio obtenido correctamente'
-        );
-    }
-
-
-    // GET /api/v1/areas-estudio
-    public function areasEstudio(): JsonResponse
-    {
-        return $this->successResponse(
-            CatalogoResource::collection($this->catalogoService->areasEstudio()),
-            'Catálogo de áreas de estudio obtenido correctamente'
         );
     }
 
