@@ -1,0 +1,65 @@
+<?php
+
+namespace App\Services\Catalogos;
+
+use App\Models\AreaEstudio;
+use App\Models\Idioma;
+use App\Models\Institucion;
+use App\Models\Organizacion;
+use App\Models\Pais;
+use App\Models\Puesto;
+use App\Models\TipoEstudio;
+use Illuminate\Database\Eloquent\Collection;
+
+// Catálogos públicos del registro: solo devuelve lo que el candidato puede seleccionar
+class CatalogoService
+{
+    public function paises(): Collection
+    {
+        return Pais::orderBy('nombre')->get(['id', 'nombre']);
+    }
+
+    // Orden de creación: Universitario, Terciario, Posgrado, Master, Doctorado, Secundario
+    public function tiposEstudio(): Collection
+    {
+        return TipoEstudio::orderBy('id')->get(['id', 'nombre']);
+    }
+
+    public function areasEstudio(): Collection
+    {
+        return AreaEstudio::where('activo', true)
+            ->orderBy('nombre')
+            ->get(['id', 'nombre']);
+    }
+
+    public function instituciones(?int $paisId): Collection
+    {
+        return Institucion::where('estado', 'activo')
+            ->when($paisId, fn ($query) => $query->where('pais_id', $paisId))
+            ->orderBy('nombre')
+            ->get(['id', 'nombre', 'pais_id']);
+    }
+
+    public function idiomas(): Collection
+    {
+        return Idioma::orderBy('nombre')->get(['id', 'nombre']);
+    }
+
+    // Solo los aprobados y visibles: las propuestas pendientes de otros candidatos no se muestran
+    public function puestos(): Collection
+    {
+        return Puesto::where('estado', 'activo')
+            ->where('estado_catalogo', 'aprobado')
+            ->orderBy('nombre')
+            ->get(['id', 'nombre']);
+    }
+
+    public function organizaciones(?int $paisId): Collection
+    {
+        return Organizacion::where('estado', 'activo')
+            ->where('estado_catalogo', 'aprobado')
+            ->when($paisId, fn ($query) => $query->where('pais_id', $paisId))
+            ->orderBy('nombre')
+            ->get(['id', 'nombre', 'pais_id']);
+    }
+}
