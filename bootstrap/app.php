@@ -60,7 +60,18 @@ return Application::configure(basePath: dirname(__DIR__))
             }
         });
 
-        // 5. No autenticado (401)
+        // 5. Método HTTP no permitido para una ruta existente (405)
+        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException $e, $request) {
+            if ($request->is('api/*')) {
+                return response()->json([
+                    'success'    => false,
+                    'message'    => 'Método HTTP no permitido para este recurso.',
+                    'error_code' => 'METHOD_NOT_ALLOWED',
+                ], 405);
+            }
+        });
+
+        // 6. No autenticado (401)
         $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, $request) {
             if ($request->is('api/*')) {
                 return response()->json([
@@ -71,7 +82,7 @@ return Application::configure(basePath: dirname(__DIR__))
             }
         });
 
-        // 6. No autorizado / Permisos insuficientes (403)
+        // 7. No autorizado / Permisos insuficientes (403)
         $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException|\Illuminate\Auth\Access\AuthorizationException $e, $request) {
             if ($request->is('api/*')) {
                 return response()->json([
@@ -82,7 +93,7 @@ return Application::configure(basePath: dirname(__DIR__))
             }
         });
 
-        // Captura específicamente modelos de Eloquent que no existan
+        // 8. Captura específicamente modelos de Eloquent que no existan
         $exceptions->render(function (\Illuminate\Database\Eloquent\ModelNotFoundException $e, $request) {
             if ($request->is('api/*')) {
                 $nombreModelo = class_basename($e->getModel()); // ej: "Candidato", "Usuario", etc.
