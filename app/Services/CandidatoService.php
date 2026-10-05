@@ -3,11 +3,28 @@
 namespace App\Services;
 
 use App\Models\Candidato;
+use App\Models\Organizacion;
+use App\Models\Puesto;
 use App\Services\Auth\UsuarioService;
 use Illuminate\Support\Facades\DB;
 
 class CandidatoService
 {
+    // Relaciones que forman el perfil completo del candidato
+    private const RELACIONES = [
+        'usuario',
+        'habilidades',
+        'estudios.tipoEstudio',
+        'estudios.areaEstudio',
+        'estudios.pais',
+        'estudios.institucion',
+        'estudios.carrera',
+        'idiomas.idioma',
+        'experiencias.puesto',
+        'experiencias.organizacion',
+        'experiencias.pais',
+    ];
+
     /**
      * Create a new class instance.
      */
@@ -19,7 +36,7 @@ class CandidatoService
     public function registrar($datos)
     {
         return DB::transaction(function() use($datos){
-            
+
             //Crea usuario base
             $usuario = $this->usuarioService->registrar($datos, 'candidato');
 
@@ -31,34 +48,42 @@ class CandidatoService
                 'dni'                  =>$datos['dni'],
                 'fecha_nacimiento'     =>$datos['fecha_nacimiento'],
                 'genero'               =>$datos['genero'] ?? 'prefiero no decir',
-                'nivel_educativo'      =>$datos['nivel_educativo'],
-                'disponibilidad'       =>$datos['disponibilidad'],
+                'busca_primer_empleo'  =>$datos['busca_primer_empleo'],
                 'celular'              =>$datos['celular'],
-            ]); 
+            ]);
 
             //Asignar habilidades
             if (!empty($datos['habilidades'])) {
                 $candidato->habilidades()->sync($datos['habilidades']);
             }
 
-            if (!empty($datos['carreras'])) {
-                $candidato->carreras()->createMany($datos['carreras']);
-            } 
+            $this->guardarEstudios($candidato, $datos['estudios']);
+            $this->guardarIdiomas($candidato, $datos['idiomas']);
 
-            return $candidato->load('usuario', 'habilidades', 'carreras');
- 
-        }); 
+            if (!$candidato->busca_primer_empleo) {
+                $this->guardarExperiencias($candidato, $datos['experiencias'] ?? []);
+            }
+
+            return $candidato->load(self::RELACIONES);
+
+        });
     }
 
     //obtener el perfil candidato del usuario autenticado (404 si el usuario no es candidato)
     public function obtenerPorUsuario(int $usuarioId): Candidato
     {
-        return Candidato::with(['usuario', 'habilidades', 'carreras'])
+        return Candidato::with(self::RELACIONES)
             ->where('usuario_id', $usuarioId)
             ->firstOrFail();
     }
 
-    //actualizar perfil
+    //cargar el perfil completo de un candidato ya resuelto por la ruta
+    public function cargarPerfil(Candidato $candidato): Candidato
+    {
+        return $candidato->load(self::RELACIONES);
+    }
+
+    //actualizar perfil: cada lista que llega reemplaza a la guardada
     public function actualizar(Candidato $candidato, array $datos):Candidato
     {
         return DB::transaction(function () use($candidato, $datos){
@@ -68,24 +93,98 @@ class CandidatoService
                 'dni'                  => $datos['dni']                  ?? null,
                 'fecha_nacimiento'     => $datos['fecha_nacimiento']     ?? null,
                 'genero'               => $datos['genero']               ?? null,
-                'disponibilidad'       => $datos['disponibilidad']       ?? null,
                 'celular'              => $datos['celular']              ?? null,
-                'nivel_educativo'      => $datos['nivel_educativo']      ?? null,
-                
+                'busca_primer_empleo'  => $datos['busca_primer_empleo']  ?? null,
+
             ], fn($v)=>!is_null($v)));
 
             if (isset($datos['habilidades'])) {
                 $candidato->habilidades()->sync($datos['habilidades']);
             }
 
-            if (array_key_exists('carreras', $datos)) {
-                $candidato->carreras()->delete();
-                $candidato->carreras()->createMany($datos['carreras']);
+            if (array_key_exists('estudios', $datos)) {
+                $candidato->estudios()->delete();
+                $this->guardarEstudios($candidato, $datos['estudios']);
             }
 
-            return $candidato->fresh(['usuario', 'habilidades', 'carreras']);
+            if (array_key_exists('idiomas', $datos)) {
+                $candidato->idiomas()->delete();
+                $this->guardarIdiomas($candidato, $datos['idiomas']);
+            }
 
-        }); 
-        
-    }  
-};       
+            // Si ahora busca su primer empleo, no puede conservar experiencias
+            if ($candidato->busca_primer_empleo) {
+                $candidato->experiencias()->delete();
+            } elseif (array_key_exists('experiencias', $datos)) {
+                $candidato->experiencias()->delete();
+                $this->guardarExperiencias($candidato, $datos['experiencias']);
+            }
+
+            return $candidato->fresh(self::RELACIONES);
+
+        });
+
+    }
+
+    private function guardarEstudios(Candidato $candidato, array $estudios): void
+    {
+        foreach ($estudios as $estudio) {
+            $candidato->estudios()->create([
+                'tipo_estudio_id' => $estudio['tipo_estudio_id'],
+                'area_estudio_id' => $estudio['area_estudio_id'],
+                'pais_id'         => $estudio['pais_id'],
+                'institucion_id'  => $estudio['institucion_id'] ?? null,
+                'carrera_id'      => $estudio['carrera_id'] ?? null,
+                'estado'          => $estudio['estado'],
+                'ciclo_actual'    => $estudio['ciclo_actual'] ?? null,
+                'fecha_inicio'    => $estudio['fecha_inicio'],
+                'fecha_fin'       => $estudio['fecha_fin'] ?? null,
+            ]);
+        }
+    }
+
+    private function guardarIdiomas(Candidato $candidato, array $idiomas): void
+    {
+        foreach ($idiomas as $idioma) {
+            $candidato->idiomas()->create([
+                'idioma_id'     => $idioma['idioma_id'],
+                'nivel_escrito' => $idioma['nivel_escrito'],
+                'nivel_oral'    => $idioma['nivel_oral'],
+            ]);
+        }
+    }
+
+    private function guardarExperiencias(Candidato $candidato, array $experiencias): void
+    {
+        foreach ($experiencias as $experiencia) {
+            $candidato->experiencias()->create([
+                'puesto_id'       => $experiencia['puesto_id'] ?? $this->resolverPuestoPropuesto($experiencia['puesto_nombre']),
+                'organizacion_id' => $experiencia['organizacion_id']
+                    ?? $this->resolverOrganizacionPropuesta($experiencia['organizacion_nombre'], $experiencia['pais_id']),
+                'pais_id'         => $experiencia['pais_id'],
+                'nivel'           => $experiencia['nivel'],
+                'fecha_inicio'    => $experiencia['fecha_inicio'],
+                'fecha_fin'       => $experiencia['fecha_fin'] ?? null,
+                'descripcion'     => $experiencia['descripcion'] ?? null,
+            ]);
+        }
+    }
+
+    
+    private function resolverPuestoPropuesto(string $nombre): int
+    {
+        return Puesto::firstOrCreate(
+            ['nombre' => trim($nombre)],
+            ['estado' => 'inactivo', 'estado_catalogo' => 'pendiente']
+        )->id;
+    }
+
+    // Igual que el puesto, pero la organización pertenece al país de la experiencia
+    private function resolverOrganizacionPropuesta(string $nombre, int $paisId): int
+    {
+        return Organizacion::firstOrCreate(
+            ['nombre' => trim($nombre), 'pais_id' => $paisId],
+            ['estado' => 'inactivo', 'estado_catalogo' => 'pendiente']
+        )->id;
+    }
+};
