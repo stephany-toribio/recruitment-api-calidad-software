@@ -1123,7 +1123,7 @@
               "response": []
             },
             {
-              "name": "2.5 Registrar Candidato - Error Más de 15 Habilidades (400)",
+              "name": "2.5 Registrar Candidato - Error Más de 15 Habilidades Técnicas (400)",
               "event": [
                 {
                   "listen": "test",
@@ -1163,10 +1163,59 @@
                     "candidatos"
                   ]
                 },
-                "description": "HU-01: más de 15 habilidades responde 400 (no 422).",
+                "description": "HU-01. Máximo 15 habilidades técnicas y 15 blandas: 16 técnicas de Tecnología responde 400 MAX_HABILIDADES_EXCEDIDO.",
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n    \"nombre\": \"Prueba\",\n    \"apellidos\": \"Error 5\",\n    \"dni\": \"70000005\",\n    \"fecha_nacimiento\": \"1995-05-15\",\n    \"genero\": \"masculino\",\n    \"celular\": \"987654321\",\n    \"correo\": \"prueba.error5@example.com\",\n    \"password\": \"Password123@\",\n    \"password_confirmation\": \"Password123@\",\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": 1,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 3,\n            \"estado\": \"en_curso\",\n            \"ciclo_actual\": 8,\n            \"fecha_inicio\": \"2019-03-01\",\n            \"fecha_fin\": null\n        }\n    ],\n    \"idiomas\": [\n        {\n            \"idioma_id\": 1,\n            \"nivel_escrito\": \"intermedio\",\n            \"nivel_oral\": \"basico\"\n        }\n    ],\n    \"busca_primer_empleo\": false,\n    \"experiencias\": [\n        {\n            \"puesto_id\": 1,\n            \"organizacion_id\": 2,\n            \"pais_id\": 1,\n            \"nivel\": \"junior\",\n            \"fecha_inicio\": \"2023-01-01\",\n            \"fecha_fin\": null,\n            \"descripcion\": \"Desarrollo de APIs REST con Laravel.\"\n        }\n    ],\n    \"habilidades\": [\n        1,\n        2,\n        3,\n        4,\n        5,\n        6,\n        7,\n        8,\n        9,\n        10,\n        11,\n        12,\n        13,\n        14,\n        15,\n        16\n    ]\n}"
+                  "raw": "{\n    \"nombre\": \"Prueba\",\n    \"apellidos\": \"Error 5\",\n    \"dni\": \"70000005\",\n    \"fecha_nacimiento\": \"1995-05-15\",\n    \"genero\": \"masculino\",\n    \"celular\": \"987654321\",\n    \"correo\": \"prueba.error5@example.com\",\n    \"password\": \"Password123@\",\n    \"password_confirmation\": \"Password123@\",\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": 1,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 3,\n            \"estado\": \"en_curso\",\n            \"ciclo_actual\": 8,\n            \"fecha_inicio\": \"2019-03-01\",\n            \"fecha_fin\": null\n        }\n    ],\n    \"idiomas\": [\n        {\n            \"idioma_id\": 1,\n            \"nivel_escrito\": \"intermedio\",\n            \"nivel_oral\": \"basico\"\n        }\n    ],\n    \"busca_primer_empleo\": false,\n    \"experiencias\": [\n        {\n            \"puesto_id\": 1,\n            \"organizacion_id\": 2,\n            \"pais_id\": 1,\n            \"nivel\": \"junior\",\n            \"fecha_inicio\": \"2023-01-01\",\n            \"fecha_fin\": null,\n            \"descripcion\": \"Desarrollo de APIs REST con Laravel.\"\n        }\n    ],\n    \"habilidades\": [\n        1,\n        2,\n        3,\n        4,\n        5,\n        6,\n        7,\n        8,\n        9,\n        10,\n        11,\n        12,\n        17,\n        18,\n        19,\n        20\n    ]\n}"
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "2.5.1 Registrar Candidato - Éxito 15 Técnicas y 3 Blandas (201 Created)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status code es 201 Created', function () {",
+                      "    pm.response.to.have.status(201);",
+                      "});",
+                      "pm.test('Guarda las 18 habilidades', function () {",
+                      "    var habilidades = pm.response.json().data.habilidades;",
+                      "    pm.expect(habilidades).to.have.lengthOf(18);",
+                      "    pm.expect(habilidades.filter(function (h) { return h.tipo_habilidad === 'tecnica'; })).to.have.lengthOf(15);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/candidatos",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "candidatos"
+                  ]
+                },
+                "description": "HU-01: el máximo es por tipo, no en total. 18 habilidades (15 técnicas + 3 blandas) se aceptan.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"nombre\": \"Prueba\",\n    \"apellidos\": \"Error 51\",\n    \"dni\": \"70000051\",\n    \"fecha_nacimiento\": \"1995-05-15\",\n    \"genero\": \"masculino\",\n    \"celular\": \"987654321\",\n    \"correo\": \"prueba.error51@example.com\",\n    \"password\": \"Password123@\",\n    \"password_confirmation\": \"Password123@\",\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": 1,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 3,\n            \"estado\": \"en_curso\",\n            \"ciclo_actual\": 8,\n            \"fecha_inicio\": \"2019-03-01\",\n            \"fecha_fin\": null\n        }\n    ],\n    \"idiomas\": [\n        {\n            \"idioma_id\": 1,\n            \"nivel_escrito\": \"intermedio\",\n            \"nivel_oral\": \"basico\"\n        }\n    ],\n    \"busca_primer_empleo\": false,\n    \"experiencias\": [\n        {\n            \"puesto_id\": 1,\n            \"organizacion_id\": 2,\n            \"pais_id\": 1,\n            \"nivel\": \"junior\",\n            \"fecha_inicio\": \"2023-01-01\",\n            \"fecha_fin\": null,\n            \"descripcion\": \"Desarrollo de APIs REST con Laravel.\"\n        }\n    ],\n    \"habilidades\": [\n        1,\n        2,\n        3,\n        4,\n        5,\n        6,\n        7,\n        8,\n        9,\n        10,\n        11,\n        12,\n        17,\n        18,\n        19,\n        14,\n        15,\n        16\n    ]\n}"
                 }
               },
               "response": []
@@ -2230,7 +2279,7 @@
               "response": []
             },
             {
-              "name": "2.24 Precognition Paso 3 - Más de 15 Habilidades (400)",
+              "name": "2.24 Precognition Paso 3 - Más de 15 Habilidades Técnicas (400)",
               "event": [
                 {
                   "listen": "test",
@@ -2278,10 +2327,10 @@
                     "candidatos"
                   ]
                 },
-                "description": "Paso 3: el límite de 15 habilidades responde 400 también en Precognition.",
+                "description": "Precognition, paso 3. Máximo 15 habilidades técnicas y 15 blandas: 16 técnicas de Tecnología responde 400 MAX_HABILIDADES_EXCEDIDO.",
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n    \"habilidades\": [\n        1,\n        2,\n        3,\n        4,\n        5,\n        6,\n        7,\n        8,\n        9,\n        10,\n        11,\n        12,\n        13,\n        14,\n        15,\n        16\n    ]\n}"
+                  "raw": "{\n    \"habilidades\": [\n        1,\n        2,\n        3,\n        4,\n        5,\n        6,\n        7,\n        8,\n        9,\n        10,\n        11,\n        12,\n        17,\n        18,\n        19,\n        20\n    ]\n}"
                 }
               },
               "response": []
@@ -3184,7 +3233,7 @@
               "response": []
             },
             {
-              "name": "2.42 Actualizar Mi Perfil - Error Más de 15 Habilidades (400)",
+              "name": "2.42 Actualizar Mi Perfil - Error Más de 15 Habilidades Técnicas (400)",
               "event": [
                 {
                   "listen": "test",
@@ -3229,10 +3278,10 @@
                     "me"
                   ]
                 },
-                "description": "Misma regla que el registro.",
+                "description": "HU-12, con los estudios de Juan (Tecnología y Negocios). Máximo 15 habilidades técnicas y 15 blandas: 16 técnicas de Tecnología responde 400 MAX_HABILIDADES_EXCEDIDO.",
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n    \"habilidades\": [\n        1,\n        2,\n        3,\n        4,\n        5,\n        6,\n        7,\n        8,\n        9,\n        10,\n        11,\n        12,\n        13,\n        14,\n        15,\n        16\n    ]\n}"
+                  "raw": "{\n    \"habilidades\": [\n        1,\n        2,\n        3,\n        4,\n        5,\n        6,\n        7,\n        8,\n        9,\n        10,\n        11,\n        12,\n        17,\n        18,\n        19,\n        20\n    ]\n}"
                 }
               },
               "response": []

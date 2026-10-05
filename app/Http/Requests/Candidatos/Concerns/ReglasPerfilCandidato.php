@@ -70,7 +70,7 @@ trait ReglasPerfilCandidato
     protected function reglasHabilidades(bool $parcial = false, array $inactivasPermitidas = []): array
     {
         return [
-            'habilidades'   => [$parcial ? 'sometimes' : 'required', 'array', 'min:1', 'max:15'],
+            'habilidades'   => [$parcial ? 'sometimes' : 'required', 'array', 'min:1', 'max:30'],
             'habilidades.*' => ['required', 'integer', 'distinct', Rule::exists('habilidades', 'id')->where(
                 function (Builder $query) use ($inactivasPermitidas) {
                     $query->where(function (Builder $query) {
@@ -274,6 +274,28 @@ trait ReglasPerfilCandidato
         return is_numeric($valor) ? (int) $valor : null;
     }
 
+        /** true si en esta petición se superó el máximo por tipo (lo usa failedValidation para responder 400) */
+    protected bool $excedeMaximoHabilidades = false;
+
+    /**
+     * Máximo 15 habilidades técnicas y 15 blandas. La lista llega mezclada, así que se consulta el tipo de cada id.
+     */
+    protected function validarMaximoPorTipo(Validator $validator, ?array $habilidades): void
+    {
+        if ($habilidades === null) {
+            return;
+        }
+
+        $ids = collect($habilidades)->map(fn ($id) => $this->entero($id))->filter()->unique()->all();
+        $porTipo = Habilidad::whereIn('id', $ids)->pluck('tipo_habilidad')->countBy();
+
+        if (($porTipo['tecnica'] ?? 0) > 15 || ($porTipo['blanda'] ?? 0) > 15) {
+            $this->excedeMaximoHabilidades = true;
+            $this->agregarError($validator, 'habilidades', 'No puedes seleccionar más de 15 habilidades técnicas ni más de 15 habilidades blandas.');
+        }
+    }
+
+
     protected function mensajesPerfil(): array
     {
         return [
@@ -330,7 +352,7 @@ trait ReglasPerfilCandidato
 
             'habilidades.required'               => 'Debe seleccionar al menos una habilidad.',
             'habilidades.min'                    => 'Debe seleccionar al menos una habilidad.',
-            'habilidades.max'                    => 'No puedes seleccionar más de 15 habilidades.',
+            'habilidades.max'                    => 'No puedes seleccionar más de 30 habilidades (15 técnicas y 15 blandas).',
             'habilidades.*.distinct'             => 'No puede repetir habilidades.',
             'habilidades.*.exists'               => 'Una o más habilidades seleccionadas no existen o no están disponibles.',
         ];

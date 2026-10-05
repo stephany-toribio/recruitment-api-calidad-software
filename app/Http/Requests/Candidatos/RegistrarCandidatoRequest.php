@@ -50,6 +50,12 @@ class RegistrarCandidatoRequest extends FormRequest
                 is_array($this->input('habilidades')) ? $this->input('habilidades') : null,
                 $this->areasDeEstudiosEnviados()
             ),
+
+            fn (Validator $validator) => $this->validarMaximoPorTipo(
+                $validator,
+                is_array($this->input('habilidades')) ? $this->input('habilidades') : null
+            ),
+
         ];
     }
 
@@ -57,10 +63,9 @@ class RegistrarCandidatoRequest extends FormRequest
     {
         $habilidades = $this->input('habilidades');
 
-        if (is_array($habilidades) && count($habilidades)>15)
-        {
+        if ($this->excedeMaximoHabilidades || (is_array($habilidades) && count($habilidades) > 30)) {
             throw new BusinessException(
-                'No puedes seleccionar mas de 15 habilidades',
+                'No puedes seleccionar más de 15 habilidades técnicas ni más de 15 habilidades blandas.',
                 400,
                 'MAX_HABILIDADES_EXCEDIDO'
             );
