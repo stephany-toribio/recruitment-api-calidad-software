@@ -3,7 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\CandidatoController;
 
-Route::post('/candidatos', [CandidatoController::class, 'store']);
+Route::post('/candidatos', [CandidatoController::class, 'store'])
+    ->middleware(['precognitive']);
 
 
 Route::middleware(['auth:sanctum', 'rol:candidato'])->group(function() {

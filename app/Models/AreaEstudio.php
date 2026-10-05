@@ -25,4 +25,9 @@ class AreaEstudio extends Model
     {
         return $this->hasMany(Habilidad::class, 'area_estudio_id');
     }
+
+    public function carreras(): HasMany
+    {
+        return $this->hasMany(Carrera::class, 'area_estudio_id');
+    }
 }

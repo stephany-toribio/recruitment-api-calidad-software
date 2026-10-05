@@ -44,7 +44,7 @@ class CandidatoController extends BaseApiController
     // GET /api/v1/candidatos/{candidato} (Ver perfil por ID)
     public function show(Candidato $candidato): JsonResponse
     {
-        $candidato->load(['habilidades', 'carreras', 'usuario']);
+        $candidato = $this->candidatoService->cargarPerfil($candidato);
         return $this->successResponse(
             new CandidatoResource($candidato),
             'Perfil de candidato obtenido exitosamente'

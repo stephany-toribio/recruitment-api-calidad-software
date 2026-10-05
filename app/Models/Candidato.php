@@ -21,13 +21,13 @@ class Candidato extends Model
         'dni',
         'fecha_nacimiento',
         'genero',
-        'nivel_educativo',
-        'disponibilidad',
+        'busca_primer_empleo',
         'celular',
-    ]; 
+    ];
 
     protected $casts = [
-        'fecha_nacimiento' => 'date'
+        'fecha_nacimiento'    => 'date',
+        'busca_primer_empleo' => 'boolean',
     ];
 
     //Relacion con usuario
@@ -44,10 +44,22 @@ class Candidato extends Model
 
     }
 
-    //Relacion con carreras
-    public function carreras(): HasMany
+    //Relacion con estudios (candidato_estudios)
+    public function estudios(): HasMany
     {
-        return $this->hasMany(CandidatoCarrera::class, 'candidato_id');
+        return $this->hasMany(CandidatoEstudio::class, 'candidato_id');
+    }
+
+    //Relacion con idiomas (candidato_idiomas)
+    public function idiomas(): HasMany
+    {
+        return $this->hasMany(CandidatoIdioma::class, 'candidato_id');
+    }
+
+    //Relacion con experiencias laborales
+    public function experiencias(): HasMany
+    {
+        return $this->hasMany(ExperienciaLaboral::class, 'candidato_id');
     }
 
     //Relacion con postulacion
