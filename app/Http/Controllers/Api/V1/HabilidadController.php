@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Requests\Habilidades\ActualizarHabilidadRequest;
 use App\Http\Requests\Habilidades\CrearHabilidadRequest;
 use App\Http\Resources\Api\V1\HabilidadResource;
+use App\Models\Habilidad;
 use App\Services\Habilidades\HabilidadService;
 use Illuminate\Http\JsonResponse;
-use App\Models\Habilidad;
 
 class HabilidadController extends BaseApiController
 {
@@ -18,11 +18,21 @@ class HabilidadController extends BaseApiController
 
     public function index(): JsonResponse
     {
-        $habilidades = $this->habilidadService->listarActivas();
+        $habilidades = $this->habilidadService->listarSeleccionables();
 
         return $this->successResponse(
             HabilidadResource::collection($habilidades),
-            'Catálogo de habilidades obtenido correctamente'
+            'Catálogo de habilidades obtenido correctamente.'
+        );
+    }
+
+    public function adminIndex(): JsonResponse
+    {
+        $habilidades = $this->habilidadService->listarTodas();
+
+        return $this->successResponse(
+            HabilidadResource::collection($habilidades),
+            'Habilidades obtenidas correctamente.'
         );
     }
 
@@ -34,7 +44,7 @@ class HabilidadController extends BaseApiController
 
         return $this->successResponse(
             new HabilidadResource($habilidad),
-            'Habilidad creada correctamente',
+            'Habilidad creada correctamente.',
             201
         );
     }
@@ -43,14 +53,34 @@ class HabilidadController extends BaseApiController
         ActualizarHabilidadRequest $request,
         Habilidad $habilidad
     ): JsonResponse {
-        $habilidadActualizada = $this->habilidadService->actualizar(
+        $habilidad = $this->habilidadService->actualizar(
             $habilidad,
             $request->validated()
         );
 
         return $this->successResponse(
-            new HabilidadResource($habilidadActualizada),
-            'Habilidad actualizada correctamente'
+            new HabilidadResource($habilidad),
+            'Habilidad actualizada correctamente.'
+        );
+    }
+
+    public function desactivar(Habilidad $habilidad): JsonResponse
+    {
+        $habilidad = $this->habilidadService->desactivar($habilidad);
+
+        return $this->successResponse(
+            new HabilidadResource($habilidad),
+            'Habilidad desactivada correctamente.'
+        );
+    }
+
+    public function reactivar(Habilidad $habilidad): JsonResponse
+    {
+        $habilidad = $this->habilidadService->reactivar($habilidad);
+
+        return $this->successResponse(
+            new HabilidadResource($habilidad),
+            'Habilidad reactivada correctamente.'
         );
     }
 }
