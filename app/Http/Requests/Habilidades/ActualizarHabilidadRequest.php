@@ -56,10 +56,7 @@ class ActualizarHabilidadRequest extends FormRequest
             ],
 
             'tipo_habilidad' => [
-                'sometimes',
-                'required',
-                'string',
-                Rule::in(['tecnica', 'blanda']),
+                'prohibited',
             ],
 
             'area_estudio_id' => [
@@ -128,9 +125,7 @@ class ActualizarHabilidadRequest extends FormRequest
             'nombre.max' => 'El nombre de la habilidad no puede superar los 100 caracteres.',
             'nombre.unique' => 'La habilidad ya existe.',
 
-            'tipo_habilidad.required' => 'El tipo de habilidad es obligatorio.',
-            'tipo_habilidad.string' => 'El tipo de habilidad debe ser una cadena de texto.',
-            'tipo_habilidad.in' => 'El tipo de habilidad debe ser tecnica o blanda.',
+            'tipo_habilidad.prohibited' => 'El tipo de habilidad no puede modificarse.',
 
             'area_estudio_id.integer' => 'El área de estudio debe ser un identificador válido.',
             'area_estudio_id.exists' => 'El área de estudio seleccionada no existe o está inactiva.',
