@@ -19,12 +19,14 @@ class ActualizarEmpresaRequest extends FormRequest
                 'required',
                 'string',
                 'max:255',
+                'regex:/\S/',
             ],
 
             'razon_social' => [
                 'required',
                 'string',
                 'max:255',
+                'regex:/\S/',
             ],
 
             'sector' => [
