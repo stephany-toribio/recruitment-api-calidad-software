@@ -8853,6 +8853,961 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "7. Recuperar Contraseña (Dev 2)",
+      "description": "HU-11: recuperación de contraseña por código enviado al correo.\n\nFlujo: 7.0 prepara un candidato → 7.1 envía el código → **copia el código** (correo o `storage/logs/laravel.log`) a la variable `codigo_recuperacion` → 7.8 lo verifica y guarda `reset_token` → 7.13 cambia la contraseña.\n\nEn el Runner, las peticiones que necesitan el código se saltan si `codigo_recuperacion` está vacío. Para el flujo completo, ejecuta 7.0 a 7.7, ingresa el código y luego 7.8 a 7.16.",
+      "item": [
+        {
+          "name": "7.0 Preparar - Registrar Candidato para Recuperación (201 o 422 si ya existe)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Usa rec_correo si lo definiste (pon tu Gmail real para probar el envío por SMTP);",
+                  "// si está vacío, genera uno nuevo para que la carpeta se pueda repetir.",
+                  "if (!pm.environment.get('rec_correo')) {",
+                  "    pm.environment.set('rec_correo', 'recuperacion.' + Date.now() + '@example.com');",
+                  "}",
+                  "pm.environment.set('rec_dni', String(Math.floor(10000000 + Math.random() * 89999999)));",
+                  "// Empieza un proceso limpio",
+                  "pm.environment.unset('codigo_recuperacion');",
+                  "pm.environment.unset('reset_token');"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Candidato listo (201 creado o 422 si el correo ya estaba registrado)', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([201, 422]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos"
+              ]
+            },
+            "description": "Crea el candidato con el que se prueba la recuperación, para no cambiar la contraseña de Juan (2.1), que usan otras carpetas. Si `rec_correo` está vacío, genera un correo nuevo en cada ejecución. Para recibir el código en un correo real (SMTP Gmail), pon tu correo en `rec_correo` antes de ejecutar. Si ya estaba registrado, el 422 también es válido.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Rosa\",\n    \"apellidos\": \"Quispe Mamani\",\n    \"dni\": \"{{rec_dni}}\",\n    \"fecha_nacimiento\": \"1999-04-12\",\n    \"genero\": \"femenino\",\n    \"celular\": \"934567812\",\n    \"correo\": \"{{rec_correo}}\",\n    \"password\": \"Password123@\",\n    \"password_confirmation\": \"Password123@\",\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": 4,\n            \"area_estudio_id\": 4,\n            \"pais_id\": 1,\n            \"institucion_id\": 3,\n            \"carrera_id\": 49,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2021-03-01\",\n            \"fecha_fin\": \"2022-12-01\"\n        }\n    ],\n    \"idiomas\": [\n        {\n            \"idioma_id\": 2,\n            \"nivel_escrito\": \"nativo\",\n            \"nivel_oral\": \"nativo\"\n        }\n    ],\n    \"busca_primer_empleo\": true,\n    \"habilidades\": [\n        13,\n        15\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "7.1 Solicitar Código - Éxito Correo Registrado (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Respuesta neutra sin datos', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data).to.be.null;",
+                  "    pm.environment.set('rec_mensaje_neutro', jsonData.message);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/forgot-password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "forgot-password"
+              ]
+            },
+            "description": "Envía un código de 6 dígitos al correo (vence en 15 min). Con `MAIL_MAILER=log`, el correo queda en `storage/logs/laravel.log`; con `smtp`, llega a la bandeja. **Copia el código a la variable `codigo_recuperacion` del entorno** antes de ejecutar 7.8.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"{{rec_correo}}\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "7.2 Solicitar Código - Correo No Registrado Misma Respuesta (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Mismo mensaje que con un correo registrado (no revela si existe)', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.message).to.eql(pm.environment.get('rec_mensaje_neutro'));",
+                  "    pm.expect(jsonData.data).to.be.null;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/forgot-password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "forgot-password"
+              ]
+            },
+            "description": "Criterio de la HU: la respuesta no revela si el correo existe. Debe ser idéntica a la de 7.1 y no se envía ningún correo.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"no.existe.recuperacion@example.com\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "7.3 Solicitar Código - Reenvío Inmediato Misma Respuesta (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Mismo mensaje neutro', function () {",
+                  "    pm.expect(pm.response.json().message).to.eql(pm.environment.get('rec_mensaje_neutro'));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/forgot-password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "forgot-password"
+              ]
+            },
+            "description": "Antes de 60 s desde 7.1 no se envía otro correo ni cambia el código (el de 7.1 sigue sirviendo). La respuesta no lo delata. Pasados 60 s, sí se genera un código nuevo y el anterior deja de servir.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"{{rec_correo}}\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "7.4 Solicitar Código - Error Correo con Formato Inválido (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Error de validación en correo', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.errors).to.have.property('correo');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/forgot-password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "forgot-password"
+              ]
+            },
+            "description": "La validación de formato sí responde 422: no revela nada sobre las cuentas.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"correo-sin-arroba\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "7.5 Verificar Código - Error Código Incorrecto (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('error_code es CODIGO_INVALIDO', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.error_code).to.eql('CODIGO_INVALIDO');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/verify-reset-code",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "verify-reset-code"
+              ]
+            },
+            "description": "Código equivocado: suma 1 intento (máximo 5) y responde el mismo error genérico que un código vencido o inexistente.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"{{rec_correo}}\",\n    \"codigo\": \"000000\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "7.6 Verificar Código - Error Correo Sin Proceso Mismo Error (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('error_code es CODIGO_INVALIDO', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.error_code).to.eql('CODIGO_INVALIDO');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/verify-reset-code",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "verify-reset-code"
+              ]
+            },
+            "description": "Un correo no registrado (o sin solicitud) recibe exactamente el mismo error que un código incorrecto.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"no.existe.recuperacion@example.com\",\n    \"codigo\": \"123456\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "7.7 Verificar Código - Error Formato del Código (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Error de validación en codigo', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.errors).to.have.property('codigo');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/verify-reset-code",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "verify-reset-code"
+              ]
+            },
+            "description": "El código debe tener exactamente 6 dígitos. No cuenta como intento.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"{{rec_correo}}\",\n    \"codigo\": \"12ab\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "7.8 Verificar Código - Éxito (200)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "if (!pm.environment.get('codigo_recuperacion')) {",
+                  "    console.warn('Falta codigo_recuperacion: cópialo del correo o de storage/logs/laravel.log al entorno.');",
+                  "    pm.execution.skipRequest();",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Devuelve reset_token de 64 caracteres y guarda reset_token', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data.reset_token).to.have.lengthOf(64);",
+                  "    pm.expect(jsonData.data.expira_en_minutos).to.eql(10);",
+                  "    pm.environment.set('reset_token', jsonData.data.reset_token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/verify-reset-code",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "verify-reset-code"
+              ]
+            },
+            "description": "Usa `codigo_recuperacion` (cópialo del correo o del log). Devuelve un `reset_token` que vence en 10 min y lo guarda en el entorno. Si la variable está vacía, la petición se salta.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"{{rec_correo}}\",\n    \"codigo\": \"{{codigo_recuperacion}}\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "7.9 Verificar Código - Error Código Ya Usado (422)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "if (!pm.environment.get('codigo_recuperacion')) {",
+                  "    console.warn('Falta codigo_recuperacion: cópialo del correo o de storage/logs/laravel.log al entorno.');",
+                  "    pm.execution.skipRequest();",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('error_code es CODIGO_INVALIDO', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.error_code).to.eql('CODIGO_INVALIDO');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/verify-reset-code",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "verify-reset-code"
+              ]
+            },
+            "description": "Criterio de la HU: el código es de un solo uso. El mismo código de 7.8 ya no sirve.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"{{rec_correo}}\",\n    \"codigo\": \"{{codigo_recuperacion}}\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "7.10 Restablecer - Error Contraseña Débil (422)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "if (!pm.environment.get('reset_token')) {",
+                  "    console.warn('Falta reset_token: ejecuta antes 7.8 Verificar Código - Éxito.');",
+                  "    pm.execution.skipRequest();",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Error de validación en password', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.errors).to.have.property('password');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/reset-password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "reset-password"
+              ]
+            },
+            "description": "La nueva contraseña debe cumplir PasswordSegura (8+ caracteres, mayúscula, número y @ # $ % &). El token no se consume.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"{{rec_correo}}\",\n    \"reset_token\": \"{{reset_token}}\",\n    \"password\": \"clave\",\n    \"password_confirmation\": \"clave\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "7.11 Restablecer - Error Confirmación No Coincide (422)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "if (!pm.environment.get('reset_token')) {",
+                  "    console.warn('Falta reset_token: ejecuta antes 7.8 Verificar Código - Éxito.');",
+                  "    pm.execution.skipRequest();",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Error de validación en password', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.errors).to.have.property('password');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/reset-password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "reset-password"
+              ]
+            },
+            "description": "`password_confirmation` distinto de `password`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"{{rec_correo}}\",\n    \"reset_token\": \"{{reset_token}}\",\n    \"password\": \"NuevaClave456#\",\n    \"password_confirmation\": \"OtraClave789#\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "7.12 Restablecer - Error Token Incorrecto (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('error_code es TOKEN_INVALIDO', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.error_code).to.eql('TOKEN_INVALIDO');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/reset-password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "reset-password"
+              ]
+            },
+            "description": "Un token de 64 caracteres que no corresponde al emitido se rechaza.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"{{rec_correo}}\",\n    \"reset_token\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\n    \"password\": \"NuevaClave456#\",\n    \"password_confirmation\": \"NuevaClave456#\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "7.13 Restablecer - Éxito (200)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "if (!pm.environment.get('reset_token')) {",
+                  "    console.warn('Falta reset_token: ejecuta antes 7.8 Verificar Código - Éxito.');",
+                  "    pm.execution.skipRequest();",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Contraseña restablecida', function () {",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/reset-password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "reset-password"
+              ]
+            },
+            "description": "Cambia la contraseña a `NuevaClave456#`, cierra todas las sesiones (revoca tokens) y elimina el proceso.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"{{rec_correo}}\",\n    \"reset_token\": \"{{reset_token}}\",\n    \"password\": \"NuevaClave456#\",\n    \"password_confirmation\": \"NuevaClave456#\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "7.14 Restablecer - Error Token Ya Usado (422)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "if (!pm.environment.get('reset_token')) {",
+                  "    console.warn('Falta reset_token: ejecuta antes 7.8 Verificar Código - Éxito.');",
+                  "    pm.execution.skipRequest();",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('error_code es TOKEN_INVALIDO', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.error_code).to.eql('TOKEN_INVALIDO');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/reset-password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "reset-password"
+              ]
+            },
+            "description": "Criterio de la HU: el mecanismo es de un solo uso. El mismo reset_token de 7.13 ya no sirve.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"{{rec_correo}}\",\n    \"reset_token\": \"{{reset_token}}\",\n    \"password\": \"NuevaClave456#\",\n    \"password_confirmation\": \"NuevaClave456#\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "7.15 Login - Error Con Contraseña Anterior (401)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "if (!pm.environment.get('reset_token')) {",
+                  "    console.warn('Falta reset_token: ejecuta antes 7.8 Verificar Código - Éxito.');",
+                  "    pm.execution.skipRequest();",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "La contraseña anterior (`Password123@`) ya no funciona.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"{{rec_correo}}\",\n    \"password\": \"Password123@\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "7.16 Login - Éxito Con Contraseña Nueva (200)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "if (!pm.environment.get('reset_token')) {",
+                  "    console.warn('Falta reset_token: ejecuta antes 7.8 Verificar Código - Éxito.');",
+                  "    pm.execution.skipRequest();",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Devuelve token', function () {",
+                  "    pm.expect(pm.response.json().data.token).to.be.a('string');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Inicia sesión con `NuevaClave456#`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"{{rec_correo}}\",\n    \"password\": \"NuevaClave456#\"\n}"
+            }
+          },
+          "response": []
+        }
+      ]
     }
   ]
 }
