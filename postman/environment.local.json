@@ -157,6 +157,36 @@
       "value": "",
       "type": "default",
       "enabled": true
+    },
+    {
+      "key": "rec_correo",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "rec_dni",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "rec_mensaje_neutro",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "codigo_recuperacion",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "reset_token",
+      "value": "",
+      "type": "default",
+      "enabled": true
     }
   ],
   "_postman_variable_scope": "environment",

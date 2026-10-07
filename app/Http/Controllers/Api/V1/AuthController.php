@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\V1;
 use App\Services\Auth\AuthService;
 use App\Services\Auth\UsuarioService;
 use App\Http\Requests\Auth\CambiarPasswordRequest;
-use App\Http\Requests\Auth\ForgotPasswordRequest;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Resources\Api\V1\UsuarioResource;
 use Illuminate\Http\JsonResponse;
@@ -103,16 +102,5 @@ class AuthController extends BaseApiController
         $request->user()?->currentAccessToken()?->delete();
 
         return $this->successResponse(null, 'Sesión cerrada correctamente');
-    }
-
-    /**
-     * POST /api/v1/auth/forgot-password
-     */
-    public function forgotPassword(ForgotPasswordRequest $request): JsonResponse
-    {
-        return $this->successResponse(
-            null,
-            'Se ha enviado el enlace de restablecimiento a su correo.'
-        );
     }
 }

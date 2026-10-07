@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\RecuperacionPasswordController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -10,8 +11,13 @@ Route::prefix('auth')->group(function () {
     // POST /api/v1/auth/login
     Route::post('/login', [AuthController::class, 'login']);
 
-    // POST /api/v1/auth/forgot-password
-    Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
+    // Recuperación de contraseña por código al correo (HU-11)
+    // POST /api/v1/auth/forgot-password    -> envía el código
+    Route::post('/forgot-password', [RecuperacionPasswordController::class, 'solicitar']);
+    // POST /api/v1/auth/verify-reset-code  -> valida el código y devuelve reset_token
+    Route::post('/verify-reset-code', [RecuperacionPasswordController::class, 'verificarCodigo']);
+    // POST /api/v1/auth/reset-password     -> establece la nueva contraseña
+    Route::post('/reset-password', [RecuperacionPasswordController::class, 'restablecer']);
 
     // Rutas protegidas con Sanctum (header Authorization: Bearer {token})
     Route::middleware('auth:sanctum')->group(function () {
