@@ -52,8 +52,16 @@ trait ReglasPerfilCandidato
                 'array', 'min:1', 'max:5',
             ],
             // Un puesto u organización del catálogo (id) o uno nuevo propuesto por el candidato (nombre)
-            'experiencias.*.puesto_id'           => ['nullable', 'required_without:experiencias.*.puesto_nombre', 'prohibits:experiencias.*.puesto_nombre', 'integer', Rule::exists('puestos', 'id')->where('estado', 'activo')],
-            'experiencias.*.puesto_nombre'       => ['nullable', 'string', 'max:200'],
+            'experiencias.*.puesto_id'           => [
+                'nullable',
+                'required_without:experiencias.*.puesto_nombre',
+                'prohibits:experiencias.*.puesto_nombre',
+                'integer',
+                Rule::exists('puestos', 'id')
+                    ->where('estado', 'activo')
+                    ->where('estado_catalogo', 'aprobado'),
+            ],
+            'experiencias.*.puesto_nombre'       => ['nullable', 'required_without:experiencias.*.puesto_id', 'prohibits:experiencias.*.puesto_id', 'string', 'max:200'],
             'experiencias.*.organizacion_id'     => ['nullable', 'required_without:experiencias.*.organizacion_nombre', 'prohibits:experiencias.*.organizacion_nombre', 'integer', Rule::exists('organizaciones', 'id')->where('estado', 'activo')],
             'experiencias.*.organizacion_nombre' => ['nullable', 'string', 'max:200'],
             'experiencias.*.pais_id'             => ['required', 'integer', Rule::exists('paises', 'id')->where('activo', true)],
@@ -338,6 +346,10 @@ trait ReglasPerfilCandidato
             'experiencias.*.puesto_id.required_without'       => 'Seleccione un puesto o escriba uno nuevo.',
             'experiencias.*.puesto_id.prohibits'              => 'Envíe el puesto del catálogo o uno nuevo, no ambos.',
             'experiencias.*.puesto_id.exists'                 => 'El puesto seleccionado no es válido.',
+            'experiencias.*.puesto_nombre.required_without'   => 'Seleccione un puesto o escriba uno nuevo.',
+            'experiencias.*.puesto_nombre.prohibits'          => 'Envíe el puesto del catálogo o uno nuevo, no ambos.',
+            'experiencias.*.puesto_nombre.string'             => 'El nombre del puesto debe ser texto.',
+            'experiencias.*.puesto_nombre.max'                => 'El nombre del puesto no puede superar los 200 caracteres.',
             'experiencias.*.organizacion_id.required_without' => 'Seleccione una organización o escriba una nueva.',
             'experiencias.*.organizacion_id.prohibits'        => 'Envíe la organización del catálogo o una nueva, no ambas.',
             'experiencias.*.organizacion_id.exists'           => 'La organización seleccionada no es válida.',
@@ -356,5 +368,37 @@ trait ReglasPerfilCandidato
             'habilidades.*.distinct'             => 'No puede repetir habilidades.',
             'habilidades.*.exists'               => 'Una o más habilidades seleccionadas no existen o no están disponibles.',
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $experiencias = $this->input('experiencias');
+
+        if (! is_array($experiencias)) {
+            return;
+        }
+
+        foreach ($experiencias as &$experiencia) {
+            if (! is_array($experiencia)) {
+                continue;
+            }
+
+            if (
+                array_key_exists('puesto_nombre', $experiencia)
+                && is_string($experiencia['puesto_nombre'])
+            ) {
+                $experiencia['puesto_nombre'] = preg_replace(
+                    '/\s+/u',
+                    ' ',
+                    trim($experiencia['puesto_nombre'])
+                );
+            }
+        }
+
+        unset($experiencia);
+
+        $this->merge([
+            'experiencias' => $experiencias,
+        ]);
     }
 }

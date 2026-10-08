@@ -27,6 +27,7 @@ class CatalogoService
     public function instituciones(?int $paisId): Collection
     {
         return Institucion::where('estado', 'activo')
+            ->whereHas('pais', fn ($query) => $query->where('activo', true))
             ->when($paisId, fn ($query) => $query->where('pais_id', $paisId))
             ->orderBy('nombre')
             ->get(['id', 'nombre', 'pais_id']);
