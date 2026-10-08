@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\AreaEstudio;
 use App\Models\Carrera;
 use App\Models\Pais;
 use App\Models\TipoEstudio;
@@ -12,7 +11,8 @@ class CarreraSeeder extends Seeder
 {
     public function run(): void
     {
-        // Regla D: las carreras dependen del país, del área y del tipo de estudio.
+        // Regla D: las carreras dependen del país y del tipo de estudio.
+        // Se agrupan por área solo para ordenar la lista: el área NO se guarda en la carrera.
         // Solo los tipos de TipoEstudio::CON_CARRERA tienen carreras (Secundario y Terciario no).
         // Perú: taxonomía universitaria completa del frontend (CAREER_TAXONOMY) + Ingeniería Informática.
         $carreras = [
@@ -114,16 +114,14 @@ class CarreraSeeder extends Seeder
 
         $paises = Pais::pluck('id', 'nombre');
         $tipos = TipoEstudio::pluck('id', 'nombre');
-        $areas = AreaEstudio::pluck('id', 'nombre');
 
         foreach ($carreras as $pais => $carrerasPorTipo) {
             foreach ($carrerasPorTipo as $tipo => $carrerasPorArea) {
-                foreach ($carrerasPorArea as $area => $nombres) {
+                foreach ($carrerasPorArea as $nombres) {
                     foreach ($nombres as $nombre) {
                         Carrera::firstOrCreate([
                             'nombre'          => $nombre,
                             'tipo_estudio_id' => $tipos[$tipo],
-                            'area_estudio_id' => $areas[$area],
                             'pais_id'         => $paises[$pais],
                         ]);
                     }

@@ -16,7 +16,6 @@ class CarreraResource extends JsonResource
             'id'              => $this->id,
             'nombre'          => $this->nombre,
             'tipo_estudio_id' => $this->tipo_estudio_id,
-            'area_estudio_id' => $this->area_estudio_id,
             'pais_id'         => $this->pais_id,
         ];
     }

@@ -8692,7 +8692,7 @@
           "response": []
         },
         {
-          "name": "6.10 Listar Carreras Universitarias de Tecnología en Perú (200)",
+          "name": "6.10 Listar Carreras Universitarias en Perú (200)",
           "event": [
             {
               "listen": "test",
@@ -8701,14 +8701,18 @@
                   "pm.test('Status code es 200 OK', function () {",
                   "    pm.response.to.have.status(200);",
                   "});",
-                  "pm.test('Todas cumplen los 3 filtros', function () {",
+                  "pm.test('Todas cumplen los 2 filtros y no exponen área', function () {",
                   "    var data = pm.response.json().data;",
-                  "    pm.expect(data.map(function (c) { return c.nombre; })).to.include('Ingeniería de Sistemas');",
                   "    data.forEach(function (c) {",
                   "        pm.expect(c.tipo_estudio_id).to.eql(1);",
-                  "        pm.expect(c.area_estudio_id).to.eql(1);",
                   "        pm.expect(c.pais_id).to.eql(1);",
+                  "        pm.expect(c).to.not.have.property('area_estudio_id');",
                   "    });",
+                  "});",
+                  "pm.test('Incluye carreras de distintas áreas', function () {",
+                  "    var nombres = pm.response.json().data.map(function (c) { return c.nombre; });",
+                  "    pm.expect(nombres).to.include('Ingeniería de Sistemas');",
+                  "    pm.expect(nombres).to.include('Medicina Humana');",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -8724,7 +8728,7 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/carreras?tipo_estudio_id=1&area_estudio_id=1&pais_id=1",
+              "raw": "{{base_url}}/carreras?tipo_estudio_id=1&pais_id=1",
               "host": [
                 "{{base_url}}"
               ],
@@ -8737,21 +8741,17 @@
                   "value": "1"
                 },
                 {
-                  "key": "area_estudio_id",
-                  "value": "1"
-                },
-                {
                   "key": "pais_id",
                   "value": "1"
                 }
               ]
             },
-            "description": "Select dependiente: tipo + área + país."
+            "description": "Select dependiente: tipo de estudio + país. Las carreras ya no dependen del área: aparecen carreras de todas las áreas."
           },
           "response": []
         },
         {
-          "name": "6.11 Listar Carreras de Master en Tecnología en Perú (200)",
+          "name": "6.11 Listar Carreras de Master en Perú (200)",
           "event": [
             {
               "listen": "test",
@@ -8760,9 +8760,10 @@
                   "pm.test('Status code es 200 OK', function () {",
                   "    pm.response.to.have.status(200);",
                   "});",
-                  "pm.test('Solo maestrías, sin carreras universitarias', function () {",
+                  "pm.test('Solo maestrías (de todas las áreas), sin carreras universitarias', function () {",
                   "    var nombres = pm.response.json().data.map(function (c) { return c.nombre; });",
                   "    pm.expect(nombres).to.include('Maestría en Ciencias de la Computación');",
+                  "    pm.expect(nombres).to.include('Maestría en Administración de Empresas (MBA)');",
                   "    pm.expect(nombres).to.not.include('Ingeniería de Sistemas');",
                   "});"
                 ],
@@ -8779,7 +8780,7 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/carreras?tipo_estudio_id=4&area_estudio_id=1&pais_id=1",
+              "raw": "{{base_url}}/carreras?tipo_estudio_id=4&pais_id=1",
               "host": [
                 "{{base_url}}"
               ],
@@ -8790,10 +8791,6 @@
                 {
                   "key": "tipo_estudio_id",
                   "value": "4"
-                },
-                {
-                  "key": "area_estudio_id",
-                  "value": "1"
                 },
                 {
                   "key": "pais_id",

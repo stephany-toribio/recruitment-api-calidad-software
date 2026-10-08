@@ -15,7 +15,6 @@ class Carrera extends Model
 
     protected $fillable = [
         'tipo_estudio_id',
-        'area_estudio_id',
         'pais_id',
         'nombre',
     ];
@@ -23,11 +22,6 @@ class Carrera extends Model
     public function tipoEstudio(): BelongsTo
     {
         return $this->belongsTo(TipoEstudio::class, 'tipo_estudio_id');
-    }
-
-    public function areaEstudio(): BelongsTo
-    {
-        return $this->belongsTo(AreaEstudio::class, 'area_estudio_id');
     }
 
     public function pais(): BelongsTo
