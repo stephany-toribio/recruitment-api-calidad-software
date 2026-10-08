@@ -19,7 +19,8 @@ trait ReglasPerfilCandidato
     protected function reglasEstudios(bool $parcial = false): array
     {
         return [
-            'estudios'                   => [$parcial ? 'sometimes' : 'required', 'array', 'min:1', 'max:5'],
+            // Sin máximo total: los límites son por tipo (validarMaximoEstudiosPorGrupo)
+            'estudios'                   => [$parcial ? 'sometimes' : 'required', 'array', 'min:1'],
             'estudios.*.tipo_estudio_id' => ['required', 'integer', 'exists:tipos_estudio,id'],
             'estudios.*.area_estudio_id' => ['required', 'integer', Rule::exists('areas_estudio', 'id')->where('activo', true)],
             'estudios.*.pais_id'         => ['required', 'integer', 'exists:paises,id'],
@@ -120,6 +121,7 @@ trait ReglasPerfilCandidato
         $carreras = Carrera::whereIn('id', $this->idsDe($estudios, 'carrera_id'))->get()->keyBy('id');
         $paisesInstitucion = Institucion::whereIn('id', $this->idsDe($estudios, 'institucion_id'))->pluck('pais_id', 'id');
         $estudiosVistos = [];
+        $cantidadPorTipo = [];
 
         foreach ($estudios as $i => $estudio) {
             if (! is_array($estudio)) {
@@ -132,6 +134,8 @@ trait ReglasPerfilCandidato
             if ($tipo === null) {
                 continue; // el tipo inexistente ya lo reporta rules()
             }
+
+            $cantidadPorTipo[$tipo] = ($cantidadPorTipo[$tipo] ?? 0) + 1;
 
             $carreraId = $this->entero($estudio['carrera_id'] ?? null);
             $institucionId = $this->entero($estudio['institucion_id'] ?? null);
@@ -178,6 +182,27 @@ trait ReglasPerfilCandidato
                 $estudiosVistos[$clave] = true;
             }
         }
+
+        $this->validarMaximoEstudiosPorGrupo($validator, $cantidadPorTipo);
+    }
+
+    /**
+     * Máximo por grupo de tipos 3 universitarios, 5 posgrados
+     *
+     * @param array<string, int> $cantidadPorTipo nombre del tipo => cantidad enviada
+     */
+    private function validarMaximoEstudiosPorGrupo(Validator $validator, array $cantidadPorTipo): void
+    {
+        foreach (TipoEstudio::MAXIMOS_POR_GRUPO as $grupo) {
+            $cantidad = array_sum(array_intersect_key($cantidadPorTipo, array_flip($grupo['tipos'])));
+
+            if ($cantidad > $grupo['maximo']) {
+                $validator->errors()->add(
+                    'estudios',
+                    "Puedes registrar como máximo {$grupo['maximo']} {$grupo['descripcion']}."
+                );
+            }
+        }
     }
 
     private function validarExperienciasContraCatalogo(Validator $validator): void
@@ -205,9 +230,7 @@ trait ReglasPerfilCandidato
     }
 
     /**
-     * Regla C: cada habilidad técnica debe pertenecer a un área de los estudios del candidato (las blandas no tienen área).
-     * Si faltan las habilidades o las áreas (p. ej. un paso de Precognition sin estudios en el body) no se valida aquí;
-     * el registro final siempre trae ambos.
+     *  cada habilidad técnica debe pertenecer a un área de los estudios del candidato (las blandas no tienen área).
      *
      * @param array|null $habilidades ids de las habilidades finales
      * @param array|null $areas       ids de las áreas de los estudios finales
@@ -298,7 +321,6 @@ trait ReglasPerfilCandidato
         return [
             'estudios.required'                  => 'Debe registrar al menos un estudio.',
             'estudios.min'                       => 'Debe registrar al menos un estudio.',
-            'estudios.max'                       => 'No puede registrar más de 5 estudios.',
             'estudios.*.tipo_estudio_id.required' => 'El tipo de estudio es obligatorio.',
             'estudios.*.tipo_estudio_id.exists'  => 'El tipo de estudio no es válido.',
             'estudios.*.area_estudio_id.required' => 'El área de estudio es obligatoria.',

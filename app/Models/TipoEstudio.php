@@ -12,7 +12,15 @@ class TipoEstudio extends Model
 
     // Reglas del estudio según su tipo 
     public const CON_CARRERA     = ['Universitario', 'Posgrado', 'Master', 'Doctorado']; 
-    public const SIN_INSTITUCION = ['Secundario', 'Terciario'];                          
+    public const SIN_INSTITUCION = ['Secundario', 'Terciario'];
+
+    // Máximo de estudios por candidato según el grupo de tipos 
+    public const MAXIMOS_POR_GRUPO = [
+        ['tipos' => ['Universitario'], 'maximo' => 3, 'descripcion' => 'carreras universitarias'],
+        ['tipos' => ['Posgrado', 'Master', 'Doctorado'], 'maximo' => 5, 'descripcion' => 'posgrados (posgrado, maestría y doctorado)'],
+        ['tipos' => ['Terciario'], 'maximo' => 1, 'descripcion' => 'estudio terciario'],
+        ['tipos' => ['Secundario'], 'maximo' => 1, 'descripcion' => 'estudio secundario'],
+    ];
 
     protected $table = 'tipos_estudio';
 
