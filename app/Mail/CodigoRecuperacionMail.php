@@ -16,7 +16,6 @@ class CodigoRecuperacionMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    // Las propiedades públicas quedan disponibles en la vista
     public function __construct(
         public string $codigo,
         public string $nombre,

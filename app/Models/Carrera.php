@@ -15,24 +15,12 @@ class Carrera extends Model
 
     protected $fillable = [
         'tipo_estudio_id',
-        'area_estudio_id',
-        'pais_id',
         'nombre',
     ];
 
     public function tipoEstudio(): BelongsTo
     {
         return $this->belongsTo(TipoEstudio::class, 'tipo_estudio_id');
-    }
-
-    public function areaEstudio(): BelongsTo
-    {
-        return $this->belongsTo(AreaEstudio::class, 'area_estudio_id');
-    }
-
-    public function pais(): BelongsTo
-    {
-        return $this->belongsTo(Pais::class, 'pais_id');
     }
 
     public function candidatoEstudios(): HasMany

@@ -7,16 +7,14 @@ use Illuminate\Support\Facades\Route;
 
 
 Route::prefix('auth')->group(function () {
-    // Rutas públicas (sin token)
     // POST /api/v1/auth/login
     Route::post('/login', [AuthController::class, 'login']);
 
-    // Recuperación de contraseña por código al correo (HU-11)
-    // POST /api/v1/auth/forgot-password    -> envía el código
+    // POST /api/v1/auth/forgot-password
     Route::post('/forgot-password', [RecuperacionPasswordController::class, 'solicitar']);
-    // POST /api/v1/auth/verify-reset-code  -> valida el código y devuelve reset_token
+    // POST /api/v1/auth/verify-reset-code
     Route::post('/verify-reset-code', [RecuperacionPasswordController::class, 'verificarCodigo']);
-    // POST /api/v1/auth/reset-password     -> establece la nueva contraseña
+    // POST /api/v1/auth/reset-password
     Route::post('/reset-password', [RecuperacionPasswordController::class, 'restablecer']);
 
     // Rutas protegidas con Sanctum (header Authorization: Bearer {token})

@@ -1322,7 +1322,7 @@
               "response": []
             },
             {
-              "name": "2.8 Registrar Candidato - Error Carrera de Otro País (422)",
+              "name": "2.8 Registrar Candidato - Error Carrera Inexistente (422)",
               "event": [
                 {
                   "listen": "test",
@@ -1363,10 +1363,10 @@
                     "candidatos"
                   ]
                 },
-                "description": "Regla D: la carrera 60 es de Chile y el estudio es en Perú. Lo valida `after()` (la FK compuesta de la BD también lo impide).",
+                "description": "La carrera 999 no existe en el catálogo (`exists:carreras,id`). Las carreras son globales: ya no hay \"carrera de otro país\".",
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n    \"nombre\": \"Prueba\",\n    \"apellidos\": \"Error 8\",\n    \"dni\": \"70000008\",\n    \"fecha_nacimiento\": \"1995-05-15\",\n    \"genero\": \"masculino\",\n    \"celular\": \"987654321\",\n    \"correo\": \"prueba.error8@example.com\",\n    \"password\": \"Password123@\",\n    \"password_confirmation\": \"Password123@\",\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": 1,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 60,\n            \"estado\": \"en_curso\",\n            \"ciclo_actual\": 8,\n            \"fecha_inicio\": \"2019-03-01\",\n            \"fecha_fin\": null\n        }\n    ],\n    \"idiomas\": [\n        {\n            \"idioma_id\": 1,\n            \"nivel_escrito\": \"intermedio\",\n            \"nivel_oral\": \"basico\"\n        }\n    ],\n    \"busca_primer_empleo\": false,\n    \"experiencias\": [\n        {\n            \"puesto_id\": 1,\n            \"organizacion_id\": 2,\n            \"pais_id\": 1,\n            \"nivel\": \"junior\",\n            \"fecha_inicio\": \"2023-01-01\",\n            \"fecha_fin\": null,\n            \"descripcion\": \"Desarrollo de APIs REST con Laravel.\"\n        }\n    ],\n    \"habilidades\": [\n        1,\n        2,\n        14\n    ]\n}"
+                  "raw": "{\n    \"nombre\": \"Prueba\",\n    \"apellidos\": \"Error 8\",\n    \"dni\": \"70000008\",\n    \"fecha_nacimiento\": \"1995-05-15\",\n    \"genero\": \"masculino\",\n    \"celular\": \"987654321\",\n    \"correo\": \"prueba.error8@example.com\",\n    \"password\": \"Password123@\",\n    \"password_confirmation\": \"Password123@\",\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": 1,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 999,\n            \"estado\": \"en_curso\",\n            \"ciclo_actual\": 8,\n            \"fecha_inicio\": \"2019-03-01\",\n            \"fecha_fin\": null\n        }\n    ],\n    \"idiomas\": [\n        {\n            \"idioma_id\": 1,\n            \"nivel_escrito\": \"intermedio\",\n            \"nivel_oral\": \"basico\"\n        }\n    ],\n    \"busca_primer_empleo\": false,\n    \"experiencias\": [\n        {\n            \"puesto_id\": 1,\n            \"organizacion_id\": 2,\n            \"pais_id\": 1,\n            \"nivel\": \"junior\",\n            \"fecha_inicio\": \"2023-01-01\",\n            \"fecha_fin\": null,\n            \"descripcion\": \"Desarrollo de APIs REST con Laravel.\"\n        }\n    ],\n    \"habilidades\": [\n        1,\n        2,\n        14\n    ]\n}"
                 }
               },
               "response": [
@@ -2159,7 +2159,7 @@
               "response": []
             },
             {
-              "name": "2.22 Precognition Paso 1 - Carrera de Otro País (422)",
+              "name": "2.22 Precognition Paso 1 - Carrera de Otro Tipo de Estudio (422)",
               "event": [
                 {
                   "listen": "test",
@@ -2210,10 +2210,10 @@
                     "candidatos"
                   ]
                 },
-                "description": "Las reglas de `after()` también corren en Precognition y solo revisan lo que llegó.",
+                "description": "La carrera 49 es de Master y el estudio es Universitario. Las reglas de `after()` también corren en Precognition y solo revisan lo que llegó.",
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": 1,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 60,\n            \"estado\": \"en_curso\",\n            \"ciclo_actual\": 8,\n            \"fecha_inicio\": \"2019-03-01\",\n            \"fecha_fin\": null\n        }\n    ],\n    \"idiomas\": [\n        {\n            \"idioma_id\": 1,\n            \"nivel_escrito\": \"intermedio\",\n            \"nivel_oral\": \"basico\"\n        },\n        {\n            \"idioma_id\": 2,\n            \"nivel_escrito\": \"nativo\",\n            \"nivel_oral\": \"nativo\"\n        }\n    ]\n}"
+                  "raw": "{\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": 1,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 49,\n            \"estado\": \"en_curso\",\n            \"ciclo_actual\": 8,\n            \"fecha_inicio\": \"2019-03-01\",\n            \"fecha_fin\": null\n        }\n    ],\n    \"idiomas\": [\n        {\n            \"idioma_id\": 1,\n            \"nivel_escrito\": \"intermedio\",\n            \"nivel_oral\": \"basico\"\n        },\n        {\n            \"idioma_id\": 2,\n            \"nivel_escrito\": \"nativo\",\n            \"nivel_oral\": \"nativo\"\n        }\n    ]\n}"
                 }
               },
               "response": []
@@ -3224,10 +3224,10 @@
                     "me"
                   ]
                 },
-                "description": "Un dato válido (nombre) con uno inválido (carrera de otro país): se rechaza la petición completa y no se guarda nada.",
+                "description": "Un dato válido (nombre) con uno inválido (carrera inexistente): se rechaza la petición completa y no se guarda nada.",
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n    \"nombre\": \"Nombre Que No Se Guarda\",\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": 1,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 60,\n            \"estado\": \"en_curso\",\n            \"ciclo_actual\": 8,\n            \"fecha_inicio\": \"2019-03-01\",\n            \"fecha_fin\": null\n        }\n    ]\n}"
+                  "raw": "{\n    \"nombre\": \"Nombre Que No Se Guarda\",\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": 1,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 999,\n            \"estado\": \"en_curso\",\n            \"ciclo_actual\": 8,\n            \"fecha_inicio\": \"2019-03-01\",\n            \"fecha_fin\": null\n        }\n    ]\n}"
                 }
               },
               "response": []
@@ -4117,6 +4117,294 @@
                 "body": {
                   "mode": "raw",
                   "raw": "{\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": 6,\n            \"area_estudio_id\": 3,\n            \"pais_id\": 1,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2013-03-01\",\n            \"fecha_fin\": \"2017-12-01\"\n        }\n    ]\n}"
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "2.E Límites de Estudios por Tipo",
+          "description": "Máximo de estudios por candidato según el tipo: 3 universitarios, 5 posgrados (posgrado + master + doctorado), 1 terciario y 1 secundario. No hay máximo total.",
+          "item": [
+            {
+              "name": "2.60 Precognition - Error 4 Universitarios (422)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status code es 422 Unprocessable Content', function () {",
+                      "    pm.response.to.have.status(422);",
+                      "});",
+                      "pm.test('Error de límite en estudios', function () {",
+                      "    var jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.error_code).to.eql('VALIDATION_ERROR');",
+                      "    pm.expect(jsonData.errors).to.have.property('estudios');",
+                      "    pm.expect(jsonData.errors.estudios).to.include('Puedes registrar como máximo 3 carreras universitarias.');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Precognition",
+                    "value": "true"
+                  },
+                  {
+                    "key": "Precognition-Validate-Only",
+                    "value": "estudios,estudios.*.*"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/candidatos",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "candidatos"
+                  ]
+                },
+                "description": "Máximo 3 estudios de tipo Universitario por candidato. Precognition: valida solo los estudios y no guarda nada.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": 1,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 1,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2015-03-01\",\n            \"fecha_fin\": \"2019-12-01\"\n        },\n        {\n            \"tipo_estudio_id\": 1,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 2,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2015-03-01\",\n            \"fecha_fin\": \"2019-12-01\"\n        },\n        {\n            \"tipo_estudio_id\": 1,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 3,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2015-03-01\",\n            \"fecha_fin\": \"2019-12-01\"\n        },\n        {\n            \"tipo_estudio_id\": 1,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 4,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2015-03-01\",\n            \"fecha_fin\": \"2019-12-01\"\n        }\n    ]\n}"
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "2.61 Precognition - Error 6 Posgrados (422)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status code es 422 Unprocessable Content', function () {",
+                      "    pm.response.to.have.status(422);",
+                      "});",
+                      "pm.test('Error de límite en estudios', function () {",
+                      "    var jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.error_code).to.eql('VALIDATION_ERROR');",
+                      "    pm.expect(jsonData.errors).to.have.property('estudios');",
+                      "    pm.expect(jsonData.errors.estudios).to.include('Puedes registrar como máximo 5 posgrados (posgrado, maestría y doctorado).');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Precognition",
+                    "value": "true"
+                  },
+                  {
+                    "key": "Precognition-Validate-Only",
+                    "value": "estudios,estudios.*.*"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/candidatos",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "candidatos"
+                  ]
+                },
+                "description": "Posgrado, Master y Doctorado se suman: máximo 5 entre los tres (aquí 1 + 3 + 2 = 6).",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": 3,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 38,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2015-03-01\",\n            \"fecha_fin\": \"2019-12-01\"\n        },\n        {\n            \"tipo_estudio_id\": 4,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 45,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2015-03-01\",\n            \"fecha_fin\": \"2019-12-01\"\n        },\n        {\n            \"tipo_estudio_id\": 4,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 46,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2015-03-01\",\n            \"fecha_fin\": \"2019-12-01\"\n        },\n        {\n            \"tipo_estudio_id\": 4,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 47,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2015-03-01\",\n            \"fecha_fin\": \"2019-12-01\"\n        },\n        {\n            \"tipo_estudio_id\": 5,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 53,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2015-03-01\",\n            \"fecha_fin\": \"2019-12-01\"\n        },\n        {\n            \"tipo_estudio_id\": 5,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 54,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2015-03-01\",\n            \"fecha_fin\": \"2019-12-01\"\n        }\n    ]\n}"
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "2.62 Precognition - Error 2 Secundarios y 2 Terciarios (422)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status code es 422 Unprocessable Content', function () {",
+                      "    pm.response.to.have.status(422);",
+                      "});",
+                      "pm.test('Error de límite en estudios', function () {",
+                      "    var jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.error_code).to.eql('VALIDATION_ERROR');",
+                      "    pm.expect(jsonData.errors).to.have.property('estudios');",
+                      "    pm.expect(jsonData.errors.estudios).to.include('Puedes registrar como máximo 1 estudio terciario.');",
+                      "    pm.expect(jsonData.errors.estudios).to.include('Puedes registrar como máximo 1 estudio secundario.');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Precognition",
+                    "value": "true"
+                  },
+                  {
+                    "key": "Precognition-Validate-Only",
+                    "value": "estudios,estudios.*.*"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/candidatos",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "candidatos"
+                  ]
+                },
+                "description": "Máximo 1 Secundario y 1 Terciario. Se reportan los dos límites a la vez.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": 6,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2008-03-01\",\n            \"fecha_fin\": \"2012-12-01\"\n        },\n        {\n            \"tipo_estudio_id\": 6,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2008-03-01\",\n            \"fecha_fin\": \"2012-12-01\"\n        },\n        {\n            \"tipo_estudio_id\": 2,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2008-03-01\",\n            \"fecha_fin\": \"2012-12-01\"\n        },\n        {\n            \"tipo_estudio_id\": 2,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2008-03-01\",\n            \"fecha_fin\": \"2012-12-01\"\n        }\n    ]\n}"
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "2.63 Precognition - Éxito Justo en el Límite, 10 Estudios (204)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status code es 204 No Content (válido, no se guarda)', function () {",
+                      "    pm.response.to.have.status(204);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Precognition",
+                    "value": "true"
+                  },
+                  {
+                    "key": "Precognition-Validate-Only",
+                    "value": "estudios,estudios.*.*"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/candidatos",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "candidatos"
+                  ]
+                },
+                "description": "3 universitarios + 5 posgrados + 1 terciario + 1 secundario = 10 estudios. Válido: ya no existe el máximo total de 5.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": 1,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 1,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2015-03-01\",\n            \"fecha_fin\": \"2019-12-01\"\n        },\n        {\n            \"tipo_estudio_id\": 1,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 2,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2015-03-01\",\n            \"fecha_fin\": \"2019-12-01\"\n        },\n        {\n            \"tipo_estudio_id\": 1,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 3,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2015-03-01\",\n            \"fecha_fin\": \"2019-12-01\"\n        },\n        {\n            \"tipo_estudio_id\": 3,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 38,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2015-03-01\",\n            \"fecha_fin\": \"2019-12-01\"\n        },\n        {\n            \"tipo_estudio_id\": 3,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 39,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2015-03-01\",\n            \"fecha_fin\": \"2019-12-01\"\n        },\n        {\n            \"tipo_estudio_id\": 4,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 45,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2015-03-01\",\n            \"fecha_fin\": \"2019-12-01\"\n        },\n        {\n            \"tipo_estudio_id\": 4,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 46,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2015-03-01\",\n            \"fecha_fin\": \"2019-12-01\"\n        },\n        {\n            \"tipo_estudio_id\": 5,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 53,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2015-03-01\",\n            \"fecha_fin\": \"2019-12-01\"\n        },\n        {\n            \"tipo_estudio_id\": 2,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2008-03-01\",\n            \"fecha_fin\": \"2012-12-01\"\n        },\n        {\n            \"tipo_estudio_id\": 6,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2008-03-01\",\n            \"fecha_fin\": \"2012-12-01\"\n        }\n    ]\n}"
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "2.64 Actualizar Mi Perfil - Error 4 Universitarios (422)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status code es 422 Unprocessable Content', function () {",
+                      "    pm.response.to.have.status(422);",
+                      "});",
+                      "pm.test('Error de límite en estudios', function () {",
+                      "    var jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.error_code).to.eql('VALIDATION_ERROR');",
+                      "    pm.expect(jsonData.errors).to.have.property('estudios');",
+                      "    pm.expect(jsonData.errors.estudios).to.include('Puedes registrar como máximo 3 carreras universitarias.');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token_candidato}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/candidatos/me",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "candidatos",
+                    "me"
+                  ]
+                },
+                "description": "La misma regla aplica al editar el perfil: la lista enviada reemplaza a la guardada y no puede superar los límites. No se guarda nada.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": 1,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 1,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2015-03-01\",\n            \"fecha_fin\": \"2019-12-01\"\n        },\n        {\n            \"tipo_estudio_id\": 1,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 2,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2015-03-01\",\n            \"fecha_fin\": \"2019-12-01\"\n        },\n        {\n            \"tipo_estudio_id\": 1,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 3,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2015-03-01\",\n            \"fecha_fin\": \"2019-12-01\"\n        },\n        {\n            \"tipo_estudio_id\": 1,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 4,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2015-03-01\",\n            \"fecha_fin\": \"2019-12-01\"\n        }\n    ]\n}"
                 }
               },
               "response": []
@@ -8692,7 +8980,7 @@
           "response": []
         },
         {
-          "name": "6.10 Listar Carreras Universitarias de Tecnología en Perú (200)",
+          "name": "6.10 Listar Carreras Universitarias (200)",
           "event": [
             {
               "listen": "test",
@@ -8701,14 +8989,18 @@
                   "pm.test('Status code es 200 OK', function () {",
                   "    pm.response.to.have.status(200);",
                   "});",
-                  "pm.test('Todas cumplen los 3 filtros', function () {",
+                  "pm.test('Todas son del tipo pedido y no exponen país ni área', function () {",
                   "    var data = pm.response.json().data;",
-                  "    pm.expect(data.map(function (c) { return c.nombre; })).to.include('Ingeniería de Sistemas');",
                   "    data.forEach(function (c) {",
                   "        pm.expect(c.tipo_estudio_id).to.eql(1);",
-                  "        pm.expect(c.area_estudio_id).to.eql(1);",
-                  "        pm.expect(c.pais_id).to.eql(1);",
+                  "        pm.expect(c).to.not.have.property('pais_id');",
+                  "        pm.expect(c).to.not.have.property('area_estudio_id');",
                   "    });",
+                  "});",
+                  "pm.test('Cada carrera aparece una sola vez', function () {",
+                  "    var nombres = pm.response.json().data.map(function (c) { return c.nombre; });",
+                  "    pm.expect(nombres).to.include('Administración');",
+                  "    pm.expect(nombres.filter(function (n) { return n === 'Administración'; })).to.have.lengthOf(1);",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -8724,7 +9016,7 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/carreras?tipo_estudio_id=1&area_estudio_id=1&pais_id=1",
+              "raw": "{{base_url}}/carreras?tipo_estudio_id=1",
               "host": [
                 "{{base_url}}"
               ],
@@ -8735,23 +9027,15 @@
                 {
                   "key": "tipo_estudio_id",
                   "value": "1"
-                },
-                {
-                  "key": "area_estudio_id",
-                  "value": "1"
-                },
-                {
-                  "key": "pais_id",
-                  "value": "1"
                 }
               ]
             },
-            "description": "Select dependiente: tipo + área + país."
+            "description": "Las carreras son globales: dependen solo del tipo de estudio (no del país ni del área)."
           },
           "response": []
         },
         {
-          "name": "6.11 Listar Carreras de Master en Tecnología en Perú (200)",
+          "name": "6.11 Listar Carreras de Master (200)",
           "event": [
             {
               "listen": "test",
@@ -8760,9 +9044,10 @@
                   "pm.test('Status code es 200 OK', function () {",
                   "    pm.response.to.have.status(200);",
                   "});",
-                  "pm.test('Solo maestrías, sin carreras universitarias', function () {",
+                  "pm.test('Solo maestrías (de todas las áreas), sin carreras universitarias', function () {",
                   "    var nombres = pm.response.json().data.map(function (c) { return c.nombre; });",
                   "    pm.expect(nombres).to.include('Maestría en Ciencias de la Computación');",
+                  "    pm.expect(nombres).to.include('Maestría en Administración de Empresas (MBA)');",
                   "    pm.expect(nombres).to.not.include('Ingeniería de Sistemas');",
                   "});"
                 ],
@@ -8779,7 +9064,7 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/carreras?tipo_estudio_id=4&area_estudio_id=1&pais_id=1",
+              "raw": "{{base_url}}/carreras?tipo_estudio_id=4",
               "host": [
                 "{{base_url}}"
               ],
@@ -8790,14 +9075,6 @@
                 {
                   "key": "tipo_estudio_id",
                   "value": "4"
-                },
-                {
-                  "key": "area_estudio_id",
-                  "value": "1"
-                },
-                {
-                  "key": "pais_id",
-                  "value": "1"
                 }
               ]
             },
@@ -8806,7 +9083,7 @@
           "response": []
         },
         {
-          "name": "6.12 Listar Carreras - Error País Inexistente (422)",
+          "name": "6.12 Listar Carreras - Error Tipo de Estudio Inexistente (422)",
           "event": [
             {
               "listen": "test",
@@ -8818,7 +9095,7 @@
                   "pm.test('Errores de validación esperados', function () {",
                   "    var j = pm.response.json();",
                   "    pm.expect(j.error_code).to.eql('VALIDATION_ERROR');",
-                  "    pm.expect(j.errors).to.have.property('pais_id');",
+                  "    pm.expect(j.errors).to.have.property('tipo_estudio_id');",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -8834,7 +9111,7 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/carreras?pais_id=999",
+              "raw": "{{base_url}}/carreras?tipo_estudio_id=999",
               "host": [
                 "{{base_url}}"
               ],
@@ -8843,7 +9120,7 @@
               ],
               "query": [
                 {
-                  "key": "pais_id",
+                  "key": "tipo_estudio_id",
                   "value": "999"
                 }
               ]

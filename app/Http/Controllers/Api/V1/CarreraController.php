@@ -12,7 +12,7 @@ class CarreraController extends BaseApiController
     public function __construct(private CarreraService $carreraService) {}
 
 
-    // GET /api/v1/carreras?tipo_estudio_id=&area_estudio_id=&pais_id=
+    // GET /api/v1/carreras?tipo_estudio_id=
     public function index(FiltrarCarrerasRequest $request): JsonResponse
     {
         return $this->successResponse(
