@@ -15,7 +15,7 @@ class CatalogoService
 {
     public function paises(): Collection
     {
-        return Pais::orderBy('nombre')->get(['id', 'nombre']);
+        return Pais::where('activo', true)->orderBy('nombre')->get(['id', 'nombre']);
     }
 
     // Orden de creación: Universitario, Terciario, Posgrado, Master, Doctorado, Secundario
@@ -27,6 +27,7 @@ class CatalogoService
     public function instituciones(?int $paisId): Collection
     {
         return Institucion::where('estado', 'activo')
+            ->whereHas('pais', fn ($query) => $query->where('activo', true))
             ->when($paisId, fn ($query) => $query->where('pais_id', $paisId))
             ->orderBy('nombre')
             ->get(['id', 'nombre', 'pais_id']);

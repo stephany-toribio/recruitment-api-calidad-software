@@ -14,7 +14,15 @@ class Pais extends Model
 
     protected $fillable = [
         'nombre',
+        'activo',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'activo' => 'boolean',
+        ];
+    }
 
     public function instituciones(): HasMany
     {
