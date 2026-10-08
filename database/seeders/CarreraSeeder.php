@@ -11,7 +11,7 @@ class CarreraSeeder extends Seeder
 {
     public function run(): void
     {
-        // Regla D: las carreras dependen del país y del tipo de estudio.
+        // las carreras dependen del país y del tipo de estudio.
         // Se agrupan por área solo para ordenar la lista: el área NO se guarda en la carrera.
         // Solo los tipos de TipoEstudio::CON_CARRERA tienen carreras (Secundario y Terciario no).
         // Perú: taxonomía universitaria completa del frontend (CAREER_TAXONOMY) + Ingeniería Informática.

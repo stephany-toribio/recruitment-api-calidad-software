@@ -4,7 +4,7 @@ use App\Http\Controllers\Api\V1\CatalogoController;
 use Illuminate\Support\Facades\Route;
 
 /*
-| Catálogos públicos del registro de candidato.
+| Catálogos públicos 
 */
 Route::get('/paises', [CatalogoController::class, 'paises']);
 Route::get('/tipos-estudio', [CatalogoController::class, 'tiposEstudio']);
