@@ -21,11 +21,6 @@ class Pais extends Model
         return $this->hasMany(Institucion::class, 'pais_id');
     }
 
-    public function carreras(): HasMany
-    {
-        return $this->hasMany(Carrera::class, 'pais_id');
-    }
-
     public function organizaciones(): HasMany
     {
         return $this->hasMany(Organizacion::class, 'pais_id');

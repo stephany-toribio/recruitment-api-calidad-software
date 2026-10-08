@@ -156,12 +156,9 @@ trait ReglasPerfilCandidato
 
             $carrera = $carreraId ? $carreras->get($carreraId) : null;
 
-            // La carrera depende del tipo de estudio y del país; el área del estudio la elige el candidato aparte
-            if ($carrera && (
-                (int) $carrera->tipo_estudio_id !== $tipoId
-                || (int) $carrera->pais_id !== $this->entero($estudio['pais_id'] ?? null)
-            )) {
-                $this->agregarError($validator, "estudios.$i.carrera_id", 'La carrera seleccionada no corresponde al tipo de estudio o país indicados.');
+            // Las carreras son globales: solo deben corresponder al tipo de estudio (el país y el área son del estudio)
+            if ($carrera && (int) $carrera->tipo_estudio_id !== $tipoId) {
+                $this->agregarError($validator, "estudios.$i.carrera_id", 'La carrera seleccionada no corresponde al tipo de estudio indicado.');
             }
 
             $paisInstitucion = $institucionId ? $this->entero($paisesInstitucion[$institucionId] ?? null) : null;

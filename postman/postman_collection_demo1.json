@@ -1322,7 +1322,7 @@
               "response": []
             },
             {
-              "name": "2.8 Registrar Candidato - Error Carrera de Otro País (422)",
+              "name": "2.8 Registrar Candidato - Error Carrera Inexistente (422)",
               "event": [
                 {
                   "listen": "test",
@@ -1363,10 +1363,10 @@
                     "candidatos"
                   ]
                 },
-                "description": "Regla D: la carrera 60 es de Chile y el estudio es en Perú. Lo valida `after()` (la FK compuesta de la BD también lo impide).",
+                "description": "La carrera 999 no existe en el catálogo (`exists:carreras,id`). Las carreras son globales: ya no hay \"carrera de otro país\".",
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n    \"nombre\": \"Prueba\",\n    \"apellidos\": \"Error 8\",\n    \"dni\": \"70000008\",\n    \"fecha_nacimiento\": \"1995-05-15\",\n    \"genero\": \"masculino\",\n    \"celular\": \"987654321\",\n    \"correo\": \"prueba.error8@example.com\",\n    \"password\": \"Password123@\",\n    \"password_confirmation\": \"Password123@\",\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": 1,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 60,\n            \"estado\": \"en_curso\",\n            \"ciclo_actual\": 8,\n            \"fecha_inicio\": \"2019-03-01\",\n            \"fecha_fin\": null\n        }\n    ],\n    \"idiomas\": [\n        {\n            \"idioma_id\": 1,\n            \"nivel_escrito\": \"intermedio\",\n            \"nivel_oral\": \"basico\"\n        }\n    ],\n    \"busca_primer_empleo\": false,\n    \"experiencias\": [\n        {\n            \"puesto_id\": 1,\n            \"organizacion_id\": 2,\n            \"pais_id\": 1,\n            \"nivel\": \"junior\",\n            \"fecha_inicio\": \"2023-01-01\",\n            \"fecha_fin\": null,\n            \"descripcion\": \"Desarrollo de APIs REST con Laravel.\"\n        }\n    ],\n    \"habilidades\": [\n        1,\n        2,\n        14\n    ]\n}"
+                  "raw": "{\n    \"nombre\": \"Prueba\",\n    \"apellidos\": \"Error 8\",\n    \"dni\": \"70000008\",\n    \"fecha_nacimiento\": \"1995-05-15\",\n    \"genero\": \"masculino\",\n    \"celular\": \"987654321\",\n    \"correo\": \"prueba.error8@example.com\",\n    \"password\": \"Password123@\",\n    \"password_confirmation\": \"Password123@\",\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": 1,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 999,\n            \"estado\": \"en_curso\",\n            \"ciclo_actual\": 8,\n            \"fecha_inicio\": \"2019-03-01\",\n            \"fecha_fin\": null\n        }\n    ],\n    \"idiomas\": [\n        {\n            \"idioma_id\": 1,\n            \"nivel_escrito\": \"intermedio\",\n            \"nivel_oral\": \"basico\"\n        }\n    ],\n    \"busca_primer_empleo\": false,\n    \"experiencias\": [\n        {\n            \"puesto_id\": 1,\n            \"organizacion_id\": 2,\n            \"pais_id\": 1,\n            \"nivel\": \"junior\",\n            \"fecha_inicio\": \"2023-01-01\",\n            \"fecha_fin\": null,\n            \"descripcion\": \"Desarrollo de APIs REST con Laravel.\"\n        }\n    ],\n    \"habilidades\": [\n        1,\n        2,\n        14\n    ]\n}"
                 }
               },
               "response": [
@@ -2159,7 +2159,7 @@
               "response": []
             },
             {
-              "name": "2.22 Precognition Paso 1 - Carrera de Otro País (422)",
+              "name": "2.22 Precognition Paso 1 - Carrera de Otro Tipo de Estudio (422)",
               "event": [
                 {
                   "listen": "test",
@@ -2210,10 +2210,10 @@
                     "candidatos"
                   ]
                 },
-                "description": "Las reglas de `after()` también corren en Precognition y solo revisan lo que llegó.",
+                "description": "La carrera 49 es de Master y el estudio es Universitario. Las reglas de `after()` también corren en Precognition y solo revisan lo que llegó.",
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": 1,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 60,\n            \"estado\": \"en_curso\",\n            \"ciclo_actual\": 8,\n            \"fecha_inicio\": \"2019-03-01\",\n            \"fecha_fin\": null\n        }\n    ],\n    \"idiomas\": [\n        {\n            \"idioma_id\": 1,\n            \"nivel_escrito\": \"intermedio\",\n            \"nivel_oral\": \"basico\"\n        },\n        {\n            \"idioma_id\": 2,\n            \"nivel_escrito\": \"nativo\",\n            \"nivel_oral\": \"nativo\"\n        }\n    ]\n}"
+                  "raw": "{\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": 1,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 49,\n            \"estado\": \"en_curso\",\n            \"ciclo_actual\": 8,\n            \"fecha_inicio\": \"2019-03-01\",\n            \"fecha_fin\": null\n        }\n    ],\n    \"idiomas\": [\n        {\n            \"idioma_id\": 1,\n            \"nivel_escrito\": \"intermedio\",\n            \"nivel_oral\": \"basico\"\n        },\n        {\n            \"idioma_id\": 2,\n            \"nivel_escrito\": \"nativo\",\n            \"nivel_oral\": \"nativo\"\n        }\n    ]\n}"
                 }
               },
               "response": []
@@ -3224,10 +3224,10 @@
                     "me"
                   ]
                 },
-                "description": "Un dato válido (nombre) con uno inválido (carrera de otro país): se rechaza la petición completa y no se guarda nada.",
+                "description": "Un dato válido (nombre) con uno inválido (carrera inexistente): se rechaza la petición completa y no se guarda nada.",
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n    \"nombre\": \"Nombre Que No Se Guarda\",\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": 1,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 60,\n            \"estado\": \"en_curso\",\n            \"ciclo_actual\": 8,\n            \"fecha_inicio\": \"2019-03-01\",\n            \"fecha_fin\": null\n        }\n    ]\n}"
+                  "raw": "{\n    \"nombre\": \"Nombre Que No Se Guarda\",\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": 1,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 999,\n            \"estado\": \"en_curso\",\n            \"ciclo_actual\": 8,\n            \"fecha_inicio\": \"2019-03-01\",\n            \"fecha_fin\": null\n        }\n    ]\n}"
                 }
               },
               "response": []
@@ -8692,7 +8692,7 @@
           "response": []
         },
         {
-          "name": "6.10 Listar Carreras Universitarias en Perú (200)",
+          "name": "6.10 Listar Carreras Universitarias (200)",
           "event": [
             {
               "listen": "test",
@@ -8701,18 +8701,18 @@
                   "pm.test('Status code es 200 OK', function () {",
                   "    pm.response.to.have.status(200);",
                   "});",
-                  "pm.test('Todas cumplen los 2 filtros y no exponen área', function () {",
+                  "pm.test('Todas son del tipo pedido y no exponen país ni área', function () {",
                   "    var data = pm.response.json().data;",
                   "    data.forEach(function (c) {",
                   "        pm.expect(c.tipo_estudio_id).to.eql(1);",
-                  "        pm.expect(c.pais_id).to.eql(1);",
+                  "        pm.expect(c).to.not.have.property('pais_id');",
                   "        pm.expect(c).to.not.have.property('area_estudio_id');",
                   "    });",
                   "});",
-                  "pm.test('Incluye carreras de distintas áreas', function () {",
+                  "pm.test('Cada carrera aparece una sola vez', function () {",
                   "    var nombres = pm.response.json().data.map(function (c) { return c.nombre; });",
-                  "    pm.expect(nombres).to.include('Ingeniería de Sistemas');",
-                  "    pm.expect(nombres).to.include('Medicina Humana');",
+                  "    pm.expect(nombres).to.include('Administración');",
+                  "    pm.expect(nombres.filter(function (n) { return n === 'Administración'; })).to.have.lengthOf(1);",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -8728,7 +8728,7 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/carreras?tipo_estudio_id=1&pais_id=1",
+              "raw": "{{base_url}}/carreras?tipo_estudio_id=1",
               "host": [
                 "{{base_url}}"
               ],
@@ -8739,19 +8739,15 @@
                 {
                   "key": "tipo_estudio_id",
                   "value": "1"
-                },
-                {
-                  "key": "pais_id",
-                  "value": "1"
                 }
               ]
             },
-            "description": "Select dependiente: tipo de estudio + país. Las carreras ya no dependen del área: aparecen carreras de todas las áreas."
+            "description": "Las carreras son globales: dependen solo del tipo de estudio (no del país ni del área)."
           },
           "response": []
         },
         {
-          "name": "6.11 Listar Carreras de Master en Perú (200)",
+          "name": "6.11 Listar Carreras de Master (200)",
           "event": [
             {
               "listen": "test",
@@ -8780,7 +8776,7 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/carreras?tipo_estudio_id=4&pais_id=1",
+              "raw": "{{base_url}}/carreras?tipo_estudio_id=4",
               "host": [
                 "{{base_url}}"
               ],
@@ -8791,10 +8787,6 @@
                 {
                   "key": "tipo_estudio_id",
                   "value": "4"
-                },
-                {
-                  "key": "pais_id",
-                  "value": "1"
                 }
               ]
             },
@@ -8803,7 +8795,7 @@
           "response": []
         },
         {
-          "name": "6.12 Listar Carreras - Error País Inexistente (422)",
+          "name": "6.12 Listar Carreras - Error Tipo de Estudio Inexistente (422)",
           "event": [
             {
               "listen": "test",
@@ -8815,7 +8807,7 @@
                   "pm.test('Errores de validación esperados', function () {",
                   "    var j = pm.response.json();",
                   "    pm.expect(j.error_code).to.eql('VALIDATION_ERROR');",
-                  "    pm.expect(j.errors).to.have.property('pais_id');",
+                  "    pm.expect(j.errors).to.have.property('tipo_estudio_id');",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -8831,7 +8823,7 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/carreras?pais_id=999",
+              "raw": "{{base_url}}/carreras?tipo_estudio_id=999",
               "host": [
                 "{{base_url}}"
               ],
@@ -8840,7 +8832,7 @@
               ],
               "query": [
                 {
-                  "key": "pais_id",
+                  "key": "tipo_estudio_id",
                   "value": "999"
                 }
               ]
