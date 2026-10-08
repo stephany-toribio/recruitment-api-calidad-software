@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\Api\V1\Admin\InstitucionController;
+use App\Http\Controllers\Api\V1\Admin\PaisController;
+use App\Http\Controllers\Api\V1\Admin\PuestoController;
 use App\Http\Controllers\Api\V1\Admin\UsuarioController;
 use App\Http\Controllers\Api\V1\AreaEstudioController;
 use App\Http\Controllers\Api\V1\HabilidadController;
@@ -70,4 +73,20 @@ Route::prefix('admin')
             '/habilidades/{habilidad}/reactivar',
             [HabilidadController::class, 'reactivar']
         );
+
+        Route::get('/paises', [PaisController::class, 'index']);
+        Route::post('/paises', [PaisController::class, 'store']);
+        Route::patch('/paises/{pais}', [PaisController::class, 'update']);
+        Route::patch('/paises/{pais}/desactivar', [PaisController::class, 'desactivar']);
+        Route::patch('/paises/{pais}/reactivar', [PaisController::class, 'reactivar']);
+
+        Route::get('/instituciones', [InstitucionController::class, 'index']);
+        Route::post('/instituciones', [InstitucionController::class, 'store']);
+        Route::patch('/instituciones/{institucion}', [InstitucionController::class, 'update']);
+        Route::patch('/instituciones/{institucion}/desactivar', [InstitucionController::class, 'desactivar']);
+        Route::patch('/instituciones/{institucion}/reactivar', [InstitucionController::class, 'reactivar']);
+
+        Route::get('/puestos', [PuestoController::class, 'index']);
+        Route::patch('/puestos/{puesto}/desactivar', [PuestoController::class, 'desactivar']);
+        Route::patch('/puestos/{puesto}/reactivar', [PuestoController::class, 'reactivar']);
     });

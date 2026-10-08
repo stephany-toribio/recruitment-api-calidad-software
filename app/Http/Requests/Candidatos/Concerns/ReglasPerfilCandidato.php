@@ -23,7 +23,7 @@ trait ReglasPerfilCandidato
             'estudios'                   => [$parcial ? 'sometimes' : 'required', 'array', 'min:1'],
             'estudios.*.tipo_estudio_id' => ['required', 'integer', 'exists:tipos_estudio,id'],
             'estudios.*.area_estudio_id' => ['required', 'integer', Rule::exists('areas_estudio', 'id')->where('activo', true)],
-            'estudios.*.pais_id'         => ['required', 'integer', 'exists:paises,id'],
+            'estudios.*.pais_id'         => ['required', 'integer', Rule::exists('paises', 'id')->where('activo', true)],
             'estudios.*.institucion_id'  => ['nullable', 'integer', Rule::exists('instituciones', 'id')->where('estado', 'activo')],
             'estudios.*.carrera_id'      => ['nullable', 'integer', 'exists:carreras,id'],
             'estudios.*.estado'          => ['required', 'in:finalizado,en_curso,incompleto'],
@@ -53,11 +53,19 @@ trait ReglasPerfilCandidato
                 'array', 'min:1', 'max:5',
             ],
             // Un puesto u organización del catálogo (id) o uno nuevo propuesto por el candidato (nombre)
-            'experiencias.*.puesto_id'           => ['nullable', 'required_without:experiencias.*.puesto_nombre', 'prohibits:experiencias.*.puesto_nombre', 'integer', Rule::exists('puestos', 'id')->where('estado', 'activo')],
-            'experiencias.*.puesto_nombre'       => ['nullable', 'string', 'max:200'],
+            'experiencias.*.puesto_id'           => [
+                'nullable',
+                'required_without:experiencias.*.puesto_nombre',
+                'prohibits:experiencias.*.puesto_nombre',
+                'integer',
+                Rule::exists('puestos', 'id')
+                    ->where('estado', 'activo')
+                    ->where('estado_catalogo', 'aprobado'),
+            ],
+            'experiencias.*.puesto_nombre'       => ['nullable', 'required_without:experiencias.*.puesto_id', 'prohibits:experiencias.*.puesto_id', 'string', 'max:200'],
             'experiencias.*.organizacion_id'     => ['nullable', 'required_without:experiencias.*.organizacion_nombre', 'prohibits:experiencias.*.organizacion_nombre', 'integer', Rule::exists('organizaciones', 'id')->where('estado', 'activo')],
             'experiencias.*.organizacion_nombre' => ['nullable', 'string', 'max:200'],
-            'experiencias.*.pais_id'             => ['required', 'integer', 'exists:paises,id'],
+            'experiencias.*.pais_id'             => ['required', 'integer', Rule::exists('paises', 'id')->where('activo', true)],
             'experiencias.*.nivel'               => ['required', 'in:practicante_pre,practicante_pro,trainee,junior,semi_senior,senior,jefe_supervisor,gerente_director'],
             'experiencias.*.fecha_inicio'        => ['required', 'date_format:Y-m-d'],
             'experiencias.*.fecha_fin'           => ['nullable', 'date_format:Y-m-d', 'after_or_equal:experiencias.*.fecha_inicio'],
@@ -326,7 +334,7 @@ trait ReglasPerfilCandidato
             'estudios.*.area_estudio_id.required' => 'El área de estudio es obligatoria.',
             'estudios.*.area_estudio_id.exists'  => 'El área de estudio no existe o está inactiva.',
             'estudios.*.pais_id.required'        => 'El país del estudio es obligatorio.',
-            'estudios.*.pais_id.exists'          => 'El país del estudio no es válido.',
+            'estudios.*.pais_id.exists'          => 'El país del estudio no existe o está inactivo.',
             'estudios.*.institucion_id.exists'   => 'La institución no existe o está inactiva.',
             'estudios.*.carrera_id.exists'       => 'La carrera seleccionada no es válida.',
             'estudios.*.estado.required'         => 'El estado del estudio es obligatorio.',
@@ -357,11 +365,15 @@ trait ReglasPerfilCandidato
             'experiencias.*.puesto_id.required_without'       => 'Seleccione un puesto o escriba uno nuevo.',
             'experiencias.*.puesto_id.prohibits'              => 'Envíe el puesto del catálogo o uno nuevo, no ambos.',
             'experiencias.*.puesto_id.exists'                 => 'El puesto seleccionado no es válido.',
+            'experiencias.*.puesto_nombre.required_without'   => 'Seleccione un puesto o escriba uno nuevo.',
+            'experiencias.*.puesto_nombre.prohibits'          => 'Envíe el puesto del catálogo o uno nuevo, no ambos.',
+            'experiencias.*.puesto_nombre.string'             => 'El nombre del puesto debe ser texto.',
+            'experiencias.*.puesto_nombre.max'                => 'El nombre del puesto no puede superar los 200 caracteres.',
             'experiencias.*.organizacion_id.required_without' => 'Seleccione una organización o escriba una nueva.',
             'experiencias.*.organizacion_id.prohibits'        => 'Envíe la organización del catálogo o una nueva, no ambas.',
             'experiencias.*.organizacion_id.exists'           => 'La organización seleccionada no es válida.',
             'experiencias.*.pais_id.required'    => 'El país de la experiencia es obligatorio.',
-            'experiencias.*.pais_id.exists'      => 'El país de la experiencia no es válido.',
+            'experiencias.*.pais_id.exists'      => 'El país de la experiencia no existe o está inactivo.',
             'experiencias.*.nivel.required'      => 'El nivel del puesto es obligatorio.',
             'experiencias.*.nivel.in'            => 'El nivel del puesto no es válido.',
             'experiencias.*.fecha_inicio.required' => 'La fecha de inicio de la experiencia es obligatoria.',
@@ -375,5 +387,37 @@ trait ReglasPerfilCandidato
             'habilidades.*.distinct'             => 'No puede repetir habilidades.',
             'habilidades.*.exists'               => 'Una o más habilidades seleccionadas no existen o no están disponibles.',
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $experiencias = $this->input('experiencias');
+
+        if (! is_array($experiencias)) {
+            return;
+        }
+
+        foreach ($experiencias as &$experiencia) {
+            if (! is_array($experiencia)) {
+                continue;
+            }
+
+            if (
+                array_key_exists('puesto_nombre', $experiencia)
+                && is_string($experiencia['puesto_nombre'])
+            ) {
+                $experiencia['puesto_nombre'] = preg_replace(
+                    '/\s+/u',
+                    ' ',
+                    trim($experiencia['puesto_nombre'])
+                );
+            }
+        }
+
+        unset($experiencia);
+
+        $this->merge([
+            'experiencias' => $experiencias,
+        ]);
     }
 }
