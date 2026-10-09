@@ -25,12 +25,14 @@ trait ReglasPerfilCandidato
             'estudios'                   => [$parcial ? 'sometimes' : 'required', 'array', 'min:1'],
             'estudios.*.tipo_estudio_id' => ['required', 'integer', 'exists:tipos_estudio,id'],
             'estudios.*.area_estudio_id' => ['required', 'integer', Rule::exists('areas_estudio', 'id')->where('activo', true)],
-            'estudios.*.pais_id'         => ['required', 'integer', Rule::exists('paises', 'id')->where('activo', true)],
+            // país, estado y fecha de inicio: obligatorios según el tipo (validarEstudiosContraCatalogo).
+            // "Sin estudios formales" solo lleva el área.
+            'estudios.*.pais_id'         => ['nullable', 'integer', Rule::exists('paises', 'id')->where('activo', true)],
             'estudios.*.institucion_id'  => ['nullable', 'integer', Rule::exists('instituciones', 'id')->where('estado', 'activo')],
             'estudios.*.carrera_id'      => ['nullable', 'integer', 'exists:carreras,id'],
-            'estudios.*.estado'          => ['required', 'in:finalizado,en_curso,incompleto'],
+            'estudios.*.estado'          => ['nullable', 'in:finalizado,en_curso,incompleto'],
             'estudios.*.ciclo_actual'    => ['nullable', 'integer', 'min:1', 'max:15', 'prohibited_unless:estudios.*.estado,en_curso'],
-            'estudios.*.fecha_inicio'    => ['required', 'date_format:Y-m-d'],
+            'estudios.*.fecha_inicio'    => ['nullable', 'date_format:Y-m-d'],
             'estudios.*.fecha_fin'       => ['nullable', 'date_format:Y-m-d', 'after_or_equal:estudios.*.fecha_inicio'],
         ];
     }
@@ -200,6 +202,7 @@ trait ReglasPerfilCandidato
         $paisesInstitucion = Institucion::whereIn('id', $this->idsDe($estudios, 'institucion_id'))->pluck('pais_id', 'id');
         $estudiosVistos = [];
         $cantidadPorTipo = [];
+        $areasSinEstudios = [];
 
         foreach ($estudios as $i => $estudio) {
             if (! is_array($estudio)) {
@@ -214,6 +217,21 @@ trait ReglasPerfilCandidato
             }
 
             $cantidadPorTipo[$tipo] = ($cantidadPorTipo[$tipo] ?? 0) + 1;
+
+            if (in_array($tipo, TipoEstudio::SOLO_AREA, true)) {
+                $this->validarEstudioSoloArea($validator, $i, $estudio, $tipo, $areasSinEstudios);
+                continue;
+            }
+
+            if (blank($estudio['pais_id'] ?? null)) {
+                $this->agregarError($validator, "estudios.$i.pais_id", 'El país del estudio es obligatorio.');
+            }
+            if (blank($estudio['estado'] ?? null)) {
+                $this->agregarError($validator, "estudios.$i.estado", 'El estado del estudio es obligatorio.');
+            }
+            if (blank($estudio['fecha_inicio'] ?? null)) {
+                $this->agregarError($validator, "estudios.$i.fecha_inicio", 'La fecha de inicio del estudio es obligatoria.');
+            }
 
             $carreraId = $this->entero($estudio['carrera_id'] ?? null);
             $institucionId = $this->entero($estudio['institucion_id'] ?? null);
@@ -262,6 +280,36 @@ trait ReglasPerfilCandidato
         }
 
         $this->validarMaximoEstudiosPorGrupo($validator, $cantidadPorTipo);
+
+        // "Sin estudios formales" es exclusivo: no se combina con estudios formales
+        $sinEstudios = array_sum(array_intersect_key($cantidadPorTipo, array_flip(TipoEstudio::SOLO_AREA)));
+        if ($sinEstudios > 0 && $sinEstudios < array_sum($cantidadPorTipo)) {
+            $this->agregarError($validator, 'estudios', 'Si eliges "Sin estudios formales", no puedes registrar otros tipos de estudio.');
+        }
+    }
+
+    /**
+     * "Sin estudios formales": solo el área de estudio (obligatoria por rules()), sin repetir el área.
+     *
+     * @param array<int, int|string> $areasVistas áreas ya usadas en otros estudios de este tipo (se actualiza)
+     */
+    private function validarEstudioSoloArea(Validator $validator, int|string $i, array $estudio, string $tipo, array &$areasVistas): void
+    {
+        foreach (['pais_id', 'institucion_id', 'carrera_id', 'estado', 'ciclo_actual', 'fecha_inicio', 'fecha_fin'] as $campo) {
+            if (filled($estudio[$campo] ?? null)) {
+                $this->agregarError($validator, "estudios.$i.$campo", "Los estudios de tipo {$tipo} solo llevan el área de estudio.");
+            }
+        }
+
+        $areaId = $this->entero($estudio['area_estudio_id'] ?? null);
+
+        if ($areaId !== null && in_array($areaId, $areasVistas, true)) {
+            $this->agregarError($validator, "estudios.$i.area_estudio_id", 'Ya registraste esta área de estudio.');
+        }
+
+        if ($areaId !== null) {
+            $areasVistas[] = $areaId;
+        }
     }
 
     /**
@@ -521,14 +569,11 @@ trait ReglasPerfilCandidato
             'estudios.*.tipo_estudio_id.exists'  => 'El tipo de estudio no es válido.',
             'estudios.*.area_estudio_id.required' => 'El área de estudio es obligatoria.',
             'estudios.*.area_estudio_id.exists'  => 'El área de estudio no existe o está inactiva.',
-            'estudios.*.pais_id.required'        => 'El país del estudio es obligatorio.',
             'estudios.*.pais_id.exists'          => 'El país del estudio no existe o está inactivo.',
             'estudios.*.institucion_id.exists'   => 'La institución no existe o está inactiva.',
             'estudios.*.carrera_id.exists'       => 'La carrera seleccionada no es válida.',
-            'estudios.*.estado.required'         => 'El estado del estudio es obligatorio.',
             'estudios.*.estado.in'               => 'El estado del estudio debe ser finalizado, en_curso o incompleto.',
             'estudios.*.ciclo_actual.prohibited_unless' => 'El ciclo actual solo se indica en estudios en curso.',
-            'estudios.*.fecha_inicio.required'   => 'La fecha de inicio del estudio es obligatoria.',
             'estudios.*.fecha_inicio.date_format' => 'La fecha de inicio debe tener el formato AAAA-MM-DD.',
             'estudios.*.fecha_fin.date_format'   => 'La fecha de fin debe tener el formato AAAA-MM-DD.',
             'estudios.*.fecha_fin.after_or_equal' => 'La fecha de fin no puede ser anterior a la de inicio.',

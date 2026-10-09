@@ -134,12 +134,13 @@ class CandidatoService
             $candidato->estudios()->create([
                 'tipo_estudio_id' => $estudio['tipo_estudio_id'],
                 'area_estudio_id' => $estudio['area_estudio_id'],
-                'pais_id'         => $estudio['pais_id'],
+                // país, estado y fecha de inicio no van en "Sin estudios formales" (solo área)
+                'pais_id'         => $estudio['pais_id'] ?? null,
                 'institucion_id'  => $estudio['institucion_id'] ?? null,
                 'carrera_id'      => $estudio['carrera_id'] ?? null,
-                'estado'          => $estudio['estado'],
+                'estado'          => $estudio['estado'] ?? null,
                 'ciclo_actual'    => $estudio['ciclo_actual'] ?? null,
-                'fecha_inicio'    => $estudio['fecha_inicio'],
+                'fecha_inicio'    => $estudio['fecha_inicio'] ?? null,
                 'fecha_fin'       => $estudio['fecha_fin'] ?? null,
             ]);
         }

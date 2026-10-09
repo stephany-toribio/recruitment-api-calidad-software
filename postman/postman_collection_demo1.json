@@ -14376,6 +14376,603 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "11. Educación - Sin Estudios Formales (Dev 2)",
+      "description": "HU-01. Tipo de estudio para quien solo llevó cursos externos: solo se registra el área de estudio (sin país, institución, carrera, estado ni fechas), que habilita sus habilidades técnicas. Es exclusivo (no se combina con otros tipos) y admite hasta 3 áreas distintas. Usa sus propios candidatos (Rosa).",
+      "item": [
+        {
+          "name": "11.1 Listar Tipos de Estudio - Incluye Sin Estudios Formales (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Incluye \"Sin estudios formales\" con solo_area = true y lo guarda', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    var tipo = data.find(function (t) { return t.nombre === 'Sin estudios formales'; });",
+                  "    pm.expect(tipo.solo_area).to.be.true;",
+                  "    pm.expect(tipo.requiere_carrera).to.be.false;",
+                  "    pm.environment.set('tipo_sin_estudios_id', tipo.id);",
+                  "});",
+                  "pm.test('Los demás tipos tienen solo_area = false', function () {",
+                  "    pm.response.json().data.filter(function (t) { return t.nombre !== 'Sin estudios formales'; })",
+                  "        .forEach(function (t) { pm.expect(t.solo_area).to.be.false; });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/tipos-estudio",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "tipos-estudio"
+              ]
+            },
+            "description": "Guarda `tipo_sin_estudios_id`. El front usa `solo_area` para mostrar solo el área."
+          },
+          "response": []
+        },
+        {
+          "name": "11.2 Registrar Candidata Rosa - Sin Estudios Formales en Dos Áreas (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Dos estudios sin estudios formales: solo área, sin país, estado ni fechas', function () {",
+                  "    var estudios = pm.response.json().data.estudios;",
+                  "    pm.expect(estudios).to.have.lengthOf(2);",
+                  "    estudios.forEach(function (e) {",
+                  "        pm.expect(e.tipo_estudio.nombre).to.eql('Sin estudios formales');",
+                  "        pm.expect(e.area_estudio).to.not.be.null;",
+                  "        pm.expect(e.pais).to.be.null;",
+                  "        pm.expect(e.estado).to.be.null;",
+                  "        pm.expect(e.fecha_inicio).to.be.null;",
+                  "    });",
+                  "});",
+                  "pm.test('Acepta habilidades técnicas de las dos áreas', function () {",
+                  "    pm.expect(pm.response.json().data.habilidades).to.have.lengthOf(3);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos"
+              ]
+            },
+            "description": "Solo cursos externos en Tecnología (1) e Ingeniería (2): las habilidades técnicas de ambas áreas son válidas.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Rosa\",\n    \"apellidos\": \"Sin Estudios Prueba\",\n    \"dni\": \"70000111\",\n    \"fecha_nacimiento\": \"1995-05-15\",\n    \"genero\": \"masculino\",\n    \"celular\": \"987654321\",\n    \"correo\": \"rosa.estudios@example.com\",\n    \"password\": \"Password123@\",\n    \"password_confirmation\": \"Password123@\",\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": \"{{tipo_sin_estudios_id}}\",\n            \"area_estudio_id\": 1\n        },\n        {\n            \"tipo_estudio_id\": \"{{tipo_sin_estudios_id}}\",\n            \"area_estudio_id\": 2\n        }\n    ],\n    \"idiomas\": [\n        {\n            \"idioma_id\": 1,\n            \"nivel_escrito\": \"intermedio\",\n            \"nivel_oral\": \"basico\"\n        },\n        {\n            \"idioma_id\": 2,\n            \"nivel_escrito\": \"nativo\",\n            \"nivel_oral\": \"nativo\"\n        }\n    ],\n    \"busca_primer_empleo\": false,\n    \"experiencias\": [\n        {\n            \"puesto_id\": 1,\n            \"organizacion_id\": 2,\n            \"pais_id\": 1,\n            \"nivel_puesto_id\": 4,\n            \"fecha_inicio\": \"2023-01-01\",\n            \"fecha_fin\": null,\n            \"descripcion\": \"Desarrollo de APIs REST con Laravel.\"\n        },\n        {\n            \"puesto_nombre\": \"Analista de Growth Marketing\",\n            \"organizacion_nombre\": \"Startup Andina Tech\",\n            \"pais_id\": 1,\n            \"nivel_puesto_id\": 2,\n            \"fecha_inicio\": \"2022-01-01\",\n            \"fecha_fin\": \"2022-12-01\"\n        }\n    ],\n    \"habilidades\": [\n        1,\n        43,\n        14\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "11.3 Login Candidata Rosa (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Guarda token_estudios_rosa', function () {",
+                  "    pm.environment.set('token_estudios_rosa', pm.response.json().data.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Guarda el token de Rosa en `token_estudios_rosa`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"rosa.estudios@example.com\",\n    \"password\": \"Password123@\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "11.4 Registrar Candidato - Error Sin Estudios Formales Con País y Fecha (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Error en estudios.0.pais_id', function () {",
+                  "    pm.expect(pm.response.json().errors).to.have.property('estudios.0.pais_id');",
+                  "});",
+                  "pm.test('Error en estudios.0.fecha_inicio', function () {",
+                  "    pm.expect(pm.response.json().errors).to.have.property('estudios.0.fecha_inicio');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos"
+              ]
+            },
+            "description": "Este tipo solo lleva el área de estudio.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Iván\",\n    \"apellidos\": \"Sin Estudios Prueba\",\n    \"dni\": \"70000112\",\n    \"fecha_nacimiento\": \"1995-05-15\",\n    \"genero\": \"masculino\",\n    \"celular\": \"987654321\",\n    \"correo\": \"ivan.estudios@example.com\",\n    \"password\": \"Password123@\",\n    \"password_confirmation\": \"Password123@\",\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": \"{{tipo_sin_estudios_id}}\",\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2020-01-01\"\n        }\n    ],\n    \"idiomas\": [\n        {\n            \"idioma_id\": 1,\n            \"nivel_escrito\": \"intermedio\",\n            \"nivel_oral\": \"basico\"\n        },\n        {\n            \"idioma_id\": 2,\n            \"nivel_escrito\": \"nativo\",\n            \"nivel_oral\": \"nativo\"\n        }\n    ],\n    \"busca_primer_empleo\": false,\n    \"experiencias\": [\n        {\n            \"puesto_id\": 1,\n            \"organizacion_id\": 2,\n            \"pais_id\": 1,\n            \"nivel_puesto_id\": 4,\n            \"fecha_inicio\": \"2023-01-01\",\n            \"fecha_fin\": null,\n            \"descripcion\": \"Desarrollo de APIs REST con Laravel.\"\n        },\n        {\n            \"puesto_nombre\": \"Analista de Growth Marketing\",\n            \"organizacion_nombre\": \"Startup Andina Tech\",\n            \"pais_id\": 1,\n            \"nivel_puesto_id\": 2,\n            \"fecha_inicio\": \"2022-01-01\",\n            \"fecha_fin\": \"2022-12-01\"\n        }\n    ],\n    \"habilidades\": [\n        1,\n        14\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "11.5 Registrar Candidato - Error Sin Estudios Formales Sin Área (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Error en estudios.0.area_estudio_id', function () {",
+                  "    pm.expect(pm.response.json().errors).to.have.property('estudios.0.area_estudio_id');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos"
+              ]
+            },
+            "description": "El área es obligatoria: de ella dependen las habilidades técnicas.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Iván\",\n    \"apellidos\": \"Sin Estudios Prueba\",\n    \"dni\": \"70000112\",\n    \"fecha_nacimiento\": \"1995-05-15\",\n    \"genero\": \"masculino\",\n    \"celular\": \"987654321\",\n    \"correo\": \"ivan.estudios@example.com\",\n    \"password\": \"Password123@\",\n    \"password_confirmation\": \"Password123@\",\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": \"{{tipo_sin_estudios_id}}\"\n        }\n    ],\n    \"idiomas\": [\n        {\n            \"idioma_id\": 1,\n            \"nivel_escrito\": \"intermedio\",\n            \"nivel_oral\": \"basico\"\n        },\n        {\n            \"idioma_id\": 2,\n            \"nivel_escrito\": \"nativo\",\n            \"nivel_oral\": \"nativo\"\n        }\n    ],\n    \"busca_primer_empleo\": false,\n    \"experiencias\": [\n        {\n            \"puesto_id\": 1,\n            \"organizacion_id\": 2,\n            \"pais_id\": 1,\n            \"nivel_puesto_id\": 4,\n            \"fecha_inicio\": \"2023-01-01\",\n            \"fecha_fin\": null,\n            \"descripcion\": \"Desarrollo de APIs REST con Laravel.\"\n        },\n        {\n            \"puesto_nombre\": \"Analista de Growth Marketing\",\n            \"organizacion_nombre\": \"Startup Andina Tech\",\n            \"pais_id\": 1,\n            \"nivel_puesto_id\": 2,\n            \"fecha_inicio\": \"2022-01-01\",\n            \"fecha_fin\": \"2022-12-01\"\n        }\n    ],\n    \"habilidades\": [\n        1,\n        14\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "11.6 Registrar Candidato - Error Sin Estudios Formales Junto a Universitario (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Error en estudios', function () {",
+                  "    pm.expect(pm.response.json().errors).to.have.property('estudios');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos"
+              ]
+            },
+            "description": "Es exclusivo: no se combina con otros tipos de estudio.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Iván\",\n    \"apellidos\": \"Sin Estudios Prueba\",\n    \"dni\": \"70000112\",\n    \"fecha_nacimiento\": \"1995-05-15\",\n    \"genero\": \"masculino\",\n    \"celular\": \"987654321\",\n    \"correo\": \"ivan.estudios@example.com\",\n    \"password\": \"Password123@\",\n    \"password_confirmation\": \"Password123@\",\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": 1,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 3,\n            \"estado\": \"en_curso\",\n            \"ciclo_actual\": 8,\n            \"fecha_inicio\": \"2019-03-01\",\n            \"fecha_fin\": null\n        },\n        {\n            \"tipo_estudio_id\": \"{{tipo_sin_estudios_id}}\",\n            \"area_estudio_id\": 2\n        }\n    ],\n    \"idiomas\": [\n        {\n            \"idioma_id\": 1,\n            \"nivel_escrito\": \"intermedio\",\n            \"nivel_oral\": \"basico\"\n        },\n        {\n            \"idioma_id\": 2,\n            \"nivel_escrito\": \"nativo\",\n            \"nivel_oral\": \"nativo\"\n        }\n    ],\n    \"busca_primer_empleo\": false,\n    \"experiencias\": [\n        {\n            \"puesto_id\": 1,\n            \"organizacion_id\": 2,\n            \"pais_id\": 1,\n            \"nivel_puesto_id\": 4,\n            \"fecha_inicio\": \"2023-01-01\",\n            \"fecha_fin\": null,\n            \"descripcion\": \"Desarrollo de APIs REST con Laravel.\"\n        },\n        {\n            \"puesto_nombre\": \"Analista de Growth Marketing\",\n            \"organizacion_nombre\": \"Startup Andina Tech\",\n            \"pais_id\": 1,\n            \"nivel_puesto_id\": 2,\n            \"fecha_inicio\": \"2022-01-01\",\n            \"fecha_fin\": \"2022-12-01\"\n        }\n    ],\n    \"habilidades\": [\n        1,\n        14\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "11.7 Registrar Candidato - Error Área Repetida (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Error en estudios.1.area_estudio_id', function () {",
+                  "    pm.expect(pm.response.json().errors).to.have.property('estudios.1.area_estudio_id');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos"
+              ]
+            },
+            "description": "Cada estudio de este tipo debe tener un área distinta.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Iván\",\n    \"apellidos\": \"Sin Estudios Prueba\",\n    \"dni\": \"70000112\",\n    \"fecha_nacimiento\": \"1995-05-15\",\n    \"genero\": \"masculino\",\n    \"celular\": \"987654321\",\n    \"correo\": \"ivan.estudios@example.com\",\n    \"password\": \"Password123@\",\n    \"password_confirmation\": \"Password123@\",\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": \"{{tipo_sin_estudios_id}}\",\n            \"area_estudio_id\": 1\n        },\n        {\n            \"tipo_estudio_id\": \"{{tipo_sin_estudios_id}}\",\n            \"area_estudio_id\": 1\n        }\n    ],\n    \"idiomas\": [\n        {\n            \"idioma_id\": 1,\n            \"nivel_escrito\": \"intermedio\",\n            \"nivel_oral\": \"basico\"\n        },\n        {\n            \"idioma_id\": 2,\n            \"nivel_escrito\": \"nativo\",\n            \"nivel_oral\": \"nativo\"\n        }\n    ],\n    \"busca_primer_empleo\": false,\n    \"experiencias\": [\n        {\n            \"puesto_id\": 1,\n            \"organizacion_id\": 2,\n            \"pais_id\": 1,\n            \"nivel_puesto_id\": 4,\n            \"fecha_inicio\": \"2023-01-01\",\n            \"fecha_fin\": null,\n            \"descripcion\": \"Desarrollo de APIs REST con Laravel.\"\n        },\n        {\n            \"puesto_nombre\": \"Analista de Growth Marketing\",\n            \"organizacion_nombre\": \"Startup Andina Tech\",\n            \"pais_id\": 1,\n            \"nivel_puesto_id\": 2,\n            \"fecha_inicio\": \"2022-01-01\",\n            \"fecha_fin\": \"2022-12-01\"\n        }\n    ],\n    \"habilidades\": [\n        1,\n        14\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "11.8 Registrar Candidato - Error Más de 3 Sin Estudios Formales (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Error en estudios', function () {",
+                  "    pm.expect(pm.response.json().errors).to.have.property('estudios');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos"
+              ]
+            },
+            "description": "Máximo 3 áreas.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Iván\",\n    \"apellidos\": \"Sin Estudios Prueba\",\n    \"dni\": \"70000112\",\n    \"fecha_nacimiento\": \"1995-05-15\",\n    \"genero\": \"masculino\",\n    \"celular\": \"987654321\",\n    \"correo\": \"ivan.estudios@example.com\",\n    \"password\": \"Password123@\",\n    \"password_confirmation\": \"Password123@\",\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": \"{{tipo_sin_estudios_id}}\",\n            \"area_estudio_id\": 1\n        },\n        {\n            \"tipo_estudio_id\": \"{{tipo_sin_estudios_id}}\",\n            \"area_estudio_id\": 2\n        },\n        {\n            \"tipo_estudio_id\": \"{{tipo_sin_estudios_id}}\",\n            \"area_estudio_id\": 3\n        },\n        {\n            \"tipo_estudio_id\": \"{{tipo_sin_estudios_id}}\",\n            \"area_estudio_id\": 4\n        }\n    ],\n    \"idiomas\": [\n        {\n            \"idioma_id\": 1,\n            \"nivel_escrito\": \"intermedio\",\n            \"nivel_oral\": \"basico\"\n        },\n        {\n            \"idioma_id\": 2,\n            \"nivel_escrito\": \"nativo\",\n            \"nivel_oral\": \"nativo\"\n        }\n    ],\n    \"busca_primer_empleo\": false,\n    \"experiencias\": [\n        {\n            \"puesto_id\": 1,\n            \"organizacion_id\": 2,\n            \"pais_id\": 1,\n            \"nivel_puesto_id\": 4,\n            \"fecha_inicio\": \"2023-01-01\",\n            \"fecha_fin\": null,\n            \"descripcion\": \"Desarrollo de APIs REST con Laravel.\"\n        },\n        {\n            \"puesto_nombre\": \"Analista de Growth Marketing\",\n            \"organizacion_nombre\": \"Startup Andina Tech\",\n            \"pais_id\": 1,\n            \"nivel_puesto_id\": 2,\n            \"fecha_inicio\": \"2022-01-01\",\n            \"fecha_fin\": \"2022-12-01\"\n        }\n    ],\n    \"habilidades\": [\n        1,\n        14\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "11.9 Registrar Candidato - Error Habilidad Técnica de Otra Área (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Error en habilidades.0', function () {",
+                  "    pm.expect(pm.response.json().errors).to.have.property('habilidades.0');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos"
+              ]
+            },
+            "description": "Solo Tecnología: AutoCAD (Ingeniería) no corresponde a sus áreas.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Iván\",\n    \"apellidos\": \"Sin Estudios Prueba\",\n    \"dni\": \"70000112\",\n    \"fecha_nacimiento\": \"1995-05-15\",\n    \"genero\": \"masculino\",\n    \"celular\": \"987654321\",\n    \"correo\": \"ivan.estudios@example.com\",\n    \"password\": \"Password123@\",\n    \"password_confirmation\": \"Password123@\",\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": \"{{tipo_sin_estudios_id}}\",\n            \"area_estudio_id\": 1\n        }\n    ],\n    \"idiomas\": [\n        {\n            \"idioma_id\": 1,\n            \"nivel_escrito\": \"intermedio\",\n            \"nivel_oral\": \"basico\"\n        },\n        {\n            \"idioma_id\": 2,\n            \"nivel_escrito\": \"nativo\",\n            \"nivel_oral\": \"nativo\"\n        }\n    ],\n    \"busca_primer_empleo\": false,\n    \"experiencias\": [\n        {\n            \"puesto_id\": 1,\n            \"organizacion_id\": 2,\n            \"pais_id\": 1,\n            \"nivel_puesto_id\": 4,\n            \"fecha_inicio\": \"2023-01-01\",\n            \"fecha_fin\": null,\n            \"descripcion\": \"Desarrollo de APIs REST con Laravel.\"\n        },\n        {\n            \"puesto_nombre\": \"Analista de Growth Marketing\",\n            \"organizacion_nombre\": \"Startup Andina Tech\",\n            \"pais_id\": 1,\n            \"nivel_puesto_id\": 2,\n            \"fecha_inicio\": \"2022-01-01\",\n            \"fecha_fin\": \"2022-12-01\"\n        }\n    ],\n    \"habilidades\": [\n        43,\n        14\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "11.10 Registrar Candidato - Error Universitario Sin País Sigue Siendo Obligatorio (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Error en estudios.0.pais_id', function () {",
+                  "    pm.expect(pm.response.json().errors).to.have.property('estudios.0.pais_id');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos"
+              ]
+            },
+            "description": "Los demás tipos no cambian: país, estado y fecha de inicio siguen siendo obligatorios.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Iván\",\n    \"apellidos\": \"Sin Estudios Prueba\",\n    \"dni\": \"70000112\",\n    \"fecha_nacimiento\": \"1995-05-15\",\n    \"genero\": \"masculino\",\n    \"celular\": \"987654321\",\n    \"correo\": \"ivan.estudios@example.com\",\n    \"password\": \"Password123@\",\n    \"password_confirmation\": \"Password123@\",\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": 1,\n            \"area_estudio_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 3,\n            \"estado\": \"en_curso\",\n            \"ciclo_actual\": 8,\n            \"fecha_inicio\": \"2019-03-01\",\n            \"fecha_fin\": null\n        }\n    ],\n    \"idiomas\": [\n        {\n            \"idioma_id\": 1,\n            \"nivel_escrito\": \"intermedio\",\n            \"nivel_oral\": \"basico\"\n        },\n        {\n            \"idioma_id\": 2,\n            \"nivel_escrito\": \"nativo\",\n            \"nivel_oral\": \"nativo\"\n        }\n    ],\n    \"busca_primer_empleo\": false,\n    \"experiencias\": [\n        {\n            \"puesto_id\": 1,\n            \"organizacion_id\": 2,\n            \"pais_id\": 1,\n            \"nivel_puesto_id\": 4,\n            \"fecha_inicio\": \"2023-01-01\",\n            \"fecha_fin\": null,\n            \"descripcion\": \"Desarrollo de APIs REST con Laravel.\"\n        },\n        {\n            \"puesto_nombre\": \"Analista de Growth Marketing\",\n            \"organizacion_nombre\": \"Startup Andina Tech\",\n            \"pais_id\": 1,\n            \"nivel_puesto_id\": 2,\n            \"fecha_inicio\": \"2022-01-01\",\n            \"fecha_fin\": \"2022-12-01\"\n        }\n    ],\n    \"habilidades\": [\n        1,\n        14\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "11.11 Rosa Edita Su Perfil - Deja Solo Tecnología (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Queda con un solo estudio sin estudios formales', function () {",
+                  "    var estudios = pm.response.json().data.estudios;",
+                  "    pm.expect(estudios).to.have.lengthOf(1);",
+                  "    pm.expect(estudios[0].area_estudio.id).to.eql(1);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_estudios_rosa}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos",
+                "me"
+              ]
+            },
+            "description": "Se envían también las habilidades: AutoCAD (Ingeniería) ya no corresponde.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": \"{{tipo_sin_estudios_id}}\",\n            \"area_estudio_id\": 1\n        }\n    ],\n    \"habilidades\": [\n        1,\n        14\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "11.12 Rosa Edita Su Perfil - Error Agregar Universitario (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Error en estudios', function () {",
+                  "    pm.expect(pm.response.json().errors).to.have.property('estudios');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_estudios_rosa}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos",
+                "me"
+              ]
+            },
+            "description": "Es exclusivo también al editar el perfil.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": \"{{tipo_sin_estudios_id}}\",\n            \"area_estudio_id\": 1\n        },\n        {\n            \"tipo_estudio_id\": 1,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 3,\n            \"estado\": \"en_curso\",\n            \"ciclo_actual\": 8,\n            \"fecha_inicio\": \"2019-03-01\",\n            \"fecha_fin\": null\n        }\n    ]\n}"
+            }
+          },
+          "response": []
+        }
+      ]
     }
   ]
 }

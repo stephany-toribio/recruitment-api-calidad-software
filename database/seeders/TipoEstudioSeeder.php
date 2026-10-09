@@ -9,7 +9,8 @@ class TipoEstudioSeeder extends Seeder
 {
     public function run(): void
     {
-        $tipos = ['Universitario', 'Terciario', 'Posgrado', 'Master', 'Doctorado', 'Secundario'];
+        // "Sin estudios formales" va al final para no cambiar los ids de los demás tipos
+        $tipos = ['Universitario', 'Terciario', 'Posgrado', 'Master', 'Doctorado', 'Secundario', 'Sin estudios formales'];
 
         foreach ($tipos as $nombre) {
             TipoEstudio::firstOrCreate(['nombre' => $nombre]);
