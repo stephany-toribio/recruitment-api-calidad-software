@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Requests\Candidatos\RegistrarCandidatoRequest;
 use App\Http\Requests\Candidatos\ActualizarCandidatoRequest;
+use App\Http\Requests\Catalogos\FiltrarPorPaisRequest;
 use App\Http\Resources\Api\V1\CandidatoResource;
 use App\Http\Resources\Api\V1\CatalogoResource;
 use App\Services\CandidatoService;
@@ -54,6 +55,20 @@ class CandidatoController extends BaseApiController
         return $this->successResponse(
             CatalogoResource::collection($this->catalogoService->puestosParaCandidato($candidato->id)),
             'Puestos disponibles obtenidos correctamente'
+        );
+    }
+
+
+    // GET /api/v1/candidatos/me/organizaciones?pais_id= (Organizaciones que puede elegir: catálogo global + sus personalizadas)
+    public function organizaciones(FiltrarPorPaisRequest $request): JsonResponse
+    {
+        $candidato = $this->candidatoService->obtenerPorUsuario($request->user()->id);
+
+        return $this->successResponse(
+            CatalogoResource::collection(
+                $this->catalogoService->organizacionesParaCandidato($candidato->id, $request->validated('pais_id'))
+            ),
+            'Organizaciones disponibles obtenidas correctamente'
         );
     }
 

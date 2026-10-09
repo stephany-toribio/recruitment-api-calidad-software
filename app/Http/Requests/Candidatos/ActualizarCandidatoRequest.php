@@ -58,6 +58,8 @@ class ActualizarCandidatoRequest extends FormRequest
 
     private ?array $puestosActuales = null;
 
+    private ?array $organizacionesActuales = null;
+
     protected function candidatoActualId(): ?int
     {
         return $this->user()?->candidato?->id;
@@ -68,6 +70,13 @@ class ActualizarCandidatoRequest extends FormRequest
     {
         return $this->puestosActuales ??= $this->user()?->candidato?->experiencias()
             ->pluck('puesto_id')->map(fn ($id) => (int) $id)->unique()->values()->all() ?? [];
+    }
+
+    // Igual que los puestos: lo usan la regla de organizacion_id y la validación de organizacion_nombre
+    protected function organizacionesActuales(): array
+    {
+        return $this->organizacionesActuales ??= $this->user()?->candidato?->experiencias()
+            ->pluck('organizacion_id')->map(fn ($id) => (int) $id)->unique()->values()->all() ?? [];
     }
 
     // Regla C combinando lo enviado con lo guardado: si cambian los estudios o las habilidades, las técnicas finales

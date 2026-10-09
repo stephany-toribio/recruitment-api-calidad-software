@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\Admin\InstitucionController;
+use App\Http\Controllers\Api\V1\Admin\OrganizacionController;
 use App\Http\Controllers\Api\V1\Admin\PaisController;
 use App\Http\Controllers\Api\V1\Admin\PuestoController;
 use App\Http\Controllers\Api\V1\Admin\UsuarioController;
@@ -91,4 +92,10 @@ Route::prefix('admin')
         Route::patch('/puestos/{puesto}', [PuestoController::class, 'update']);
         Route::patch('/puestos/{puesto}/desactivar', [PuestoController::class, 'desactivar']);
         Route::patch('/puestos/{puesto}/reactivar', [PuestoController::class, 'reactivar']);
+
+        Route::get('/organizaciones', [OrganizacionController::class, 'index']);
+        Route::post('/organizaciones', [OrganizacionController::class, 'store']);
+        Route::patch('/organizaciones/{organizacion}', [OrganizacionController::class, 'update']);
+        Route::patch('/organizaciones/{organizacion}/desactivar', [OrganizacionController::class, 'desactivar']);
+        Route::patch('/organizaciones/{organizacion}/reactivar', [OrganizacionController::class, 'reactivar']);
     });

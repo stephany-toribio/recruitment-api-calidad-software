@@ -56,12 +56,25 @@ class CatalogoService
             ->get(['id', 'nombre', 'candidato_id']);
     }
 
+    // Solo las globales habilitadas de países activos: las personalizadas de cada candidato no se muestran a otros
     public function organizaciones(?int $paisId): Collection
     {
-        return Organizacion::where('estado', 'activo')
-            ->where('estado_catalogo', 'aprobado')
+        return Organizacion::whereNull('candidato_id')
+            ->where('estado', 'activo')
+            ->whereHas('pais', fn ($query) => $query->where('activo', true))
             ->when($paisId, fn ($query) => $query->where('pais_id', $paisId))
             ->orderBy('nombre')
             ->get(['id', 'nombre', 'pais_id']);
+    }
+
+    // Para el candidato autenticado: las globales habilitadas más sus propias personalizadas habilitadas (nunca las de otros)
+    public function organizacionesParaCandidato(int $candidatoId, ?int $paisId): Collection
+    {
+        return Organizacion::where('estado', 'activo')
+            ->where(fn ($query) => $query->whereNull('candidato_id')->orWhere('candidato_id', $candidatoId))
+            ->whereHas('pais', fn ($query) => $query->where('activo', true))
+            ->when($paisId, fn ($query) => $query->where('pais_id', $paisId))
+            ->orderBy('nombre')
+            ->get(['id', 'nombre', 'pais_id', 'candidato_id']);
     }
 }

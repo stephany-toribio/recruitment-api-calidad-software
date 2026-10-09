@@ -16,6 +16,9 @@ Route::middleware(['auth:sanctum', 'rol:candidato'])->group(function() {
     // catálogo global + sus puestos personalizados (para agregar experiencias desde el perfil)
     Route::get('/candidatos/me/puestos', [CandidatoController::class, 'puestos']);
 
+    // catálogo global + sus organizaciones personalizadas (?pais_id= opcional)
+    Route::get('/candidatos/me/organizaciones', [CandidatoController::class, 'organizaciones']);
+
 }); 
 
 Route::middleware(['auth:sanctum', 'rol:empresa,admin'])->group(function () {

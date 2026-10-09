@@ -160,7 +160,7 @@ class CandidatoService
             $candidato->experiencias()->create([
                 'puesto_id'       => $experiencia['puesto_id'] ?? $this->resolverPuestoEscrito($experiencia['puesto_nombre'], $candidato),
                 'organizacion_id' => $experiencia['organizacion_id']
-                    ?? $this->resolverOrganizacionPropuesta($experiencia['organizacion_nombre'], $experiencia['pais_id']),
+                    ?? $this->resolverOrganizacionEscrita($experiencia['organizacion_nombre'], $experiencia['pais_id'], $candidato),
                 'pais_id'         => $experiencia['pais_id'],
                 'nivel'           => $experiencia['nivel'],
                 'fecha_inicio'    => $experiencia['fecha_inicio'],
@@ -193,11 +193,22 @@ class CandidatoService
     }
 
     // Igual que el puesto, pero la organización pertenece al país de la experiencia
-    private function resolverOrganizacionPropuesta(string $nombre, int $paisId): int
+    private function resolverOrganizacionEscrita(string $nombre, int $paisId, Candidato $candidato): int
     {
+        $nombre = trim($nombre);
+
+        $global = Organizacion::whereNull('candidato_id')
+            ->where('nombre', $nombre)
+            ->where('pais_id', $paisId)
+            ->first();
+
+        if ($global) {
+            return $global->id;
+        }
+
         return Organizacion::firstOrCreate(
-            ['nombre' => trim($nombre), 'pais_id' => $paisId],
-            ['estado' => 'inactivo', 'estado_catalogo' => 'pendiente']
+            ['nombre' => $nombre, 'pais_id' => $paisId, 'candidato_id' => $candidato->id],
+            ['estado' => 'activo']
         )->id;
     }
 };

@@ -839,11 +839,11 @@
                       "    pm.expect(data.experiencias).to.have.lengthOf(2);",
                       "    pm.expect(data.habilidades).to.have.lengthOf(3);",
                       "});",
-                      "pm.test('El puesto escrito queda como personalizado del candidato y la organización propuesta queda pendiente', function () {",
+                      "pm.test('El puesto y la organización escritos quedan como personalizados del candidato', function () {",
                       "    var propuesta = pm.response.json().data.experiencias[1];",
                       "    pm.expect(propuesta.puesto.personalizado).to.be.true;",
                       "    pm.expect(propuesta.puesto.activo).to.be.true;",
-                      "    pm.expect(propuesta.organizacion.estado_catalogo).to.eql('pendiente');",
+                      "    pm.expect(propuesta.organizacion.personalizado).to.be.true;",
                       "});",
                       "pm.test('Ya no expone campos eliminados', function () {",
                       "    var data = pm.response.json().data;",
@@ -880,7 +880,7 @@
                     "candidatos"
                   ]
                 },
-                "description": "HU-01. Registro completo: 2 estudios (Universitario con institución y carrera del catálogo + Secundario sin ninguna de las dos), 2 idiomas, 2 experiencias (una del catálogo y otra con puesto y organización escritos por nombre: el puesto queda como personalizado de Juan y la organización `pendiente`) y habilidades técnicas + blanda. Guarda `candidato_id` y `usuario_id`.",
+                "description": "HU-01. Registro completo: 2 estudios (Universitario con institución y carrera del catálogo + Secundario sin ninguna de las dos), 2 idiomas, 2 experiencias (una del catálogo y otra con puesto y organización escritos por nombre: el puesto y la organización quedan como personalizados de Juan) y habilidades técnicas + blanda. Guarda `candidato_id` y `usuario_id`.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n    \"nombre\": \"Juan\",\n    \"apellidos\": \"Perez Gomez\",\n    \"dni\": \"12345678\",\n    \"fecha_nacimiento\": \"1995-05-15\",\n    \"genero\": \"masculino\",\n    \"celular\": \"987654321\",\n    \"correo\": \"juan.perez@example.com\",\n    \"password\": \"Password123@\",\n    \"password_confirmation\": \"Password123@\",\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": 1,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 3,\n            \"estado\": \"en_curso\",\n            \"ciclo_actual\": 8,\n            \"fecha_inicio\": \"2019-03-01\",\n            \"fecha_fin\": null\n        },\n        {\n            \"tipo_estudio_id\": 6,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2013-03-01\",\n            \"fecha_fin\": \"2017-12-01\"\n        }\n    ],\n    \"idiomas\": [\n        {\n            \"idioma_id\": 1,\n            \"nivel_escrito\": \"intermedio\",\n            \"nivel_oral\": \"basico\"\n        },\n        {\n            \"idioma_id\": 2,\n            \"nivel_escrito\": \"nativo\",\n            \"nivel_oral\": \"nativo\"\n        }\n    ],\n    \"busca_primer_empleo\": false,\n    \"experiencias\": [\n        {\n            \"puesto_id\": 1,\n            \"organizacion_id\": 2,\n            \"pais_id\": 1,\n            \"nivel\": \"junior\",\n            \"fecha_inicio\": \"2023-01-01\",\n            \"fecha_fin\": null,\n            \"descripcion\": \"Desarrollo de APIs REST con Laravel.\"\n        },\n        {\n            \"puesto_nombre\": \"Analista de Growth Marketing\",\n            \"organizacion_nombre\": \"Startup Andina Tech\",\n            \"pais_id\": 1,\n            \"nivel\": \"practicante_pro\",\n            \"fecha_inicio\": \"2022-01-01\",\n            \"fecha_fin\": \"2022-12-01\"\n        }\n    ],\n    \"habilidades\": [\n        1,\n        2,\n        14\n    ]\n}"
@@ -8897,7 +8897,7 @@
                   "        pm.expect(e.pais_id).to.eql(1);",
                   "    });",
                   "});",
-                  "pm.test('No muestra \"Consultora Andina SAC\" (propuesta pendiente)', function () {",
+                  "pm.test('No muestra \"Consultora Andina SAC\" (ya no se siembra; las personalizadas no son públicas)', function () {",
                   "    var nombres = pm.response.json().data.map(function (e) { return e.nombre; });",
                   "    pm.expect(nombres).to.not.include('Consultora Andina SAC');",
                   "});"
@@ -11451,6 +11451,1456 @@
                 "admin",
                 "puestos",
                 "{{puesto_personalizado_id}}",
+                "reactivar"
+              ]
+            },
+            "description": "No se reactiva dos veces."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "9. Admin - Organizaciones y Valores Personalizados (Dev 2)",
+      "description": "HU-01 / HU-19. Igual que puestos (carpeta 8), pero cada organización pertenece a un país. La organización que escribe un candidato es personalizada suya: no se comparte ni se muestra a otros. El admin crea y edita globales (el país no cambia); las personalizadas solo las ve y las deshabilita o habilita. Requiere `token_admin` (carpeta 0). Usa sus propios candidatos (Sofía, Mateo, Valeria).",
+      "item": [
+        {
+          "name": "9.1 Registrar Candidata Sofía - Escribe Organización Personalizada (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('La organización escrita queda como personalizada de Sofía y activa', function () {",
+                  "    var org = pm.response.json().data.experiencias[0].organizacion;",
+                  "    pm.expect(org.nombre).to.eql('Startup Andina Tech');",
+                  "    pm.expect(org.personalizado).to.be.true;",
+                  "    pm.expect(org.activo).to.be.true;",
+                  "    pm.environment.set('organizacion_personalizada_id', org.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos"
+              ]
+            },
+            "description": "HU-01. Sofía escribe \"Startup Andina Tech\" (Perú), que no existe en el catálogo: se crea como personalizada suya. Guarda `organizacion_personalizada_id`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Sofía\",\n    \"apellidos\": \"Organizaciones Prueba\",\n    \"dni\": \"70000091\",\n    \"fecha_nacimiento\": \"1995-05-15\",\n    \"genero\": \"masculino\",\n    \"celular\": \"987654321\",\n    \"correo\": \"sofia.organizaciones@example.com\",\n    \"password\": \"Password123@\",\n    \"password_confirmation\": \"Password123@\",\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": 1,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 3,\n            \"estado\": \"en_curso\",\n            \"ciclo_actual\": 8,\n            \"fecha_inicio\": \"2019-03-01\",\n            \"fecha_fin\": null\n        },\n        {\n            \"tipo_estudio_id\": 6,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2013-03-01\",\n            \"fecha_fin\": \"2017-12-01\"\n        }\n    ],\n    \"idiomas\": [\n        {\n            \"idioma_id\": 1,\n            \"nivel_escrito\": \"intermedio\",\n            \"nivel_oral\": \"basico\"\n        },\n        {\n            \"idioma_id\": 2,\n            \"nivel_escrito\": \"nativo\",\n            \"nivel_oral\": \"nativo\"\n        }\n    ],\n    \"busca_primer_empleo\": false,\n    \"experiencias\": [\n        {\n            \"puesto_id\": 1,\n            \"pais_id\": 1,\n            \"nivel\": \"junior\",\n            \"fecha_inicio\": \"2023-01-01\",\n            \"fecha_fin\": null,\n            \"descripcion\": \"Desarrollo de APIs REST con Laravel.\",\n            \"organizacion_nombre\": \"Startup   Andina Tech\"\n        }\n    ],\n    \"habilidades\": [\n        1,\n        2,\n        14\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "9.2 Login Candidata Sofía (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Guarda token_organizaciones_sofia', function () {",
+                  "    pm.environment.set('token_organizaciones_sofia', pm.response.json().data.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Guarda el token de Sofía en `token_organizaciones_sofia`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"sofia.organizaciones@example.com\",\n    \"password\": \"Password123@\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "9.3 Registrar Candidato Mateo - Mismo Nombre Crea Su Propia Organización (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Mateo obtiene su propia organización, no la de Sofía', function () {",
+                  "    var org = pm.response.json().data.experiencias[0].organizacion;",
+                  "    pm.expect(org.personalizado).to.be.true;",
+                  "    pm.expect(org.id).to.not.eql(Number(pm.environment.get('organizacion_personalizada_id')));",
+                  "    pm.environment.set('organizacion_personalizada_mateo_id', org.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos"
+              ]
+            },
+            "description": "Mateo escribe \"startup andina tech\" en Perú (no puede ver la de Sofía): se crea una propia. Guarda `organizacion_personalizada_mateo_id`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Mateo\",\n    \"apellidos\": \"Organizaciones Prueba\",\n    \"dni\": \"70000092\",\n    \"fecha_nacimiento\": \"1995-05-15\",\n    \"genero\": \"masculino\",\n    \"celular\": \"987654321\",\n    \"correo\": \"mateo.organizaciones@example.com\",\n    \"password\": \"Password123@\",\n    \"password_confirmation\": \"Password123@\",\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": 1,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 3,\n            \"estado\": \"en_curso\",\n            \"ciclo_actual\": 8,\n            \"fecha_inicio\": \"2019-03-01\",\n            \"fecha_fin\": null\n        },\n        {\n            \"tipo_estudio_id\": 6,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2013-03-01\",\n            \"fecha_fin\": \"2017-12-01\"\n        }\n    ],\n    \"idiomas\": [\n        {\n            \"idioma_id\": 1,\n            \"nivel_escrito\": \"intermedio\",\n            \"nivel_oral\": \"basico\"\n        },\n        {\n            \"idioma_id\": 2,\n            \"nivel_escrito\": \"nativo\",\n            \"nivel_oral\": \"nativo\"\n        }\n    ],\n    \"busca_primer_empleo\": false,\n    \"experiencias\": [\n        {\n            \"puesto_id\": 1,\n            \"pais_id\": 1,\n            \"nivel\": \"junior\",\n            \"fecha_inicio\": \"2023-01-01\",\n            \"fecha_fin\": null,\n            \"descripcion\": \"Desarrollo de APIs REST con Laravel.\",\n            \"organizacion_nombre\": \"startup andina tech\"\n        }\n    ],\n    \"habilidades\": [\n        1,\n        2,\n        14\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "9.4 Registrar Candidato - Nombre de Organización Global Usa el Catálogo (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Usa la organización global del país, no crea una personalizada', function () {",
+                  "    var org = pm.response.json().data.experiencias[0].organizacion;",
+                  "    pm.expect(org.nombre).to.eql('Interbank');",
+                  "    pm.expect(org.personalizado).to.be.false;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos"
+              ]
+            },
+            "description": "Escribe \"interbank\" en Perú, que ya existe en el catálogo global de ese país: se usa esa organización.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Valeria\",\n    \"apellidos\": \"Organizaciones Prueba\",\n    \"dni\": \"70000093\",\n    \"fecha_nacimiento\": \"1995-05-15\",\n    \"genero\": \"masculino\",\n    \"celular\": \"987654321\",\n    \"correo\": \"valeria.organizaciones@example.com\",\n    \"password\": \"Password123@\",\n    \"password_confirmation\": \"Password123@\",\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": 1,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 3,\n            \"estado\": \"en_curso\",\n            \"ciclo_actual\": 8,\n            \"fecha_inicio\": \"2019-03-01\",\n            \"fecha_fin\": null\n        },\n        {\n            \"tipo_estudio_id\": 6,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2013-03-01\",\n            \"fecha_fin\": \"2017-12-01\"\n        }\n    ],\n    \"idiomas\": [\n        {\n            \"idioma_id\": 1,\n            \"nivel_escrito\": \"intermedio\",\n            \"nivel_oral\": \"basico\"\n        },\n        {\n            \"idioma_id\": 2,\n            \"nivel_escrito\": \"nativo\",\n            \"nivel_oral\": \"nativo\"\n        }\n    ],\n    \"busca_primer_empleo\": false,\n    \"experiencias\": [\n        {\n            \"puesto_id\": 1,\n            \"pais_id\": 1,\n            \"nivel\": \"junior\",\n            \"fecha_inicio\": \"2023-01-01\",\n            \"fecha_fin\": null,\n            \"descripcion\": \"Desarrollo de APIs REST con Laravel.\",\n            \"organizacion_nombre\": \"interbank\"\n        }\n    ],\n    \"habilidades\": [\n        1,\n        2,\n        14\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "9.5 Catálogo Público No Muestra Organizaciones Personalizadas (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('No aparece Startup Andina Tech', function () {",
+                  "    var nombres = pm.response.json().data.map(function (e) { return e.nombre.toLowerCase(); });",
+                  "    pm.expect(nombres).to.not.include('startup andina tech');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/organizaciones?pais_id=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "organizaciones"
+              ],
+              "query": [
+                {
+                  "key": "pais_id",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Las personalizadas no se muestran como opción a otros usuarios."
+          },
+          "response": []
+        },
+        {
+          "name": "9.6 Sofía - Mis Organizaciones Incluye Su Personalizada (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Incluye la de Sofía (personalizada) y no la de Mateo', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    var ids = data.map(function (o) { return o.id; });",
+                  "    var propia = data.find(function (o) { return o.id === Number(pm.environment.get('organizacion_personalizada_id')); });",
+                  "    pm.expect(propia.personalizado).to.be.true;",
+                  "    pm.expect(ids).to.not.include(Number(pm.environment.get('organizacion_personalizada_mateo_id')));",
+                  "});",
+                  "pm.test('Incluye las globales del país', function () {",
+                  "    var nombres = pm.response.json().data.filter(function (o) { return !o.personalizado; }).map(function (o) { return o.nombre; });",
+                  "    pm.expect(nombres).to.include('Interbank');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_organizaciones_sofia}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos/me/organizaciones?pais_id=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos",
+                "me",
+                "organizaciones"
+              ],
+              "query": [
+                {
+                  "key": "pais_id",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Catálogo global + las personalizadas del candidato autenticado. Lo usa el perfil al agregar experiencias."
+          },
+          "response": []
+        },
+        {
+          "name": "9.7 Mis Organizaciones - Error Sin Token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos/me/organizaciones",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos",
+                "me",
+                "organizaciones"
+              ]
+            },
+            "description": "Ruta protegida con Sanctum."
+          },
+          "response": []
+        },
+        {
+          "name": "9.8 Mis Organizaciones - Error Token de Admin (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 403 Forbidden', function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos/me/organizaciones",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos",
+                "me",
+                "organizaciones"
+              ]
+            },
+            "description": "Solo el rol candidato."
+          },
+          "response": []
+        },
+        {
+          "name": "9.9 Admin - Listar Organizaciones Personalizadas de Perú (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Incluye las de Sofía y Mateo con su creador y país', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    var sofia = data.find(function (o) { return o.id === Number(pm.environment.get('organizacion_personalizada_id')); });",
+                  "    pm.expect(sofia.personalizado).to.be.true;",
+                  "    pm.expect(sofia.creado_por.nombre).to.eql('Sofía');",
+                  "    pm.expect(sofia.pais.id).to.eql(1);",
+                  "    pm.expect(sofia.candidatos_con_mismo_nombre).to.be.at.least(2);",
+                  "    data.forEach(function (o) { pm.expect(o.personalizado).to.be.true; pm.expect(o.pais_id).to.eql(1); });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/organizaciones?tipo=personalizado&pais_id=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "organizaciones"
+              ],
+              "query": [
+                {
+                  "key": "tipo",
+                  "value": "personalizado"
+                },
+                {
+                  "key": "pais_id",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Bandeja de moderación: el admin ve las organizaciones escritas por candidatos, quién las escribió y su país."
+          },
+          "response": []
+        },
+        {
+          "name": "9.10 Admin - Listar Organizaciones - Error Filtro Inválido (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Error en tipo', function () {",
+                  "    pm.expect(pm.response.json().errors).to.have.property('tipo');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/organizaciones?tipo=otra",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "organizaciones"
+              ],
+              "query": [
+                {
+                  "key": "tipo",
+                  "value": "otra"
+                }
+              ]
+            },
+            "description": "tipo solo acepta global o personalizado."
+          },
+          "response": []
+        },
+        {
+          "name": "9.11 Admin - Crear Organización Global (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Se crea global, activa y en el país indicado', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    pm.expect(data.personalizado).to.be.false;",
+                  "    pm.expect(data.activo).to.be.true;",
+                  "    pm.expect(data.pais.id).to.eql(1);",
+                  "    pm.environment.set('organizacion_global_id', data.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/organizaciones",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "organizaciones"
+              ]
+            },
+            "description": "Guarda `organizacion_global_id`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"  Rimac   Seguros \",\n    \"pais_id\": 1\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "9.12 Admin - Crear Organización - Error Nombre Duplicado en el País (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Error en nombre', function () {",
+                  "    pm.expect(pm.response.json().errors).to.have.property('nombre');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/organizaciones",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "organizaciones"
+              ]
+            },
+            "description": "El nombre es único entre las globales del mismo país.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Interbank\",\n    \"pais_id\": 1\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "9.13 Admin - Crear Organización - Error Sin País (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Error en pais_id', function () {",
+                  "    pm.expect(pm.response.json().errors).to.have.property('pais_id');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/organizaciones",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "organizaciones"
+              ]
+            },
+            "description": "El país es obligatorio.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Pacífico Seguros\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "9.14 Admin - Crear Organización - Error Token de Candidato (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 403 Forbidden', function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_organizaciones_sofia}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/organizaciones",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "organizaciones"
+              ]
+            },
+            "description": "Solo el rol admin.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Pacífico Seguros\",\n    \"pais_id\": 1\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "9.15 Admin - Crear Organización - Error Sin Token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/organizaciones",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "organizaciones"
+              ]
+            },
+            "description": "Ruta protegida con Sanctum.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Pacífico Seguros\",\n    \"pais_id\": 1\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "9.16 Admin - Editar Organización Global (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Nombre actualizado', function () {",
+                  "    pm.expect(pm.response.json().data.nombre).to.eql('Rimac Seguros y Reaseguros');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/organizaciones/{{organizacion_global_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "organizaciones",
+                "{{organizacion_global_id}}"
+              ]
+            },
+            "description": "Solo se edita el nombre de una global.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Rimac Seguros y Reaseguros\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "9.17 Admin - Editar Organización - Error Cambiar País (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Error en pais_id', function () {",
+                  "    pm.expect(pm.response.json().errors).to.have.property('pais_id');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/organizaciones/{{organizacion_global_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "organizaciones",
+                "{{organizacion_global_id}}"
+              ]
+            },
+            "description": "El país no se puede cambiar: las experiencias están enlazadas por (organizacion_id, pais_id).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"pais_id\": 2\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "9.18 Admin - Editar Organización Personalizada - Error (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 409 Conflict', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "pm.test('Devuelve ORGANIZACION_PERSONALIZADA_NO_EDITABLE', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('ORGANIZACION_PERSONALIZADA_NO_EDITABLE');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/organizaciones/{{organizacion_personalizada_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "organizaciones",
+                "{{organizacion_personalizada_id}}"
+              ]
+            },
+            "description": "El texto es del candidato: el admin solo puede verla y deshabilitarla.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Andina Tech\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "9.19 Admin - Editar Organización - Error No Encontrada (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 404 Not Found', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test('Devuelve RESOURCE_NOT_FOUND', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('RESOURCE_NOT_FOUND');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/organizaciones/99999",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "organizaciones",
+                "99999"
+              ]
+            },
+            "description": "Route Model Binding.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"No Existe\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "9.20 Admin - Desactivar Organización Personalizada (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Queda inactiva y sigue siendo personalizada', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    pm.expect(data.activo).to.be.false;",
+                  "    pm.expect(data.personalizado).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/organizaciones/{{organizacion_personalizada_id}}/desactivar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "organizaciones",
+                "{{organizacion_personalizada_id}}",
+                "desactivar"
+              ]
+            },
+            "description": "Deshabilita la organización de Sofía. La de Mateo no se ve afectada."
+          },
+          "response": []
+        },
+        {
+          "name": "9.21 Admin - Desactivar Organización Ya Inactiva (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 409 Conflict', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "pm.test('Devuelve ORGANIZACION_ALREADY_INACTIVE', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('ORGANIZACION_ALREADY_INACTIVE');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/organizaciones/{{organizacion_personalizada_id}}/desactivar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "organizaciones",
+                "{{organizacion_personalizada_id}}",
+                "desactivar"
+              ]
+            },
+            "description": "No se desactiva dos veces."
+          },
+          "response": []
+        },
+        {
+          "name": "9.22 Sofía - Mis Organizaciones No Incluye Su Deshabilitada (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('La personalizada deshabilitada no se ofrece para elegir', function () {",
+                  "    var ids = pm.response.json().data.map(function (o) { return o.id; });",
+                  "    pm.expect(ids).to.not.include(Number(pm.environment.get('organizacion_personalizada_id')));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_organizaciones_sofia}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos/me/organizaciones?pais_id=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos",
+                "me",
+                "organizaciones"
+              ],
+              "query": [
+                {
+                  "key": "pais_id",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "La conserva en su experiencia (9.23), pero no puede volver a elegirla."
+          },
+          "response": []
+        },
+        {
+          "name": "9.23 Sofía Conserva Su Organización Deshabilitada al Editar Perfil (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Conserva la organización, marcada como inactiva', function () {",
+                  "    var org = pm.response.json().data.experiencias[0].organizacion;",
+                  "    pm.expect(org.id).to.eql(Number(pm.environment.get('organizacion_personalizada_id')));",
+                  "    pm.expect(org.activo).to.be.false;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_organizaciones_sofia}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos",
+                "me"
+              ]
+            },
+            "description": "Mismo criterio que puestos (8.18) y habilidades (2.49).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"experiencias\": [\n        {\n            \"puesto_id\": 1,\n            \"pais_id\": 1,\n            \"nivel\": \"junior\",\n            \"fecha_inicio\": \"2023-01-01\",\n            \"fecha_fin\": null,\n            \"descripcion\": \"Desarrollo de APIs REST con Laravel.\",\n            \"organizacion_id\": \"{{organizacion_personalizada_id}}\"\n        }\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "9.24 Sofía Usa la Organización Personalizada de Mateo - Error (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Error en experiencias.0.organizacion_id', function () {",
+                  "    pm.expect(pm.response.json().errors).to.have.property('experiencias.0.organizacion_id');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_organizaciones_sofia}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos",
+                "me"
+              ]
+            },
+            "description": "Una personalizada solo la puede usar su dueño.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"experiencias\": [\n        {\n            \"puesto_id\": 1,\n            \"pais_id\": 1,\n            \"nivel\": \"junior\",\n            \"fecha_inicio\": \"2023-01-01\",\n            \"fecha_fin\": null,\n            \"descripcion\": \"Desarrollo de APIs REST con Laravel.\",\n            \"organizacion_id\": \"{{organizacion_personalizada_mateo_id}}\"\n        }\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "9.25 Admin - Desactivar Organización Global (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Queda inactiva', function () {",
+                  "    pm.expect(pm.response.json().data.activo).to.be.false;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/organizaciones/{{organizacion_global_id}}/desactivar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "organizaciones",
+                "{{organizacion_global_id}}",
+                "desactivar"
+              ]
+            },
+            "description": "Prepara 9.26."
+          },
+          "response": []
+        },
+        {
+          "name": "9.26 Registrar Candidato - Escribe Organización Global Deshabilitada - Error (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Error en experiencias.0.organizacion_nombre', function () {",
+                  "    pm.expect(pm.response.json().errors).to.have.property('experiencias.0.organizacion_nombre');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos"
+              ]
+            },
+            "description": "No se puede esquivar una desactivación del admin escribiendo el nombre.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Diego\",\n    \"apellidos\": \"Organizaciones Prueba\",\n    \"dni\": \"70000094\",\n    \"fecha_nacimiento\": \"1995-05-15\",\n    \"genero\": \"masculino\",\n    \"celular\": \"987654321\",\n    \"correo\": \"diego.organizaciones@example.com\",\n    \"password\": \"Password123@\",\n    \"password_confirmation\": \"Password123@\",\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": 1,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 3,\n            \"estado\": \"en_curso\",\n            \"ciclo_actual\": 8,\n            \"fecha_inicio\": \"2019-03-01\",\n            \"fecha_fin\": null\n        },\n        {\n            \"tipo_estudio_id\": 6,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2013-03-01\",\n            \"fecha_fin\": \"2017-12-01\"\n        }\n    ],\n    \"idiomas\": [\n        {\n            \"idioma_id\": 1,\n            \"nivel_escrito\": \"intermedio\",\n            \"nivel_oral\": \"basico\"\n        },\n        {\n            \"idioma_id\": 2,\n            \"nivel_escrito\": \"nativo\",\n            \"nivel_oral\": \"nativo\"\n        }\n    ],\n    \"busca_primer_empleo\": false,\n    \"experiencias\": [\n        {\n            \"puesto_id\": 1,\n            \"pais_id\": 1,\n            \"nivel\": \"junior\",\n            \"fecha_inicio\": \"2023-01-01\",\n            \"fecha_fin\": null,\n            \"descripcion\": \"Desarrollo de APIs REST con Laravel.\",\n            \"organizacion_nombre\": \"Rimac Seguros y Reaseguros\"\n        }\n    ],\n    \"habilidades\": [\n        1,\n        2,\n        14\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "9.27 Admin - Reactivar Organización Global (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Queda activa', function () {",
+                  "    pm.expect(pm.response.json().data.activo).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/organizaciones/{{organizacion_global_id}}/reactivar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "organizaciones",
+                "{{organizacion_global_id}}",
+                "reactivar"
+              ]
+            },
+            "description": "Vuelve al catálogo público."
+          },
+          "response": []
+        },
+        {
+          "name": "9.28 Admin - Reactivar Organización Personalizada No La Vuelve Global (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Activa, pero sigue siendo personalizada', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    pm.expect(data.activo).to.be.true;",
+                  "    pm.expect(data.personalizado).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/organizaciones/{{organizacion_personalizada_id}}/reactivar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "organizaciones",
+                "{{organizacion_personalizada_id}}",
+                "reactivar"
+              ]
+            },
+            "description": "HU-01: no se contempla convertir un valor personalizado en global."
+          },
+          "response": []
+        },
+        {
+          "name": "9.29 Admin - Reactivar Organización Ya Activa (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 409 Conflict', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "pm.test('Devuelve ORGANIZACION_ALREADY_ACTIVE', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('ORGANIZACION_ALREADY_ACTIVE');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/organizaciones/{{organizacion_personalizada_id}}/reactivar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "organizaciones",
+                "{{organizacion_personalizada_id}}",
                 "reactivar"
               ]
             },

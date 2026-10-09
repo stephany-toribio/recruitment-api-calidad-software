@@ -21,11 +21,12 @@ class ExperienciaLaboralResource extends JsonResource
                 'personalizado' => $this->puesto->esPersonalizado(),
                 'activo'        => $this->puesto->estado === 'activo',
             ]),
-            // estado_catalogo permite al frontend mostrar "pendiente de validación" en lo que propuso el candidato
+            // Mismo criterio que el puesto
             'organizacion' => $this->whenLoaded('organizacion', fn () => [
-                'id'              => $this->organizacion->id,
-                'nombre'          => $this->organizacion->nombre,
-                'estado_catalogo' => $this->organizacion->estado_catalogo,
+                'id'            => $this->organizacion->id,
+                'nombre'        => $this->organizacion->nombre,
+                'personalizado' => $this->organizacion->esPersonalizada(),
+                'activo'        => $this->organizacion->estado === 'activo',
             ]),
             'pais'         => $this->whenLoaded('pais', fn () => [
                 'id'     => $this->pais->id,

@@ -81,8 +81,33 @@ trait ReglasPerfilCandidato
                 }),
             ],
             'experiencias.*.puesto_nombre'       => ['nullable', 'required_without:experiencias.*.puesto_id', 'prohibits:experiencias.*.puesto_id', 'string', 'max:200'],
-            'experiencias.*.organizacion_id'     => ['nullable', 'required_without:experiencias.*.organizacion_nombre', 'prohibits:experiencias.*.organizacion_nombre', 'integer', Rule::exists('organizaciones', 'id')->where('estado', 'activo')],
-            'experiencias.*.organizacion_nombre' => ['nullable', 'string', 'max:200'],
+            // Organización por id: misma regla que el puesto (global activa, propia activa o una que ya tenía)
+            'experiencias.*.organizacion_id'     => [
+                'nullable',
+                'required_without:experiencias.*.organizacion_nombre',
+                'prohibits:experiencias.*.organizacion_nombre',
+                'integer',
+                Rule::exists('organizaciones', 'id')->where(function (Builder $query) {
+                    $candidatoId = $this->candidatoActualId();
+                    $organizacionesActuales = $this->organizacionesActuales();
+
+                    $query->where(function (Builder $query) use ($candidatoId) {
+                        $query->where('estado', 'activo')
+                            ->where(function (Builder $query) use ($candidatoId) {
+                                $query->whereNull('candidato_id');
+
+                                if ($candidatoId) {
+                                    $query->orWhere('candidato_id', $candidatoId);
+                                }
+                            });
+                    });
+
+                    if (! empty($organizacionesActuales)) {
+                        $query->orWhereIn('id', $organizacionesActuales);
+                    }
+                }),
+            ],
+            'experiencias.*.organizacion_nombre' => ['nullable', 'required_without:experiencias.*.organizacion_id', 'prohibits:experiencias.*.organizacion_id', 'string', 'max:200'],
             'experiencias.*.pais_id'             => ['required', 'integer', Rule::exists('paises', 'id')->where('activo', true)],
             'experiencias.*.nivel'               => ['required', 'in:practicante_pre,practicante_pro,trainee,junior,semi_senior,senior,jefe_supervisor,gerente_director'],
             'experiencias.*.fecha_inicio'        => ['required', 'date_format:Y-m-d'],
@@ -247,6 +272,7 @@ trait ReglasPerfilCandidato
             }
 
             $this->validarPuestoEscrito($validator, $i, $experiencia);
+            $this->validarOrganizacionEscrita($validator, $i, $experiencia);
 
             $organizacionId = $this->entero($experiencia['organizacion_id'] ?? null);
             $paisOrganizacion = $organizacionId ? $this->entero($paisesOrganizacion[$organizacionId] ?? null) : null;
@@ -287,6 +313,37 @@ trait ReglasPerfilCandidato
         }
     }
 
+    /**
+     * Organización escrita por nombre: igual que el puesto, pero buscando dentro del país de la experiencia.
+     */
+    private function validarOrganizacionEscrita(Validator $validator, int|string $i, array $experiencia): void
+    {
+        $nombre = $experiencia['organizacion_nombre'] ?? null;
+        $paisId = $this->entero($experiencia['pais_id'] ?? null);
+
+        if (! is_string($nombre) || $nombre === '' || $paisId === null || filled($experiencia['organizacion_id'] ?? null)) {
+            return; // vacío, sin país o enviado junto al id: ya lo reporta rules()
+        }
+
+        $candidatoId = $this->candidatoActualId();
+
+        $organizacion = Organizacion::where('nombre', $nombre)
+            ->where('pais_id', $paisId)
+            ->where(function ($query) use ($candidatoId) {
+                $query->whereNull('candidato_id');
+
+                if ($candidatoId) {
+                    $query->orWhere('candidato_id', $candidatoId);
+                }
+            })
+            ->orderByRaw('candidato_id IS NOT NULL') // la global primero
+            ->first();
+
+        if ($organizacion && $organizacion->estado !== 'activo' && ! in_array($organizacion->id, $this->organizacionesActuales(), true)) {
+            $this->agregarError($validator, "experiencias.$i.organizacion_nombre", "La organización «{$organizacion->nombre}» no está disponible. Selecciona otra o escribe una distinta.");
+        }
+    }
+
     // Candidato que edita su perfil. En el registro todavía no existe (lo sobrescribe ActualizarCandidatoRequest)
     protected function candidatoActualId(): ?int
     {
@@ -295,6 +352,12 @@ trait ReglasPerfilCandidato
 
     // Puestos que el candidato ya tiene en sus experiencias: los conserva aunque el administrador los deshabilite
     protected function puestosActuales(): array
+    {
+        return [];
+    }
+
+    // Organizaciones que el candidato ya tiene en sus experiencias: las conserva aunque el administrador las deshabilite
+    protected function organizacionesActuales(): array
     {
         return [];
     }
@@ -433,7 +496,11 @@ trait ReglasPerfilCandidato
             'experiencias.*.puesto_nombre.max'                => 'El nombre del puesto no puede superar los 200 caracteres.',
             'experiencias.*.organizacion_id.required_without' => 'Seleccione una organización o escriba una nueva.',
             'experiencias.*.organizacion_id.prohibits'        => 'Envíe la organización del catálogo o una nueva, no ambas.',
-            'experiencias.*.organizacion_id.exists'           => 'La organización seleccionada no es válida.',
+            'experiencias.*.organizacion_id.exists'           => 'La organización seleccionada no es válida o no está disponible.',
+            'experiencias.*.organizacion_nombre.required_without' => 'Seleccione una organización o escriba una nueva.',
+            'experiencias.*.organizacion_nombre.prohibits'    => 'Envíe la organización del catálogo o una nueva, no ambas.',
+            'experiencias.*.organizacion_nombre.string'       => 'El nombre de la organización debe ser texto.',
+            'experiencias.*.organizacion_nombre.max'          => 'El nombre de la organización no puede superar los 200 caracteres.',
             'experiencias.*.pais_id.required'    => 'El país de la experiencia es obligatorio.',
             'experiencias.*.pais_id.exists'      => 'El país de la experiencia no existe o está inactivo.',
             'experiencias.*.nivel.required'      => 'El nivel del puesto es obligatorio.',
@@ -464,15 +531,10 @@ trait ReglasPerfilCandidato
                 continue;
             }
 
-            if (
-                array_key_exists('puesto_nombre', $experiencia)
-                && is_string($experiencia['puesto_nombre'])
-            ) {
-                $experiencia['puesto_nombre'] = preg_replace(
-                    '/\s+/u',
-                    ' ',
-                    trim($experiencia['puesto_nombre'])
-                );
+            foreach (['puesto_nombre', 'organizacion_nombre'] as $campo) {
+                if (array_key_exists($campo, $experiencia) && is_string($experiencia[$campo])) {
+                    $experiencia[$campo] = preg_replace('/\s+/u', ' ', trim($experiencia[$campo]));
+                }
             }
         }
 
