@@ -158,7 +158,7 @@ class CandidatoService
     {
         foreach ($experiencias as $experiencia) {
             $candidato->experiencias()->create([
-                'puesto_id'       => $experiencia['puesto_id'] ?? $this->resolverPuestoPropuesto($experiencia['puesto_nombre']),
+                'puesto_id'       => $experiencia['puesto_id'] ?? $this->resolverPuestoEscrito($experiencia['puesto_nombre'], $candidato),
                 'organizacion_id' => $experiencia['organizacion_id']
                     ?? $this->resolverOrganizacionPropuesta($experiencia['organizacion_nombre'], $experiencia['pais_id']),
                 'pais_id'         => $experiencia['pais_id'],
@@ -171,11 +171,24 @@ class CandidatoService
     }
 
     
-    private function resolverPuestoPropuesto(string $nombre): int
+    /**
+     * Puesto escrito por el candidato: si el nombre ya existe en el catálogo global se usa ese;
+     * si no, se usa o se crea su propio valor personalizado (no se comparte con otros candidatos).
+     * Que no esté deshabilitado ya lo valida ReglasPerfilCandidato.
+     */
+    private function resolverPuestoEscrito(string $nombre, Candidato $candidato): int
     {
+        $nombre = trim($nombre);
+
+        $global = Puesto::whereNull('candidato_id')->where('nombre', $nombre)->first();
+
+        if ($global) {
+            return $global->id;
+        }
+
         return Puesto::firstOrCreate(
-            ['nombre' => trim($nombre)],
-            ['estado' => 'inactivo', 'estado_catalogo' => 'pendiente']
+            ['nombre' => $nombre, 'candidato_id' => $candidato->id],
+            ['estado' => 'activo']
         )->id;
     }
 

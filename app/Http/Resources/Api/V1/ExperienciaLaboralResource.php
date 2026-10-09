@@ -14,12 +14,14 @@ class ExperienciaLaboralResource extends JsonResource
     {
         return [
             'id'           => $this->id,
-            // estado_catalogo permite al frontend mostrar "pendiente de validación" en lo que propuso el candidato
+            // personalizado: lo escribió el candidato. activo = false: el administrador lo deshabilitó (lo conserva, pero no puede volver a elegirlo)
             'puesto'       => $this->whenLoaded('puesto', fn () => [
-                'id'              => $this->puesto->id,
-                'nombre'          => $this->puesto->nombre,
-                'estado_catalogo' => $this->puesto->estado_catalogo,
+                'id'            => $this->puesto->id,
+                'nombre'        => $this->puesto->nombre,
+                'personalizado' => $this->puesto->esPersonalizado(),
+                'activo'        => $this->puesto->estado === 'activo',
             ]),
+            // estado_catalogo permite al frontend mostrar "pendiente de validación" en lo que propuso el candidato
             'organizacion' => $this->whenLoaded('organizacion', fn () => [
                 'id'              => $this->organizacion->id,
                 'nombre'          => $this->organizacion->nombre,

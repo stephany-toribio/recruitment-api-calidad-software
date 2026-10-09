@@ -87,6 +87,8 @@ Route::prefix('admin')
         Route::patch('/instituciones/{institucion}/reactivar', [InstitucionController::class, 'reactivar']);
 
         Route::get('/puestos', [PuestoController::class, 'index']);
+        Route::post('/puestos', [PuestoController::class, 'store']);
+        Route::patch('/puestos/{puesto}', [PuestoController::class, 'update']);
         Route::patch('/puestos/{puesto}/desactivar', [PuestoController::class, 'desactivar']);
         Route::patch('/puestos/{puesto}/reactivar', [PuestoController::class, 'reactivar']);
     });

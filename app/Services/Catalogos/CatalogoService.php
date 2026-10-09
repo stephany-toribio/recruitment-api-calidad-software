@@ -38,13 +38,22 @@ class CatalogoService
         return Idioma::orderBy('nombre')->get(['id', 'nombre']);
     }
 
-    // Solo los aprobados y visibles: las propuestas pendientes de otros candidatos no se muestran
+    // Solo los globales habilitados: los personalizados que escribe cada candidato no se muestran a otros
     public function puestos(): Collection
     {
-        return Puesto::where('estado', 'activo')
-            ->where('estado_catalogo', 'aprobado')
+        return Puesto::whereNull('candidato_id')
+            ->where('estado', 'activo')
             ->orderBy('nombre')
             ->get(['id', 'nombre']);
+    }
+
+    // Para el candidato autenticado: los globales habilitados más sus propios personalizados habilitados (nunca los de otros)
+    public function puestosParaCandidato(int $candidatoId): Collection
+    {
+        return Puesto::where('estado', 'activo')
+            ->where(fn ($query) => $query->whereNull('candidato_id')->orWhere('candidato_id', $candidatoId))
+            ->orderBy('nombre')
+            ->get(['id', 'nombre', 'candidato_id']);
     }
 
     public function organizaciones(?int $paisId): Collection

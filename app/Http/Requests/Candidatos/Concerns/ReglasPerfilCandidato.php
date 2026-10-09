@@ -6,6 +6,7 @@ use App\Models\Carrera;
 use App\Models\Habilidad;
 use App\Models\Institucion;
 use App\Models\Organizacion;
+use App\Models\Puesto;
 use App\Models\TipoEstudio;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Database\Query\Builder;
@@ -53,14 +54,31 @@ trait ReglasPerfilCandidato
                 'array', 'min:1', 'max:5',
             ],
             // Un puesto u organización del catálogo (id) o uno nuevo propuesto por el candidato (nombre)
+            // Puesto por id: global activo, personalizado propio activo, o uno que ya tenía aunque luego se deshabilitara
             'experiencias.*.puesto_id'           => [
                 'nullable',
                 'required_without:experiencias.*.puesto_nombre',
                 'prohibits:experiencias.*.puesto_nombre',
                 'integer',
-                Rule::exists('puestos', 'id')
-                    ->where('estado', 'activo')
-                    ->where('estado_catalogo', 'aprobado'),
+                Rule::exists('puestos', 'id')->where(function (Builder $query) {
+                    $candidatoId = $this->candidatoActualId();
+                    $puestosActuales = $this->puestosActuales();
+
+                    $query->where(function (Builder $query) use ($candidatoId) {
+                        $query->where('estado', 'activo')
+                            ->where(function (Builder $query) use ($candidatoId) {
+                                $query->whereNull('candidato_id');
+
+                                if ($candidatoId) {
+                                    $query->orWhere('candidato_id', $candidatoId);
+                                }
+                            });
+                    });
+
+                    if (! empty($puestosActuales)) {
+                        $query->orWhereIn('id', $puestosActuales);
+                    }
+                }),
             ],
             'experiencias.*.puesto_nombre'       => ['nullable', 'required_without:experiencias.*.puesto_id', 'prohibits:experiencias.*.puesto_id', 'string', 'max:200'],
             'experiencias.*.organizacion_id'     => ['nullable', 'required_without:experiencias.*.organizacion_nombre', 'prohibits:experiencias.*.organizacion_nombre', 'integer', Rule::exists('organizaciones', 'id')->where('estado', 'activo')],
@@ -228,6 +246,8 @@ trait ReglasPerfilCandidato
                 continue;
             }
 
+            $this->validarPuestoEscrito($validator, $i, $experiencia);
+
             $organizacionId = $this->entero($experiencia['organizacion_id'] ?? null);
             $paisOrganizacion = $organizacionId ? $this->entero($paisesOrganizacion[$organizacionId] ?? null) : null;
 
@@ -235,6 +255,48 @@ trait ReglasPerfilCandidato
                 $this->agregarError($validator, "experiencias.$i.organizacion_id", 'La organización seleccionada no pertenece al país de la experiencia.');
             }
         }
+    }
+
+    /**
+     * Puesto escrito por nombre: resuelve igual que CandidatoService (primero el global, luego el propio)
+     * y rechaza el que el administrador deshabilitó, salvo que el candidato ya lo tuviera.
+     */
+    private function validarPuestoEscrito(Validator $validator, int|string $i, array $experiencia): void
+    {
+        $nombre = $experiencia['puesto_nombre'] ?? null;
+
+        if (! is_string($nombre) || $nombre === '' || filled($experiencia['puesto_id'] ?? null)) {
+            return; // vacío o enviado junto al id: ya lo reporta rules()
+        }
+
+        $candidatoId = $this->candidatoActualId();
+
+        $puesto = Puesto::where('nombre', $nombre)
+            ->where(function ($query) use ($candidatoId) {
+                $query->whereNull('candidato_id');
+
+                if ($candidatoId) {
+                    $query->orWhere('candidato_id', $candidatoId);
+                }
+            })
+            ->orderByRaw('candidato_id IS NOT NULL') // el global primero
+            ->first();
+
+        if ($puesto && $puesto->estado !== 'activo' && ! in_array($puesto->id, $this->puestosActuales(), true)) {
+            $this->agregarError($validator, "experiencias.$i.puesto_nombre", "El puesto «{$puesto->nombre}» no está disponible. Selecciona otro o escribe uno distinto.");
+        }
+    }
+
+    // Candidato que edita su perfil. En el registro todavía no existe (lo sobrescribe ActualizarCandidatoRequest)
+    protected function candidatoActualId(): ?int
+    {
+        return null;
+    }
+
+    // Puestos que el candidato ya tiene en sus experiencias: los conserva aunque el administrador los deshabilite
+    protected function puestosActuales(): array
+    {
+        return [];
     }
 
     /**
@@ -364,7 +426,7 @@ trait ReglasPerfilCandidato
             'experiencias.max'                   => 'No puede registrar más de 5 experiencias laborales.',
             'experiencias.*.puesto_id.required_without'       => 'Seleccione un puesto o escriba uno nuevo.',
             'experiencias.*.puesto_id.prohibits'              => 'Envíe el puesto del catálogo o uno nuevo, no ambos.',
-            'experiencias.*.puesto_id.exists'                 => 'El puesto seleccionado no es válido.',
+            'experiencias.*.puesto_id.exists'                 => 'El puesto seleccionado no es válido o no está disponible.',
             'experiencias.*.puesto_nombre.required_without'   => 'Seleccione un puesto o escriba uno nuevo.',
             'experiencias.*.puesto_nombre.prohibits'          => 'Envíe el puesto del catálogo o uno nuevo, no ambos.',
             'experiencias.*.puesto_nombre.string'             => 'El nombre del puesto debe ser texto.',

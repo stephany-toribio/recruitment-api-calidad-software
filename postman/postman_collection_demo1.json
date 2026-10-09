@@ -839,9 +839,10 @@
                       "    pm.expect(data.experiencias).to.have.lengthOf(2);",
                       "    pm.expect(data.habilidades).to.have.lengthOf(3);",
                       "});",
-                      "pm.test('El puesto y la organización propuestos quedan pendientes de validación', function () {",
+                      "pm.test('El puesto escrito queda como personalizado del candidato y la organización propuesta queda pendiente', function () {",
                       "    var propuesta = pm.response.json().data.experiencias[1];",
-                      "    pm.expect(propuesta.puesto.estado_catalogo).to.eql('pendiente');",
+                      "    pm.expect(propuesta.puesto.personalizado).to.be.true;",
+                      "    pm.expect(propuesta.puesto.activo).to.be.true;",
                       "    pm.expect(propuesta.organizacion.estado_catalogo).to.eql('pendiente');",
                       "});",
                       "pm.test('Ya no expone campos eliminados', function () {",
@@ -879,7 +880,7 @@
                     "candidatos"
                   ]
                 },
-                "description": "HU-01. Registro completo: 2 estudios (Universitario con institución y carrera del catálogo + Secundario sin ninguna de las dos), 2 idiomas, 2 experiencias (una del catálogo y otra con puesto/organización PROPUESTOS por nombre, que quedan `pendiente`) y habilidades técnicas + blanda. Guarda `candidato_id` y `usuario_id`.",
+                "description": "HU-01. Registro completo: 2 estudios (Universitario con institución y carrera del catálogo + Secundario sin ninguna de las dos), 2 idiomas, 2 experiencias (una del catálogo y otra con puesto y organización escritos por nombre: el puesto queda como personalizado de Juan y la organización `pendiente`) y habilidades técnicas + blanda. Guarda `candidato_id` y `usuario_id`.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n    \"nombre\": \"Juan\",\n    \"apellidos\": \"Perez Gomez\",\n    \"dni\": \"12345678\",\n    \"fecha_nacimiento\": \"1995-05-15\",\n    \"genero\": \"masculino\",\n    \"celular\": \"987654321\",\n    \"correo\": \"juan.perez@example.com\",\n    \"password\": \"Password123@\",\n    \"password_confirmation\": \"Password123@\",\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": 1,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 3,\n            \"estado\": \"en_curso\",\n            \"ciclo_actual\": 8,\n            \"fecha_inicio\": \"2019-03-01\",\n            \"fecha_fin\": null\n        },\n        {\n            \"tipo_estudio_id\": 6,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2013-03-01\",\n            \"fecha_fin\": \"2017-12-01\"\n        }\n    ],\n    \"idiomas\": [\n        {\n            \"idioma_id\": 1,\n            \"nivel_escrito\": \"intermedio\",\n            \"nivel_oral\": \"basico\"\n        },\n        {\n            \"idioma_id\": 2,\n            \"nivel_escrito\": \"nativo\",\n            \"nivel_oral\": \"nativo\"\n        }\n    ],\n    \"busca_primer_empleo\": false,\n    \"experiencias\": [\n        {\n            \"puesto_id\": 1,\n            \"organizacion_id\": 2,\n            \"pais_id\": 1,\n            \"nivel\": \"junior\",\n            \"fecha_inicio\": \"2023-01-01\",\n            \"fecha_fin\": null,\n            \"descripcion\": \"Desarrollo de APIs REST con Laravel.\"\n        },\n        {\n            \"puesto_nombre\": \"Analista de Growth Marketing\",\n            \"organizacion_nombre\": \"Startup Andina Tech\",\n            \"pais_id\": 1,\n            \"nivel\": \"practicante_pro\",\n            \"fecha_inicio\": \"2022-01-01\",\n            \"fecha_fin\": \"2022-12-01\"\n        }\n    ],\n    \"habilidades\": [\n        1,\n        2,\n        14\n    ]\n}"
@@ -2508,7 +2509,7 @@
                       "    pm.expect(data.correo).to.eql('juan.perez@example.com');",
                       "    pm.expect(data.estudios[0].tipo_estudio).to.have.property('nombre');",
                       "    pm.expect(data.idiomas[0].idioma).to.have.property('nombre');",
-                      "    pm.expect(data.experiencias[0].puesto).to.have.property('estado_catalogo');",
+                      "    pm.expect(data.experiencias[0].puesto).to.have.property('personalizado');",
                       "});"
                     ],
                     "type": "text/javascript"
@@ -8824,7 +8825,7 @@
           "response": []
         },
         {
-          "name": "6.7 Listar Puestos Aprobados (200)",
+          "name": "6.7 Listar Puestos Globales (200)",
           "event": [
             {
               "listen": "test",
@@ -8842,7 +8843,7 @@
                   "        pm.expect(e).to.have.property('nombre');",
                   "    });",
                   "});",
-                  "pm.test('No muestra \"Analista de Growth Marketing\" (propuesta pendiente)', function () {",
+                  "pm.test('No muestra \"Analista de Growth Marketing\" (personalizado de Juan, 2.1)', function () {",
                   "    var nombres = pm.response.json().data.map(function (e) { return e.nombre; });",
                   "    pm.expect(nombres).to.not.include('Analista de Growth Marketing');",
                   "});"
@@ -8868,7 +8869,7 @@
                 "puestos"
               ]
             },
-            "description": "Solo activos y aprobados."
+            "description": "Solo puestos del catálogo global y activos. Los personalizados de cada candidato no se muestran."
           },
           "response": []
         },
@@ -10081,6 +10082,1379 @@
               "mode": "raw",
               "raw": "{\n    \"correo\": \"{{rec_correo}}\",\n    \"password\": \"NuevaClave456#\"\n}"
             }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "8. Admin - Puestos y Valores Personalizados (Dev 2)",
+      "description": "HU-01 / HU-19. El puesto que escribe un candidato es personalizado suyo: no se comparte ni se muestra a otros. El admin crea y edita globales; los personalizados solo los ve y los deshabilita o habilita. Requiere `token_admin` (carpeta 0). Usa sus propios candidatos (Ana, Luis, Carla).",
+      "item": [
+        {
+          "name": "8.1 Registrar Candidata Ana - Escribe Puesto Personalizado (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('El puesto escrito queda como personalizado de Ana y activo', function () {",
+                  "    var puesto = pm.response.json().data.experiencias[0].puesto;",
+                  "    pm.expect(puesto.nombre).to.eql('Growth Hacker');",
+                  "    pm.expect(puesto.personalizado).to.be.true;",
+                  "    pm.expect(puesto.activo).to.be.true;",
+                  "    pm.environment.set('puesto_personalizado_id', puesto.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos"
+              ]
+            },
+            "description": "HU-01. Ana escribe \"Growth Hacker\", que no existe en el catálogo: se crea como personalizado suyo. Guarda `puesto_personalizado_id`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Ana\",\n    \"apellidos\": \"Puestos Prueba\",\n    \"dni\": \"70000081\",\n    \"fecha_nacimiento\": \"1995-05-15\",\n    \"genero\": \"masculino\",\n    \"celular\": \"987654321\",\n    \"correo\": \"ana.puestos@example.com\",\n    \"password\": \"Password123@\",\n    \"password_confirmation\": \"Password123@\",\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": 1,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 3,\n            \"estado\": \"en_curso\",\n            \"ciclo_actual\": 8,\n            \"fecha_inicio\": \"2019-03-01\",\n            \"fecha_fin\": null\n        },\n        {\n            \"tipo_estudio_id\": 6,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2013-03-01\",\n            \"fecha_fin\": \"2017-12-01\"\n        }\n    ],\n    \"idiomas\": [\n        {\n            \"idioma_id\": 1,\n            \"nivel_escrito\": \"intermedio\",\n            \"nivel_oral\": \"basico\"\n        },\n        {\n            \"idioma_id\": 2,\n            \"nivel_escrito\": \"nativo\",\n            \"nivel_oral\": \"nativo\"\n        }\n    ],\n    \"busca_primer_empleo\": false,\n    \"experiencias\": [\n        {\n            \"organizacion_id\": 2,\n            \"pais_id\": 1,\n            \"nivel\": \"junior\",\n            \"fecha_inicio\": \"2023-01-01\",\n            \"fecha_fin\": null,\n            \"descripcion\": \"Desarrollo de APIs REST con Laravel.\",\n            \"puesto_nombre\": \"Growth Hacker\"\n        }\n    ],\n    \"habilidades\": [\n        1,\n        2,\n        14\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "8.2 Login Candidata Ana (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Guarda token_puestos_ana', function () {",
+                  "    pm.environment.set('token_puestos_ana', pm.response.json().data.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Guarda el token de Ana en `token_puestos_ana`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"ana.puestos@example.com\",\n    \"password\": \"Password123@\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "8.3 Registrar Candidato Luis - Mismo Nombre Crea Su Propio Personalizado (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Luis obtiene su propio puesto, no el de Ana', function () {",
+                  "    var puesto = pm.response.json().data.experiencias[0].puesto;",
+                  "    pm.expect(puesto.personalizado).to.be.true;",
+                  "    pm.expect(puesto.id).to.not.eql(Number(pm.environment.get('puesto_personalizado_id')));",
+                  "    pm.environment.set('puesto_personalizado_luis_id', puesto.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos"
+              ]
+            },
+            "description": "Luis escribe \"growth hacker\" (no puede ver el de Ana): se crea uno propio. Guarda `puesto_personalizado_luis_id`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Luis\",\n    \"apellidos\": \"Puestos Prueba\",\n    \"dni\": \"70000082\",\n    \"fecha_nacimiento\": \"1995-05-15\",\n    \"genero\": \"masculino\",\n    \"celular\": \"987654321\",\n    \"correo\": \"luis.puestos@example.com\",\n    \"password\": \"Password123@\",\n    \"password_confirmation\": \"Password123@\",\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": 1,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 3,\n            \"estado\": \"en_curso\",\n            \"ciclo_actual\": 8,\n            \"fecha_inicio\": \"2019-03-01\",\n            \"fecha_fin\": null\n        },\n        {\n            \"tipo_estudio_id\": 6,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2013-03-01\",\n            \"fecha_fin\": \"2017-12-01\"\n        }\n    ],\n    \"idiomas\": [\n        {\n            \"idioma_id\": 1,\n            \"nivel_escrito\": \"intermedio\",\n            \"nivel_oral\": \"basico\"\n        },\n        {\n            \"idioma_id\": 2,\n            \"nivel_escrito\": \"nativo\",\n            \"nivel_oral\": \"nativo\"\n        }\n    ],\n    \"busca_primer_empleo\": false,\n    \"experiencias\": [\n        {\n            \"organizacion_id\": 2,\n            \"pais_id\": 1,\n            \"nivel\": \"junior\",\n            \"fecha_inicio\": \"2023-01-01\",\n            \"fecha_fin\": null,\n            \"descripcion\": \"Desarrollo de APIs REST con Laravel.\",\n            \"puesto_nombre\": \"growth hacker\"\n        }\n    ],\n    \"habilidades\": [\n        1,\n        2,\n        14\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "8.4 Registrar Candidato - Nombre de Puesto Global Usa el Catálogo (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Usa el puesto global, no crea un personalizado', function () {",
+                  "    var puesto = pm.response.json().data.experiencias[0].puesto;",
+                  "    pm.expect(puesto.nombre).to.eql('Contador');",
+                  "    pm.expect(puesto.personalizado).to.be.false;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos"
+              ]
+            },
+            "description": "Escribe \"contador\", que ya existe en el catálogo global: se usa ese puesto.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Carla\",\n    \"apellidos\": \"Puestos Prueba\",\n    \"dni\": \"70000083\",\n    \"fecha_nacimiento\": \"1995-05-15\",\n    \"genero\": \"masculino\",\n    \"celular\": \"987654321\",\n    \"correo\": \"carla.puestos@example.com\",\n    \"password\": \"Password123@\",\n    \"password_confirmation\": \"Password123@\",\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": 1,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 3,\n            \"estado\": \"en_curso\",\n            \"ciclo_actual\": 8,\n            \"fecha_inicio\": \"2019-03-01\",\n            \"fecha_fin\": null\n        },\n        {\n            \"tipo_estudio_id\": 6,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2013-03-01\",\n            \"fecha_fin\": \"2017-12-01\"\n        }\n    ],\n    \"idiomas\": [\n        {\n            \"idioma_id\": 1,\n            \"nivel_escrito\": \"intermedio\",\n            \"nivel_oral\": \"basico\"\n        },\n        {\n            \"idioma_id\": 2,\n            \"nivel_escrito\": \"nativo\",\n            \"nivel_oral\": \"nativo\"\n        }\n    ],\n    \"busca_primer_empleo\": false,\n    \"experiencias\": [\n        {\n            \"organizacion_id\": 2,\n            \"pais_id\": 1,\n            \"nivel\": \"junior\",\n            \"fecha_inicio\": \"2023-01-01\",\n            \"fecha_fin\": null,\n            \"descripcion\": \"Desarrollo de APIs REST con Laravel.\",\n            \"puesto_nombre\": \"contador\"\n        }\n    ],\n    \"habilidades\": [\n        1,\n        2,\n        14\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "8.5 Catálogo Público No Muestra Personalizados (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('No aparece Growth Hacker', function () {",
+                  "    var nombres = pm.response.json().data.map(function (e) { return e.nombre.toLowerCase(); });",
+                  "    pm.expect(nombres).to.not.include('growth hacker');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/puestos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "puestos"
+              ]
+            },
+            "description": "Los personalizados no se muestran como opción a otros usuarios."
+          },
+          "response": []
+        },
+        {
+          "name": "8.5.1 Ana - Mis Puestos Incluye Su Personalizado (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Incluye el Growth Hacker de Ana (personalizado) y no el de Luis', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    var ids = data.map(function (p) { return p.id; });",
+                  "    var propio = data.find(function (p) { return p.id === Number(pm.environment.get('puesto_personalizado_id')); });",
+                  "    pm.expect(propio.personalizado).to.be.true;",
+                  "    pm.expect(ids).to.not.include(Number(pm.environment.get('puesto_personalizado_luis_id')));",
+                  "});",
+                  "pm.test('Incluye los globales (personalizado = false)', function () {",
+                  "    var nombres = pm.response.json().data.filter(function (p) { return !p.personalizado; }).map(function (p) { return p.nombre; });",
+                  "    pm.expect(nombres).to.include('Contador');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_puestos_ana}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos/me/puestos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos",
+                "me",
+                "puestos"
+              ]
+            },
+            "description": "Catálogo global + los personalizados del candidato autenticado. Lo usa el perfil al agregar experiencias."
+          },
+          "response": []
+        },
+        {
+          "name": "8.5.2 Mis Puestos - Error Sin Token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos/me/puestos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos",
+                "me",
+                "puestos"
+              ]
+            },
+            "description": "Ruta protegida con Sanctum."
+          },
+          "response": []
+        },
+        {
+          "name": "8.5.3 Mis Puestos - Error Token de Admin (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 403 Forbidden', function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos/me/puestos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos",
+                "me",
+                "puestos"
+              ]
+            },
+            "description": "Solo el rol candidato."
+          },
+          "response": []
+        },
+        {
+          "name": "8.6 Admin - Listar Puestos Personalizados (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Incluye los de Ana y Luis con su creador', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    var ana = data.find(function (p) { return p.id === Number(pm.environment.get('puesto_personalizado_id')); });",
+                  "    pm.expect(ana.personalizado).to.be.true;",
+                  "    pm.expect(ana.creado_por.nombre).to.eql('Ana');",
+                  "    pm.expect(ana.candidatos_con_mismo_nombre).to.be.at.least(2);",
+                  "    data.forEach(function (p) { pm.expect(p.personalizado).to.be.true; });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/puestos?tipo=personalizado",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "puestos"
+              ],
+              "query": [
+                {
+                  "key": "tipo",
+                  "value": "personalizado"
+                }
+              ]
+            },
+            "description": "Bandeja de moderación: el admin ve los puestos escritos por candidatos y quién los escribió."
+          },
+          "response": []
+        },
+        {
+          "name": "8.7 Admin - Listar Puestos - Error Filtro Inválido (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Error en tipo', function () {",
+                  "    pm.expect(pm.response.json().errors).to.have.property('tipo');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/puestos?tipo=otro",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "puestos"
+              ],
+              "query": [
+                {
+                  "key": "tipo",
+                  "value": "otro"
+                }
+              ]
+            },
+            "description": "tipo solo acepta global o personalizado."
+          },
+          "response": []
+        },
+        {
+          "name": "8.8 Admin - Crear Puesto Global (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Se crea global y activo', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    pm.expect(data.personalizado).to.be.false;",
+                  "    pm.expect(data.activo).to.be.true;",
+                  "    pm.environment.set('puesto_global_id', data.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/puestos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "puestos"
+              ]
+            },
+            "description": "Guarda `puesto_global_id`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"  Scrum   Master \"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "8.9 Admin - Crear Puesto - Error Nombre Duplicado (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Error en nombre', function () {",
+                  "    pm.expect(pm.response.json().errors).to.have.property('nombre');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/puestos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "puestos"
+              ]
+            },
+            "description": "El nombre es único entre los puestos globales.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Contador\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "8.10 Admin - Crear Puesto - Error Enviar candidato_id (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Error en candidato_id', function () {",
+                  "    pm.expect(pm.response.json().errors).to.have.property('candidato_id');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/puestos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "puestos"
+              ]
+            },
+            "description": "El admin solo crea puestos globales.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Product Owner\",\n    \"candidato_id\": 1\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "8.11 Admin - Crear Puesto - Error Token de Candidato (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 403 Forbidden', function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_puestos_ana}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/puestos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "puestos"
+              ]
+            },
+            "description": "Solo el rol admin.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Product Owner\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "8.12 Admin - Crear Puesto - Error Sin Token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/puestos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "puestos"
+              ]
+            },
+            "description": "Ruta protegida con Sanctum.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Product Owner\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "8.13 Admin - Editar Puesto Global (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Nombre actualizado', function () {",
+                  "    pm.expect(pm.response.json().data.nombre).to.eql('Scrum Master Certificado');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/puestos/{{puesto_global_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "puestos",
+                "{{puesto_global_id}}"
+              ]
+            },
+            "description": "Solo se edita el nombre de un global.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Scrum Master Certificado\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "8.14 Admin - Editar Puesto Personalizado - Error (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 409 Conflict', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "pm.test('Devuelve PUESTO_PERSONALIZADO_NO_EDITABLE', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('PUESTO_PERSONALIZADO_NO_EDITABLE');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/puestos/{{puesto_personalizado_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "puestos",
+                "{{puesto_personalizado_id}}"
+              ]
+            },
+            "description": "El texto es del candidato: el admin solo puede verlo y deshabilitarlo.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Growth Marketing\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "8.15 Admin - Editar Puesto - Error No Encontrado (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 404 Not Found', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test('Devuelve RESOURCE_NOT_FOUND', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('RESOURCE_NOT_FOUND');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/puestos/99999",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "puestos",
+                "99999"
+              ]
+            },
+            "description": "Route Model Binding.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"No Existe\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "8.16 Admin - Desactivar Puesto Personalizado (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Queda inactivo y sigue siendo personalizado', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    pm.expect(data.activo).to.be.false;",
+                  "    pm.expect(data.personalizado).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/puestos/{{puesto_personalizado_id}}/desactivar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "puestos",
+                "{{puesto_personalizado_id}}",
+                "desactivar"
+              ]
+            },
+            "description": "Deshabilita el \"Growth Hacker\" de Ana. El de Luis no se ve afectado."
+          },
+          "response": []
+        },
+        {
+          "name": "8.17 Admin - Desactivar Puesto Ya Inactivo (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 409 Conflict', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "pm.test('Devuelve PUESTO_ALREADY_INACTIVE', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('PUESTO_ALREADY_INACTIVE');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/puestos/{{puesto_personalizado_id}}/desactivar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "puestos",
+                "{{puesto_personalizado_id}}",
+                "desactivar"
+              ]
+            },
+            "description": "No se desactiva dos veces."
+          },
+          "response": []
+        },
+        {
+          "name": "8.17.1 Ana - Mis Puestos No Incluye Su Puesto Deshabilitado (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('El personalizado deshabilitado no se ofrece para elegir', function () {",
+                  "    var ids = pm.response.json().data.map(function (p) { return p.id; });",
+                  "    pm.expect(ids).to.not.include(Number(pm.environment.get('puesto_personalizado_id')));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_puestos_ana}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos/me/puestos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos",
+                "me",
+                "puestos"
+              ]
+            },
+            "description": "Lo conserva en su experiencia (8.18), pero no puede volver a elegirlo."
+          },
+          "response": []
+        },
+        {
+          "name": "8.18 Ana Conserva Su Puesto Deshabilitado al Editar Perfil (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Conserva el puesto, marcado como inactivo', function () {",
+                  "    var puesto = pm.response.json().data.experiencias[0].puesto;",
+                  "    pm.expect(puesto.id).to.eql(Number(pm.environment.get('puesto_personalizado_id')));",
+                  "    pm.expect(puesto.activo).to.be.false;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_puestos_ana}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos",
+                "me"
+              ]
+            },
+            "description": "Mismo criterio que habilidades (2.49): lo que ya tenía se conserva aunque el admin lo deshabilite.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"experiencias\": [\n        {\n            \"organizacion_id\": 2,\n            \"pais_id\": 1,\n            \"nivel\": \"junior\",\n            \"fecha_inicio\": \"2023-01-01\",\n            \"fecha_fin\": null,\n            \"descripcion\": \"Desarrollo de APIs REST con Laravel.\",\n            \"puesto_id\": \"{{puesto_personalizado_id}}\"\n        }\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "8.19 Ana Usa el Puesto Personalizado de Luis - Error (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Error en experiencias.0.puesto_id', function () {",
+                  "    pm.expect(pm.response.json().errors).to.have.property('experiencias.0.puesto_id');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_puestos_ana}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos",
+                "me"
+              ]
+            },
+            "description": "Un personalizado solo lo puede usar su dueño.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"experiencias\": [\n        {\n            \"organizacion_id\": 2,\n            \"pais_id\": 1,\n            \"nivel\": \"junior\",\n            \"fecha_inicio\": \"2023-01-01\",\n            \"fecha_fin\": null,\n            \"descripcion\": \"Desarrollo de APIs REST con Laravel.\",\n            \"puesto_id\": \"{{puesto_personalizado_luis_id}}\"\n        }\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "8.20 Admin - Desactivar Puesto Global (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Queda inactivo', function () {",
+                  "    pm.expect(pm.response.json().data.activo).to.be.false;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/puestos/{{puesto_global_id}}/desactivar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "puestos",
+                "{{puesto_global_id}}",
+                "desactivar"
+              ]
+            },
+            "description": "Prepara 8.21."
+          },
+          "response": []
+        },
+        {
+          "name": "8.21 Registrar Candidato - Escribe Puesto Global Deshabilitado - Error (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Error en experiencias.0.puesto_nombre', function () {",
+                  "    pm.expect(pm.response.json().errors).to.have.property('experiencias.0.puesto_nombre');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos"
+              ]
+            },
+            "description": "No se puede esquivar una desactivación del admin escribiendo el nombre.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Diego\",\n    \"apellidos\": \"Puestos Prueba\",\n    \"dni\": \"70000084\",\n    \"fecha_nacimiento\": \"1995-05-15\",\n    \"genero\": \"masculino\",\n    \"celular\": \"987654321\",\n    \"correo\": \"diego.puestos@example.com\",\n    \"password\": \"Password123@\",\n    \"password_confirmation\": \"Password123@\",\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": 1,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 3,\n            \"estado\": \"en_curso\",\n            \"ciclo_actual\": 8,\n            \"fecha_inicio\": \"2019-03-01\",\n            \"fecha_fin\": null\n        },\n        {\n            \"tipo_estudio_id\": 6,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2013-03-01\",\n            \"fecha_fin\": \"2017-12-01\"\n        }\n    ],\n    \"idiomas\": [\n        {\n            \"idioma_id\": 1,\n            \"nivel_escrito\": \"intermedio\",\n            \"nivel_oral\": \"basico\"\n        },\n        {\n            \"idioma_id\": 2,\n            \"nivel_escrito\": \"nativo\",\n            \"nivel_oral\": \"nativo\"\n        }\n    ],\n    \"busca_primer_empleo\": false,\n    \"experiencias\": [\n        {\n            \"organizacion_id\": 2,\n            \"pais_id\": 1,\n            \"nivel\": \"junior\",\n            \"fecha_inicio\": \"2023-01-01\",\n            \"fecha_fin\": null,\n            \"descripcion\": \"Desarrollo de APIs REST con Laravel.\",\n            \"puesto_nombre\": \"Scrum Master Certificado\"\n        }\n    ],\n    \"habilidades\": [\n        1,\n        2,\n        14\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "8.22 Admin - Reactivar Puesto Global (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Queda activo', function () {",
+                  "    pm.expect(pm.response.json().data.activo).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/puestos/{{puesto_global_id}}/reactivar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "puestos",
+                "{{puesto_global_id}}",
+                "reactivar"
+              ]
+            },
+            "description": "Vuelve al catálogo público."
+          },
+          "response": []
+        },
+        {
+          "name": "8.23 Admin - Reactivar Puesto Personalizado No Lo Vuelve Global (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Activo, pero sigue siendo personalizado', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    pm.expect(data.activo).to.be.true;",
+                  "    pm.expect(data.personalizado).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/puestos/{{puesto_personalizado_id}}/reactivar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "puestos",
+                "{{puesto_personalizado_id}}",
+                "reactivar"
+              ]
+            },
+            "description": "HU-01: no se contempla convertir un valor personalizado en global."
+          },
+          "response": []
+        },
+        {
+          "name": "8.24 Admin - Reactivar Puesto Ya Activo (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 409 Conflict', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "pm.test('Devuelve PUESTO_ALREADY_ACTIVE', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('PUESTO_ALREADY_ACTIVE');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/puestos/{{puesto_personalizado_id}}/reactivar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "puestos",
+                "{{puesto_personalizado_id}}",
+                "reactivar"
+              ]
+            },
+            "description": "No se reactiva dos veces."
           },
           "response": []
         }

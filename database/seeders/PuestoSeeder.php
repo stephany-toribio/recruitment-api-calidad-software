@@ -32,18 +32,13 @@ class PuestoSeeder extends Seeder
             'Practicante',
         ];
 
-        // Los defaults de la tabla son inactivo/pendiente: el catálogo base se marca explícitamente
+        // Catálogo global (candidato_id NULL). El default de la tabla es inactivo: se marca activo explícitamente.
+        // Los personalizados no se siembran: los crea cada candidato al escribir un puesto que no está en el catálogo.
         foreach ($aprobados as $nombre) {
             Puesto::updateOrCreate(
-                ['nombre' => $nombre],
-                ['estado' => 'activo', 'estado_catalogo' => 'aprobado']
+                ['nombre' => $nombre, 'candidato_id' => null],
+                ['estado' => 'activo']
             );
         }
-
-        // Ejemplo de puesto propuesto por un candidato, para probar la moderación del admin
-        Puesto::updateOrCreate(
-            ['nombre' => 'Analista de Growth Marketing'],
-            ['estado' => 'inactivo', 'estado_catalogo' => 'pendiente']
-        );
     }
 }

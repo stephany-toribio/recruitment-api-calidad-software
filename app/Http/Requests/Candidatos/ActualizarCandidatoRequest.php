@@ -56,6 +56,20 @@ class ActualizarCandidatoRequest extends FormRequest
         return $this->user()?->candidato?->habilidades()->pluck('habilidades.id')->all() ?? [];
     }
 
+    private ?array $puestosActuales = null;
+
+    protected function candidatoActualId(): ?int
+    {
+        return $this->user()?->candidato?->id;
+    }
+
+    // Se consulta una sola vez: lo usan la regla de puesto_id y la validación de puesto_nombre
+    protected function puestosActuales(): array
+    {
+        return $this->puestosActuales ??= $this->user()?->candidato?->experiencias()
+            ->pluck('puesto_id')->map(fn ($id) => (int) $id)->unique()->values()->all() ?? [];
+    }
+
     // Regla C combinando lo enviado con lo guardado: si cambian los estudios o las habilidades, las técnicas finales
     // deben seguir perteneciendo a las áreas de los estudios finales
     private function validarHabilidadesSegunAreasFinales(Validator $validator): void

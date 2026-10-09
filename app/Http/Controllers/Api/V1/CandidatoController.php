@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Requests\Candidatos\RegistrarCandidatoRequest;
 use App\Http\Requests\Candidatos\ActualizarCandidatoRequest;
 use App\Http\Resources\Api\V1\CandidatoResource;
-use App\Services\CandidatoService; 
+use App\Http\Resources\Api\V1\CatalogoResource;
+use App\Services\CandidatoService;
+use App\Services\Catalogos\CatalogoService;
 use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use App\Models\Candidato;  
@@ -14,7 +16,10 @@ use Illuminate\Http\Request;
 
 class CandidatoController extends BaseApiController
 {
-    public function __construct(private CandidatoService $candidatoService) {}
+    public function __construct(
+        private CandidatoService $candidatoService,
+        private CatalogoService $catalogoService,
+    ) {}
 
 
     // POST /api/v1/candidatos (Crear)
@@ -37,6 +42,18 @@ class CandidatoController extends BaseApiController
         return $this->successResponse(
             new CandidatoResource($candidato),
             'Perfil de candidato obtenido exitosamente'
+        );
+    }
+
+
+    // GET /api/v1/candidatos/me/puestos (Puestos que puede elegir: catálogo global + sus personalizados)
+    public function puestos(Request $request): JsonResponse
+    {
+        $candidato = $this->candidatoService->obtenerPorUsuario($request->user()->id);
+
+        return $this->successResponse(
+            CatalogoResource::collection($this->catalogoService->puestosParaCandidato($candidato->id)),
+            'Puestos disponibles obtenidos correctamente'
         );
     }
 
