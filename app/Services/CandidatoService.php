@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Candidato;
+use App\Models\NivelPuesto;
 use App\Models\Organizacion;
 use App\Models\Puesto;
 use App\Services\Auth\UsuarioService;
@@ -22,6 +23,7 @@ class CandidatoService
         'idiomas.idioma',
         'experiencias.puesto',
         'experiencias.organizacion',
+        'experiencias.nivelPuesto',
         'experiencias.pais',
     ];
 
@@ -162,7 +164,8 @@ class CandidatoService
                 'organizacion_id' => $experiencia['organizacion_id']
                     ?? $this->resolverOrganizacionEscrita($experiencia['organizacion_nombre'], $experiencia['pais_id'], $candidato),
                 'pais_id'         => $experiencia['pais_id'],
-                'nivel'           => $experiencia['nivel'],
+                'nivel_puesto_id' => $experiencia['nivel_puesto_id']
+                    ?? $this->resolverNivelEscrito($experiencia['nivel_puesto_nombre'], $candidato),
                 'fecha_inicio'    => $experiencia['fecha_inicio'],
                 'fecha_fin'       => $experiencia['fecha_fin'] ?? null,
                 'descripcion'     => $experiencia['descripcion'] ?? null,
@@ -187,6 +190,23 @@ class CandidatoService
         }
 
         return Puesto::firstOrCreate(
+            ['nombre' => $nombre, 'candidato_id' => $candidato->id],
+            ['estado' => 'activo']
+        )->id;
+    }
+
+    // Igual que el puesto: primero el global, si no, el propio del candidato
+    private function resolverNivelEscrito(string $nombre, Candidato $candidato): int
+    {
+        $nombre = trim($nombre);
+
+        $global = NivelPuesto::whereNull('candidato_id')->where('nombre', $nombre)->first();
+
+        if ($global) {
+            return $global->id;
+        }
+
+        return NivelPuesto::firstOrCreate(
             ['nombre' => $nombre, 'candidato_id' => $candidato->id],
             ['estado' => 'activo']
         )->id;

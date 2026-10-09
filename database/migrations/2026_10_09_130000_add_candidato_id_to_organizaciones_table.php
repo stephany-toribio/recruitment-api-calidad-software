@@ -7,25 +7,7 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Valores personalizados de organización (HU-01), igual que los puestos: la organización que escribe un candidato
-     * es suya y no pasa al catálogo global. A diferencia del puesto, pertenece a un país.
-     *
-     * - candidato_id: NULL = catálogo global; con valor = personalizada del candidato que la escribió.
-     * - estado: solo indica si el administrador la tiene habilitada o deshabilitada.
-     * - estado_catalogo (pendiente/aprobado) desaparece junto con su CHECK.
-     * - Unicidad: nombre único por país entre las globales y por país y candidato entre las personalizadas
-     *   (dueno_id = COALESCE(candidato_id, 0), porque MySQL no compara NULL en un unique).
-     * - Se mantiene unique(id, pais_id): es el destino de la FK compuesta de experiencias_laborales.
-     *
-     * Orden:
-     * 1. Soltar el CHECK y el unique(nombre, pais_id), que impiden activar o separar las pendientes.
-     * 2. Agregar candidato_id.
-     * 3. Datos: cada pendiente pasa a ser personalizada de quien la usa. Con el modelo anterior, varios candidatos
-     *    que escribían el mismo nombre en el mismo país compartían una fila: se crea una copia (mismo país) por
-     *    candidato y se reasignan sus experiencias. Las que nadie usa se eliminan.
-     * 4. Quitar estado_catalogo, crear dueno_id + unique(nombre, pais_id, dueno_id) y el CHECK de nombre no vacío.
-     */
+    
     public function up(): void
     {
         if (DB::getDriverName() === 'mysql') {
@@ -59,11 +41,7 @@ return new class extends Migration
         }
     }
 
-    /**
-     * Reverse the migrations.
-     * Las organizaciones con el mismo nombre y país se fusionan (la global, si existe, o la de menor id) para
-     * poder volver al unique(nombre, pais_id), y las personalizadas quedan como pendientes e inactivas.
-     */
+    
     public function down(): void
     {
         if (DB::getDriverName() === 'mysql') {

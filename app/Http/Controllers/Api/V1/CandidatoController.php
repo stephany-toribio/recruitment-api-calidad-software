@@ -59,7 +59,19 @@ class CandidatoController extends BaseApiController
     }
 
 
-    // GET /api/v1/candidatos/me/organizaciones?pais_id= (Organizaciones que puede elegir: catálogo global + sus personalizadas)
+    // GET /api/v1/candidatos/me/niveles-puesto Niveles que puede elegir catálogo global + sus personalizados
+    public function nivelesPuesto(Request $request): JsonResponse
+    {
+        $candidato = $this->candidatoService->obtenerPorUsuario($request->user()->id);
+
+        return $this->successResponse(
+            CatalogoResource::collection($this->catalogoService->nivelesPuestoParaCandidato($candidato->id)),
+            'Niveles del puesto disponibles obtenidos correctamente'
+        );
+    }
+
+
+    // GET /api/v1/candidatos/me/organizaciones?pais_id= Organizaciones que puede elegir: catálogo global + sus personalizadas
     public function organizaciones(FiltrarPorPaisRequest $request): JsonResponse
     {
         $candidato = $this->candidatoService->obtenerPorUsuario($request->user()->id);

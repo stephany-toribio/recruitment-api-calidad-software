@@ -9,19 +9,7 @@ return new class extends Migration
 {
     /**
      * Valores personalizados de puesto (HU-01): el puesto que escribe un candidato es suyo y no pasa al catálogo global.
-     *
-     * - candidato_id: NULL = catálogo global; con valor = personalizado del candidato que lo escribió.
-     * - estado: solo indica si el administrador lo tiene habilitado o deshabilitado.
-     * - estado_catalogo (pendiente/aprobado) desaparece junto con su CHECK.
-     * - Unicidad: nombre único entre los globales y por candidato. Como MySQL no compara NULL en un unique,
-     *   dueno_id = COALESCE(candidato_id, 0) da un valor fijo (0) a los globales.
-     *
-     * Orden:
-     * 1. Soltar el CHECK y el unique(nombre), que impiden activar o separar los pendientes.
-     * 2. Agregar candidato_id.
-     * 3. Datos: cada pendiente pasa a ser personalizado de quien lo usa. Si lo usan varios candidatos se
-     *    crea una copia por candidato y se reasignan sus experiencias. Los que nadie usa se eliminan.
-     * 4. Quitar estado_catalogo y crear dueno_id + unique(nombre, dueno_id).
+     
      */
     public function up(): void
     {

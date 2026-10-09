@@ -5,6 +5,7 @@ namespace App\Http\Requests\Candidatos\Concerns;
 use App\Models\Carrera;
 use App\Models\Habilidad;
 use App\Models\Institucion;
+use App\Models\NivelPuesto;
 use App\Models\Organizacion;
 use App\Models\Puesto;
 use App\Models\TipoEstudio;
@@ -109,7 +110,33 @@ trait ReglasPerfilCandidato
             ],
             'experiencias.*.organizacion_nombre' => ['nullable', 'required_without:experiencias.*.organizacion_id', 'prohibits:experiencias.*.organizacion_id', 'string', 'max:200'],
             'experiencias.*.pais_id'             => ['required', 'integer', Rule::exists('paises', 'id')->where('activo', true)],
-            'experiencias.*.nivel'               => ['required', 'in:practicante_pre,practicante_pro,trainee,junior,semi_senior,senior,jefe_supervisor,gerente_director'],
+            // Nivel por id: misma regla que el puesto (global activo, propio activo o uno que ya tenía)
+            'experiencias.*.nivel_puesto_id'     => [
+                'nullable',
+                'required_without:experiencias.*.nivel_puesto_nombre',
+                'prohibits:experiencias.*.nivel_puesto_nombre',
+                'integer',
+                Rule::exists('niveles_puesto', 'id')->where(function (Builder $query) {
+                    $candidatoId = $this->candidatoActualId();
+                    $nivelesActuales = $this->nivelesActuales();
+
+                    $query->where(function (Builder $query) use ($candidatoId) {
+                        $query->where('estado', 'activo')
+                            ->where(function (Builder $query) use ($candidatoId) {
+                                $query->whereNull('candidato_id');
+
+                                if ($candidatoId) {
+                                    $query->orWhere('candidato_id', $candidatoId);
+                                }
+                            });
+                    });
+
+                    if (! empty($nivelesActuales)) {
+                        $query->orWhereIn('id', $nivelesActuales);
+                    }
+                }),
+            ],
+            'experiencias.*.nivel_puesto_nombre' => ['nullable', 'required_without:experiencias.*.nivel_puesto_id', 'prohibits:experiencias.*.nivel_puesto_id', 'string', 'max:100'],
             'experiencias.*.fecha_inicio'        => ['required', 'date_format:Y-m-d'],
             'experiencias.*.fecha_fin'           => ['nullable', 'date_format:Y-m-d', 'after_or_equal:experiencias.*.fecha_inicio'],
             'experiencias.*.descripcion'         => ['nullable', 'string', 'max:1000'],
@@ -273,6 +300,7 @@ trait ReglasPerfilCandidato
 
             $this->validarPuestoEscrito($validator, $i, $experiencia);
             $this->validarOrganizacionEscrita($validator, $i, $experiencia);
+            $this->validarNivelEscrito($validator, $i, $experiencia);
 
             $organizacionId = $this->entero($experiencia['organizacion_id'] ?? null);
             $paisOrganizacion = $organizacionId ? $this->entero($paisesOrganizacion[$organizacionId] ?? null) : null;
@@ -344,6 +372,35 @@ trait ReglasPerfilCandidato
         }
     }
 
+    /**
+     * Nivel escrito por nombre: igual que el puesto primero el global, luego el propio 
+     */
+    private function validarNivelEscrito(Validator $validator, int|string $i, array $experiencia): void
+    {
+        $nombre = $experiencia['nivel_puesto_nombre'] ?? null;
+
+        if (! is_string($nombre) || $nombre === '' || filled($experiencia['nivel_puesto_id'] ?? null)) {
+            return; // vacío o enviado junto al id: ya lo reporta rules()
+        }
+
+        $candidatoId = $this->candidatoActualId();
+
+        $nivel = NivelPuesto::where('nombre', $nombre)
+            ->where(function ($query) use ($candidatoId) {
+                $query->whereNull('candidato_id');
+
+                if ($candidatoId) {
+                    $query->orWhere('candidato_id', $candidatoId);
+                }
+            })
+            ->orderByRaw('candidato_id IS NOT NULL') // el global primero
+            ->first();
+
+        if ($nivel && $nivel->estado !== 'activo' && ! in_array($nivel->id, $this->nivelesActuales(), true)) {
+            $this->agregarError($validator, "experiencias.$i.nivel_puesto_nombre", "El nivel «{$nivel->nombre}» no está disponible. Selecciona otro o escribe uno distinto.");
+        }
+    }
+
     // Candidato que edita su perfil. En el registro todavía no existe (lo sobrescribe ActualizarCandidatoRequest)
     protected function candidatoActualId(): ?int
     {
@@ -358,6 +415,12 @@ trait ReglasPerfilCandidato
 
     // Organizaciones que el candidato ya tiene en sus experiencias: las conserva aunque el administrador las deshabilite
     protected function organizacionesActuales(): array
+    {
+        return [];
+    }
+
+    // Niveles que el candidato ya tiene en sus experiencias: los conserva aunque el administrador los deshabilite
+    protected function nivelesActuales(): array
     {
         return [];
     }
@@ -503,8 +566,13 @@ trait ReglasPerfilCandidato
             'experiencias.*.organizacion_nombre.max'          => 'El nombre de la organización no puede superar los 200 caracteres.',
             'experiencias.*.pais_id.required'    => 'El país de la experiencia es obligatorio.',
             'experiencias.*.pais_id.exists'      => 'El país de la experiencia no existe o está inactivo.',
-            'experiencias.*.nivel.required'      => 'El nivel del puesto es obligatorio.',
-            'experiencias.*.nivel.in'            => 'El nivel del puesto no es válido.',
+            'experiencias.*.nivel_puesto_id.required_without'     => 'Seleccione un nivel del puesto o escriba uno nuevo.',
+            'experiencias.*.nivel_puesto_id.prohibits'            => 'Envíe el nivel del catálogo o uno nuevo, no ambos.',
+            'experiencias.*.nivel_puesto_id.exists'               => 'El nivel del puesto seleccionado no es válido o no está disponible.',
+            'experiencias.*.nivel_puesto_nombre.required_without' => 'Seleccione un nivel del puesto o escriba uno nuevo.',
+            'experiencias.*.nivel_puesto_nombre.prohibits'        => 'Envíe el nivel del catálogo o uno nuevo, no ambos.',
+            'experiencias.*.nivel_puesto_nombre.string'           => 'El nivel del puesto debe ser texto.',
+            'experiencias.*.nivel_puesto_nombre.max'              => 'El nivel del puesto no puede superar los 100 caracteres.',
             'experiencias.*.fecha_inicio.required' => 'La fecha de inicio de la experiencia es obligatoria.',
             'experiencias.*.fecha_inicio.date_format' => 'La fecha de inicio debe tener el formato AAAA-MM-DD.',
             'experiencias.*.fecha_fin.date_format' => 'La fecha de fin debe tener el formato AAAA-MM-DD.',
@@ -531,7 +599,7 @@ trait ReglasPerfilCandidato
                 continue;
             }
 
-            foreach (['puesto_nombre', 'organizacion_nombre'] as $campo) {
+            foreach (['puesto_nombre', 'organizacion_nombre', 'nivel_puesto_nombre'] as $campo) {
                 if (array_key_exists($campo, $experiencia) && is_string($experiencia[$campo])) {
                     $experiencia[$campo] = preg_replace('/\s+/u', ' ', trim($experiencia[$campo]));
                 }

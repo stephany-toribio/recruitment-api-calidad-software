@@ -13,10 +13,13 @@ Route::middleware(['auth:sanctum', 'rol:candidato'])->group(function() {
     Route::get('/candidatos/me', [CandidatoController::class, 'me']);
     Route::put('/candidatos/me', [CandidatoController::class, 'update']);
 
-    // catálogo global + sus puestos personalizados (para agregar experiencias desde el perfil)
+    // catálogo global + sus puestos personalizados 
     Route::get('/candidatos/me/puestos', [CandidatoController::class, 'puestos']);
 
-    // catálogo global + sus organizaciones personalizadas (?pais_id= opcional)
+    // catálogo global + sus niveles del puesto personalizados
+    Route::get('/candidatos/me/niveles-puesto', [CandidatoController::class, 'nivelesPuesto']);
+
+    // catálogo global + sus organizaciones personalizadas
     Route::get('/candidatos/me/organizaciones', [CandidatoController::class, 'organizaciones']);
 
 }); 

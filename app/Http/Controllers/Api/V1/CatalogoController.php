@@ -63,6 +63,16 @@ class CatalogoController extends BaseApiController
     }
 
 
+    // GET /api/v1/niveles-puesto
+    public function nivelesPuesto(): JsonResponse
+    {
+        return $this->successResponse(
+            CatalogoResource::collection($this->catalogoService->nivelesPuesto()),
+            'Catálogo de niveles del puesto obtenido correctamente'
+        );
+    }
+
+
     // GET /api/v1/organizaciones?pais_id=
     public function organizaciones(FiltrarPorPaisRequest $request): JsonResponse
     {

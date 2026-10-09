@@ -4,6 +4,7 @@ namespace App\Services\Catalogos;
 
 use App\Models\Idioma;
 use App\Models\Institucion;
+use App\Models\NivelPuesto;
 use App\Models\Organizacion;
 use App\Models\Pais;
 use App\Models\Puesto;
@@ -52,6 +53,27 @@ class CatalogoService
     {
         return Puesto::where('estado', 'activo')
             ->where(fn ($query) => $query->whereNull('candidato_id')->orWhere('candidato_id', $candidatoId))
+            ->orderBy('nombre')
+            ->get(['id', 'nombre', 'candidato_id']);
+    }
+
+    // Solo los globales habilitados, en orden jerárquico (Practicante → Gerente), no alfabético
+    public function nivelesPuesto(): Collection
+    {
+        return NivelPuesto::whereNull('candidato_id')
+            ->where('estado', 'activo')
+            ->orderBy('orden')
+            ->orderBy('nombre')
+            ->get(['id', 'nombre']);
+    }
+
+    // Para el candidato autenticado: los globales (en su orden) y después sus personalizados (sin orden)
+    public function nivelesPuestoParaCandidato(int $candidatoId): Collection
+    {
+        return NivelPuesto::where('estado', 'activo')
+            ->where(fn ($query) => $query->whereNull('candidato_id')->orWhere('candidato_id', $candidatoId))
+            ->orderByRaw('orden IS NULL')
+            ->orderBy('orden')
             ->orderBy('nombre')
             ->get(['id', 'nombre', 'candidato_id']);
     }

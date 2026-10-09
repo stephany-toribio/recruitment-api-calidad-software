@@ -8,10 +8,6 @@ return new class extends Migration
 {
     /**
      * Las carreras dejan de depender del área de estudio: solo del tipo de estudio y del país.
-     * El área se mantiene en candidato_estudios (la elige el candidato y la usa la regla C de habilidades).
-     *
-     * Orden: MySQL no deja borrar un índice que sostiene una FK, por eso primero se suelta
-     * la FK compuesta de candidato_estudios, se cambia carreras y al final se crea la FK nueva.
      */
     public function up(): void
     {

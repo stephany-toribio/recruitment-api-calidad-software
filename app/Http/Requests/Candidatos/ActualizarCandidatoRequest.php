@@ -60,6 +60,8 @@ class ActualizarCandidatoRequest extends FormRequest
 
     private ?array $organizacionesActuales = null;
 
+    private ?array $nivelesActuales = null;
+
     protected function candidatoActualId(): ?int
     {
         return $this->user()?->candidato?->id;
@@ -79,8 +81,14 @@ class ActualizarCandidatoRequest extends FormRequest
             ->pluck('organizacion_id')->map(fn ($id) => (int) $id)->unique()->values()->all() ?? [];
     }
 
-    // Regla C combinando lo enviado con lo guardado: si cambian los estudios o las habilidades, las técnicas finales
-    // deben seguir perteneciendo a las áreas de los estudios finales
+    // Igual que los puestos: lo usan la regla de nivel_puesto_id y la validación de nivel_puesto_nombre
+    protected function nivelesActuales(): array
+    {
+        return $this->nivelesActuales ??= $this->user()?->candidato?->experiencias()
+            ->pluck('nivel_puesto_id')->map(fn ($id) => (int) $id)->unique()->values()->all() ?? [];
+    }
+
+ 
     private function validarHabilidadesSegunAreasFinales(Validator $validator): void
     {
         if (! $this->has('habilidades') && ! $this->has('estudios')) {

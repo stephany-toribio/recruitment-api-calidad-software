@@ -14,7 +14,7 @@ class ExperienciaLaboralResource extends JsonResource
     {
         return [
             'id'           => $this->id,
-            // personalizado: lo escribió el candidato. activo = false: el administrador lo deshabilitó (lo conserva, pero no puede volver a elegirlo)
+            // personalizado: lo escribió el candidato. activo = false el administrador lo deshabilitó 
             'puesto'       => $this->whenLoaded('puesto', fn () => [
                 'id'            => $this->puesto->id,
                 'nombre'        => $this->puesto->nombre,
@@ -32,7 +32,13 @@ class ExperienciaLaboralResource extends JsonResource
                 'id'     => $this->pais->id,
                 'nombre' => $this->pais->nombre,
             ]),
-            'nivel'        => $this->nivel,
+            // Mismo criterio que el puesto (antes era un código fijo como "junior")
+            'nivel'        => $this->whenLoaded('nivelPuesto', fn () => [
+                'id'            => $this->nivelPuesto->id,
+                'nombre'        => $this->nivelPuesto->nombre,
+                'personalizado' => $this->nivelPuesto->esPersonalizado(),
+                'activo'        => $this->nivelPuesto->estado === 'activo',
+            ]),
             'fecha_inicio' => $this->fecha_inicio?->format('Y-m-d'),
             'fecha_fin'    => $this->fecha_fin?->format('Y-m-d'),
             'descripcion'  => $this->descripcion,

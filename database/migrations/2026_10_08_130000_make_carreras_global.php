@@ -9,18 +9,6 @@ return new class extends Migration
 {
     /**
      * Las carreras pasan a ser globales: existen en todos los países y dependen solo del tipo de estudio.
-     * El país se mantiene en candidato_estudios (dónde estudió) y sigue validando la institución.
-     *
-     * Orden:
-     * 1. Soltar la FK compuesta (carrera, tipo, país) de candidato_estudios.
-     * 2. Datos: cada carrera repetida por país se fusiona en la de menor id con el mismo (nombre, tipo);
-     *    los estudios se reasignan a esa carrera y las repetidas se eliminan.
-     * 3. Quitar carreras.pais_id y crear los únicos (nombre, tipo) e (id, tipo).
-     * 4. Crear un índice propio (carrera, tipo) y la FK compuesta nueva sobre él.
-     * 5. Borrar el índice que dejó la FK anterior.
-     *
-     * Cada paso revisa si ya se hizo: MySQL no revierte cambios de estructura, así que si la
-     * migración se corta a la mitad se puede volver a ejecutar y continúa donde quedó.
      */
     public function up(): void
     {
