@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "portal-empleos-demo1-collection",
     "name": "Portal Empleos - Demo 2 (Backend Completo)",
-    "description": "Colección del Portal de Empleos (API v1). ORDEN DE EJECUCIÓN: las carpetas están ordenadas por dependencias para que el Runner funcione de corrido después de `php artisan migrate:fresh --seed`: Login Admin (token_admin) → Empresas (crea la empresa y token_empresa) → Candidatos (crea a Juan, María y Luis; usa token_empresa) → Habilidades → Auth (usa a Juan) → Seguridad de Tokens (independiente) → Catálogos de Registro (solo lectura). Las rutas privadas usan Authorization: Bearer {{token}} / {{token_candidato}} / {{token_empresa}}. La prueba 5.7 es manual y el Runner la omite.\n\n`POST /candidatos` usa Laravel Precognition (validación por pasos).\n\nLos IDs de catálogos (países, tipos de estudio, carreras, instituciones, puestos, organizaciones) son los que crean los seeders tras `migrate:fresh --seed`.\n\nAntes de correr: llenar `admin_correo` y `admin_password` en el \"Current value\" del environment (mismos valores que ADMIN_CORREO y ADMIN_PASSWORD del .env). En el repositorio quedan vacíos.",
+    "description": "Colección del Portal de Empleos (API v1).\n\nANTES DE CORRER: `php artisan migrate:fresh --seed` y llenar `admin_correo` y `admin_password` en el \"Current value\" del environment (mismos valores que ADMIN_CORREO y ADMIN_PASSWORD del .env; en el repositorio quedan vacíos).\n\nORDEN DE EJECUCIÓN: las carpetas están ordenadas por dependencias (no por número) para que el Runner funcione de corrido:\n0 Login Admin (token_admin) → 3 Empresas (token_empresa) → 2 Candidatos (crea a Juan, María y Luis; token_candidato) → 4 Habilidades → 1 Auth (usa a Juan; 1.16 le cambia la contraseña y revoca sus tokens, 1.19 la restaura) → 5 Seguridad de Tokens → 6 Catálogos → 7 Recuperar Contraseña → 8 Puestos → 9 Organizaciones → 10 Niveles del Puesto → 11 Sin Estudios Formales → 12 Carreras → 13 Idiomas → 14 Celular Único → 15 Edad Mínima → 16 Países e Instituciones → 17 Usuarios (suspender/reactivar).\nLas carpetas 12 a 15 empiezan con un login de Juan (X.0) que refresca `token_candidato`, revocado por 1.16.\n\nDATOS DE PRUEBA: cada carpeta 8 a 17 registra sus propios candidatos. El celular de cada registro es 9 + DNI (es único). Para volver a correr la colección hay que repetir `migrate:fresh --seed` (los correos y DNI ya existirían).\n\n`POST /candidatos` usa Laravel Precognition (validación por pasos). La prueba 5.7 es manual y el Runner la omite. Los IDs de catálogos (países, tipos de estudio, carreras, niveles, puestos, organizaciones) son los que crean los seeders y migraciones.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -4119,6 +4119,98 @@
                   "mode": "raw",
                   "raw": "{\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": 6,\n            \"area_estudio_id\": 3,\n            \"pais_id\": 1,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2013-03-01\",\n            \"fecha_fin\": \"2017-12-01\"\n        }\n    ]\n}"
                 }
+              },
+              "response": []
+            },
+            {
+              "name": "2.49.1 Restaurar - Reactivar Habilidad 16 (200)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status code es 200 OK', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "pm.test('Queda activa', function () {",
+                      "    pm.expect(pm.response.json().data.activo).to.eql(true);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token_admin}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/admin/habilidades/16/reactivar",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "habilidades",
+                    "16",
+                    "reactivar"
+                  ]
+                },
+                "description": "Deja la habilidad 16 como estaba antes de 2.46/2.47, para no afectar a las carpetas siguientes."
+              },
+              "response": []
+            },
+            {
+              "name": "2.49.2 Restaurar - Reactivar Habilidad 15 (200)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status code es 200 OK', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "pm.test('Queda activa', function () {",
+                      "    pm.expect(pm.response.json().data.activo).to.eql(true);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token_admin}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/admin/habilidades/15/reactivar",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "habilidades",
+                    "15",
+                    "reactivar"
+                  ]
+                },
+                "description": "Deja la habilidad 15 como estaba antes de 2.46/2.47, para no afectar a las carpetas siguientes."
               },
               "response": []
             }
@@ -14979,6 +15071,54 @@
       "description": "HU-01 / HU-19. CRUD del catálogo de carreras: crear, editar el nombre (el tipo no cambia), desactivar y reactivar. Sin valores personalizados (el candidato no escribe carreras). El catálogo público solo muestra las activas y el candidato conserva la que ya tenía si se desactiva. Requiere `token_admin` (carpeta 0) y `token_candidato` (2.27) para el 403.",
       "item": [
         {
+          "name": "12.0 Preparar - Login Juan (refresca token_candidato) (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Guarda token_candidato', function () {",
+                  "    pm.environment.set('token_candidato', pm.response.json().data.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "El caso 1.16 cambia la contraseña de Juan y revoca todos sus tokens (1.17). Por eso esta carpeta vuelve a iniciar sesión: así funciona de corrido en el Runner o ejecutada sola.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"juan.perez@example.com\",\n    \"password\": \"Password123@\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
           "name": "12.1 Admin - Listar Carreras Universitarias (200)",
           "event": [
             {
@@ -15972,6 +16112,54 @@
       "description": "HU-01 / HU-19. CRUD del catálogo de idiomas: crear, renombrar, desactivar y reactivar. Sin valores personalizados. El catálogo público solo muestra los activos y el candidato conserva el que ya tenía si se desactiva. Requiere `token_admin` (carpeta 0) y `token_candidato` (2.27) para el 403.",
       "item": [
         {
+          "name": "13.0 Preparar - Login Juan (refresca token_candidato) (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Guarda token_candidato', function () {",
+                  "    pm.environment.set('token_candidato', pm.response.json().data.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "El caso 1.16 cambia la contraseña de Juan y revoca todos sus tokens (1.17). Por eso esta carpeta vuelve a iniciar sesión: así funciona de corrido en el Runner o ejecutada sola.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"juan.perez@example.com\",\n    \"password\": \"Password123@\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
           "name": "13.1 Admin - Listar Idiomas (200)",
           "event": [
             {
@@ -16837,6 +17025,54 @@
       "description": "El celular del candidato es único (como el DNI). En los registros de la colección el celular es 9 + DNI, así nunca se repite. Requiere haber ejecutado la carpeta 2 (Juan, María y `token_candidato`).",
       "item": [
         {
+          "name": "14.0 Preparar - Login Juan (refresca token_candidato) (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Guarda token_candidato', function () {",
+                  "    pm.environment.set('token_candidato', pm.response.json().data.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "El caso 1.16 cambia la contraseña de Juan y revoca todos sus tokens (1.17). Por eso esta carpeta vuelve a iniciar sesión: así funciona de corrido en el Runner o ejecutada sola.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"juan.perez@example.com\",\n    \"password\": \"Password123@\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
           "name": "14.1 Registrar Candidato - Error Celular Ya Registrado (422)",
           "event": [
             {
@@ -17093,6 +17329,54 @@
       "description": "El candidato debe tener al menos 17 años (Candidato::EDAD_MINIMA), igual que valida el front. Se aplica al registrarse y al editar el perfil. Requiere `token_candidato` (2.27) para 15.3.",
       "item": [
         {
+          "name": "15.0 Preparar - Login Juan (refresca token_candidato) (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Guarda token_candidato', function () {",
+                  "    pm.environment.set('token_candidato', pm.response.json().data.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "El caso 1.16 cambia la contraseña de Juan y revoca todos sus tokens (1.17). Por eso esta carpeta vuelve a iniciar sesión: así funciona de corrido en el Runner o ejecutada sola.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"juan.perez@example.com\",\n    \"password\": \"Password123@\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
           "name": "15.1 Registrar Candidato - Error Menor de 17 Años (422)",
           "event": [
             {
@@ -17254,6 +17538,1848 @@
             "body": {
               "mode": "raw",
               "raw": "{\n    \"fecha_nacimiento\": \"{{fecha_16_anios}}\"\n}"
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "16. Admin - Países e Instituciones",
+      "description": "CRUD de países e instituciones (sección D1-09): crear, editar, desactivar y reactivar. Una institución no se reactiva si su país está inactivo. Requiere `token_admin` (0) y `token_empresa` (3.4).",
+      "item": [
+        {
+          "name": "16.1 Admin - Listar Países (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Cada país trae su estado', function () {",
+                  "    pm.response.json().data.forEach(function (p) { pm.expect(p).to.have.property('activo'); });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/paises",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "paises"
+              ]
+            },
+            "description": "Incluye activos e inactivos."
+          },
+          "response": []
+        },
+        {
+          "name": "16.2 Admin - Crear País (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Se crea activo', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    pm.expect(data.nombre).to.eql('Bolivia');",
+                  "    pm.expect(data.activo).to.eql(true);",
+                  "    pm.environment.set('pais_prueba_id', data.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/paises",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "paises"
+              ]
+            },
+            "description": "Guarda `pais_prueba_id`. El nombre se normaliza (espacios).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"  Bolivia \"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "16.3 Admin - Crear País - Error Duplicado (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Error en nombre', function () {",
+                  "    pm.expect(pm.response.json().errors).to.have.property('nombre');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/paises",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "paises"
+              ]
+            },
+            "description": "El nombre es único.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Perú\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "16.4 Admin - Crear País - Error Enviar activo (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Error en activo', function () {",
+                  "    pm.expect(pm.response.json().errors).to.have.property('activo');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/paises",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "paises"
+              ]
+            },
+            "description": "El estado no se envía: se cambia con desactivar/reactivar.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Paraguay\",\n    \"activo\": false\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "16.5 Admin - Crear País - Error Token de Empresa (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 403 Forbidden', function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_empresa}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/paises",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "paises"
+              ]
+            },
+            "description": "Solo el rol admin.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Paraguay\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "16.6 Admin - Crear País - Error Sin Token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/paises",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "paises"
+              ]
+            },
+            "description": "Ruta protegida con Sanctum.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Paraguay\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "16.7 Admin - Editar País (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Nombre actualizado', function () {",
+                  "    pm.expect(pm.response.json().data.nombre).to.eql('Estado Plurinacional de Bolivia');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/paises/{{pais_prueba_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "paises",
+                "{{pais_prueba_id}}"
+              ]
+            },
+            "description": "Se renombra.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Estado Plurinacional de Bolivia\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "16.8 Admin - Editar País - Error No Encontrado (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 404 Not Found', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test('Devuelve RESOURCE_NOT_FOUND', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('RESOURCE_NOT_FOUND');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/paises/99999",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "paises",
+                "99999"
+              ]
+            },
+            "description": "Route Model Binding.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"No Existe\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "16.9 Admin - Crear Institución (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Se crea activa y en el país indicado', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    pm.expect(data.activo).to.eql(true);",
+                  "    pm.expect(data.pais_id).to.eql(Number(pm.environment.get('pais_prueba_id')));",
+                  "    pm.environment.set('institucion_prueba_id', data.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/instituciones",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "instituciones"
+              ]
+            },
+            "description": "Guarda `institucion_prueba_id`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Universidad Mayor de San Andrés\",\n    \"pais_id\": \"{{pais_prueba_id}}\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "16.10 Admin - Crear Institución - Error Duplicada en el País (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Error en nombre', function () {",
+                  "    pm.expect(pm.response.json().errors).to.have.property('nombre');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/instituciones",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "instituciones"
+              ]
+            },
+            "description": "Única por país.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Universidad Mayor de San Andrés\",\n    \"pais_id\": \"{{pais_prueba_id}}\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "16.11 Admin - Crear Institución - Error País Inexistente (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Error en pais_id', function () {",
+                  "    pm.expect(pm.response.json().errors).to.have.property('pais_id');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/instituciones",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "instituciones"
+              ]
+            },
+            "description": "El país debe existir y estar activo.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Universidad Fantasma\",\n    \"pais_id\": 99999\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "16.12 Admin - Editar Institución - Error Cambiar País (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Error en pais_id', function () {",
+                  "    pm.expect(pm.response.json().errors).to.have.property('pais_id');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/instituciones/{{institucion_prueba_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "instituciones",
+                "{{institucion_prueba_id}}"
+              ]
+            },
+            "description": "El país no cambia: los estudios están enlazados por (institucion_id, pais_id).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"pais_id\": 1\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "16.13 Admin - Editar Institución (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Nombre actualizado', function () {",
+                  "    pm.expect(pm.response.json().data.nombre).to.eql('Universidad Mayor de San Andrés (UMSA)');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/instituciones/{{institucion_prueba_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "instituciones",
+                "{{institucion_prueba_id}}"
+              ]
+            },
+            "description": "Solo se edita el nombre.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Universidad Mayor de San Andrés (UMSA)\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "16.14 Catálogo Público Incluye la Institución (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Incluye el registro de prueba', function () {",
+                  "    var ids = pm.response.json().data.map(function (x) { return x.id; });",
+                  "    pm.expect(ids).to.include(Number(pm.environment.get('institucion_prueba_id')));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/instituciones?pais_id={{pais_prueba_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "instituciones"
+              ],
+              "query": [
+                {
+                  "key": "pais_id",
+                  "value": "{{pais_prueba_id}}"
+                }
+              ]
+            },
+            "description": "GET /instituciones?pais_id= solo devuelve las activas de países activos."
+          },
+          "response": []
+        },
+        {
+          "name": "16.15 Admin - Desactivar Institución (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Queda inactiva', function () {",
+                  "    pm.expect(pm.response.json().data.activo).to.eql(false);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/instituciones/{{institucion_prueba_id}}/desactivar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "instituciones",
+                "{{institucion_prueba_id}}",
+                "desactivar"
+              ]
+            },
+            "description": "Prepara la prueba de reactivación con el país inactivo."
+          },
+          "response": []
+        },
+        {
+          "name": "16.16 Admin - Desactivar País (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Queda inactivo', function () {",
+                  "    pm.expect(pm.response.json().data.activo).to.eql(false);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/paises/{{pais_prueba_id}}/desactivar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "paises",
+                "{{pais_prueba_id}}",
+                "desactivar"
+              ]
+            },
+            "description": "Baja lógica."
+          },
+          "response": []
+        },
+        {
+          "name": "16.17 Admin - Desactivar País Ya Inactivo (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 409 Conflict', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "pm.test('Devuelve PAIS_ALREADY_INACTIVE', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('PAIS_ALREADY_INACTIVE');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/paises/{{pais_prueba_id}}/desactivar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "paises",
+                "{{pais_prueba_id}}",
+                "desactivar"
+              ]
+            },
+            "description": "No se desactiva dos veces."
+          },
+          "response": []
+        },
+        {
+          "name": "16.18 Catálogo Público No Muestra el País Desactivado (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('No incluye el registro de prueba', function () {",
+                  "    var ids = pm.response.json().data.map(function (x) { return x.id; });",
+                  "    pm.expect(ids).to.not.include(Number(pm.environment.get('pais_prueba_id')));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/paises",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "paises"
+              ]
+            },
+            "description": "GET /paises solo devuelve los activos."
+          },
+          "response": []
+        },
+        {
+          "name": "16.19 Admin - Reactivar Institución Con País Inactivo (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 409 Conflict', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "pm.test('Devuelve INSTITUCION_PAIS_INACTIVO', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('INSTITUCION_PAIS_INACTIVO');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/instituciones/{{institucion_prueba_id}}/reactivar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "instituciones",
+                "{{institucion_prueba_id}}",
+                "reactivar"
+              ]
+            },
+            "description": "Primero hay que reactivar el país."
+          },
+          "response": []
+        },
+        {
+          "name": "16.20 Admin - Reactivar País (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Queda activo', function () {",
+                  "    pm.expect(pm.response.json().data.activo).to.eql(true);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/paises/{{pais_prueba_id}}/reactivar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "paises",
+                "{{pais_prueba_id}}",
+                "reactivar"
+              ]
+            },
+            "description": "Vuelve al catálogo público."
+          },
+          "response": []
+        },
+        {
+          "name": "16.21 Admin - Reactivar País Ya Activo (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 409 Conflict', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "pm.test('Devuelve PAIS_ALREADY_ACTIVE', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('PAIS_ALREADY_ACTIVE');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/paises/{{pais_prueba_id}}/reactivar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "paises",
+                "{{pais_prueba_id}}",
+                "reactivar"
+              ]
+            },
+            "description": "No se reactiva dos veces."
+          },
+          "response": []
+        },
+        {
+          "name": "16.22 Admin - Reactivar Institución (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Queda activa', function () {",
+                  "    pm.expect(pm.response.json().data.activo).to.eql(true);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/instituciones/{{institucion_prueba_id}}/reactivar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "instituciones",
+                "{{institucion_prueba_id}}",
+                "reactivar"
+              ]
+            },
+            "description": "Con el país activo ya se puede reactivar."
+          },
+          "response": []
+        },
+        {
+          "name": "16.23 Admin - Reactivar Institución Ya Activa (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 409 Conflict', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "pm.test('Devuelve INSTITUCION_ALREADY_ACTIVE', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('INSTITUCION_ALREADY_ACTIVE');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/instituciones/{{institucion_prueba_id}}/reactivar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "instituciones",
+                "{{institucion_prueba_id}}",
+                "reactivar"
+              ]
+            },
+            "description": "No se reactiva dos veces."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "17. Admin - Usuarios: Suspender y Reactivar (Dev 1)",
+      "description": "HU-20. El admin lista usuarios, suspende y reactiva cuentas de candidatos/empresas. Suspender revoca los tokens y bloquea el login (403). Usa su propio candidato (Pedro). Requiere `token_admin` (0).",
+      "item": [
+        {
+          "name": "17.1 Preparar - Registrar Candidato Pedro (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Guarda susp_usuario_id', function () {",
+                  "    pm.environment.set('susp_usuario_id', pm.response.json().data.usuario_id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos"
+              ]
+            },
+            "description": "Candidato propio para no suspender a Juan ni a María.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Pedro\",\n    \"apellidos\": \"Suspension Prueba\",\n    \"dni\": \"70000171\",\n    \"fecha_nacimiento\": \"1995-05-15\",\n    \"genero\": \"masculino\",\n    \"celular\": \"970000171\",\n    \"correo\": \"pedro.suspension@example.com\",\n    \"password\": \"Password123@\",\n    \"password_confirmation\": \"Password123@\",\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": 1,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"institucion_id\": 2,\n            \"carrera_id\": 3,\n            \"estado\": \"en_curso\",\n            \"ciclo_actual\": 8,\n            \"fecha_inicio\": \"2019-03-01\",\n            \"fecha_fin\": null\n        },\n        {\n            \"tipo_estudio_id\": 6,\n            \"area_estudio_id\": 1,\n            \"pais_id\": 1,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2013-03-01\",\n            \"fecha_fin\": \"2017-12-01\"\n        }\n    ],\n    \"idiomas\": [\n        {\n            \"idioma_id\": 1,\n            \"nivel_escrito\": \"intermedio\",\n            \"nivel_oral\": \"basico\"\n        },\n        {\n            \"idioma_id\": 2,\n            \"nivel_escrito\": \"nativo\",\n            \"nivel_oral\": \"nativo\"\n        }\n    ],\n    \"busca_primer_empleo\": false,\n    \"experiencias\": [\n        {\n            \"puesto_id\": 1,\n            \"organizacion_id\": 2,\n            \"pais_id\": 1,\n            \"nivel_puesto_id\": 4,\n            \"fecha_inicio\": \"2023-01-01\",\n            \"fecha_fin\": null,\n            \"descripcion\": \"Desarrollo de APIs REST con Laravel.\"\n        },\n        {\n            \"puesto_nombre\": \"Analista de Growth Marketing\",\n            \"organizacion_nombre\": \"Startup Andina Tech\",\n            \"pais_id\": 1,\n            \"nivel_puesto_id\": 2,\n            \"fecha_inicio\": \"2022-01-01\",\n            \"fecha_fin\": \"2022-12-01\"\n        }\n    ],\n    \"habilidades\": [\n        1,\n        2,\n        14\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "17.2 Login Candidato Pedro (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Guarda token_susp', function () {",
+                  "    pm.environment.set('token_susp', pm.response.json().data.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Guarda `token_susp`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"pedro.suspension@example.com\",\n    \"password\": \"Password123@\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "17.3 Preparar - Obtener el Id del Admin (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Guarda admin_usuario_id', function () {",
+                  "    pm.environment.set('admin_usuario_id', pm.response.json().data.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Para probar que el admin no se puede suspender a sí mismo."
+          },
+          "response": []
+        },
+        {
+          "name": "17.4 Admin - Listar Usuarios (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Pedro aparece activo', function () {",
+                  "    var pedro = pm.response.json().data.find(function (u) { return u.id === Number(pm.environment.get('susp_usuario_id')); });",
+                  "    pm.expect(pedro.estado_cuenta).to.eql('activo');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/usuarios",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "usuarios"
+              ]
+            },
+            "description": "Todos los usuarios con su rol y estado de cuenta."
+          },
+          "response": []
+        },
+        {
+          "name": "17.5 Admin - Listar Usuarios - Error Token de Candidato (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 403 Forbidden', function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_susp}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/usuarios",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "usuarios"
+              ]
+            },
+            "description": "Solo el rol admin."
+          },
+          "response": []
+        },
+        {
+          "name": "17.6 Admin - Listar Usuarios - Error Sin Token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/usuarios",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "usuarios"
+              ]
+            },
+            "description": "Ruta protegida con Sanctum."
+          },
+          "response": []
+        },
+        {
+          "name": "17.7 Admin - Suspender - Error Motivo Muy Largo (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Error en motivo', function () {",
+                  "    pm.expect(pm.response.json().errors).to.have.property('motivo');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/usuarios/{{susp_usuario_id}}/suspender",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "usuarios",
+                "{{susp_usuario_id}}",
+                "suspender"
+              ]
+            },
+            "description": "El motivo admite como máximo 255 caracteres.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"motivo\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "17.8 Admin - Suspender - Error Cuenta de Administrador (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Devuelve USER_SUSPENSION_NOT_ALLOWED', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('USER_SUSPENSION_NOT_ALLOWED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/usuarios/{{admin_usuario_id}}/suspender",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "usuarios",
+                "{{admin_usuario_id}}",
+                "suspender"
+              ]
+            },
+            "description": "Solo se suspenden candidatos y empresas.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"motivo\": \"Prueba\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "17.9 Admin - Suspender - Error Usuario No Encontrado (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 404 Not Found', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test('Devuelve RESOURCE_NOT_FOUND', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('RESOURCE_NOT_FOUND');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/usuarios/99999/suspender",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "usuarios",
+                "99999",
+                "suspender"
+              ]
+            },
+            "description": "Route Model Binding.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"motivo\": \"Prueba\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "17.10 Admin - Suspender Candidato (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Queda suspendido con su motivo', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    pm.expect(data.estado_cuenta).to.eql('suspendido');",
+                  "    pm.expect(data.motivo_suspension).to.eql('Prueba de suspensión desde Postman');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/usuarios/{{susp_usuario_id}}/suspender",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "usuarios",
+                "{{susp_usuario_id}}",
+                "suspender"
+              ]
+            },
+            "description": "HU-20. Suspende la cuenta y revoca sus tokens.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"motivo\": \"Prueba de suspensión desde Postman\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "17.11 Token del Candidato Suspendido Queda Revocado (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_susp}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Al suspender se borran todos sus tokens."
+          },
+          "response": []
+        },
+        {
+          "name": "17.12 Login - Error Cuenta Suspendida (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 403 Forbidden', function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});",
+                  "pm.test('Mensaje de cuenta suspendida', function () {",
+                  "    pm.expect(pm.response.json().message).to.include('suspendida');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Con credenciales correctas, pero la cuenta está suspendida.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"pedro.suspension@example.com\",\n    \"password\": \"Password123@\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "17.13 Admin - Reactivar Candidato (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Queda activo y sin motivo', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    pm.expect(data.estado_cuenta).to.eql('activo');",
+                  "    pm.expect(data.motivo_suspension).to.be.null;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/usuarios/{{susp_usuario_id}}/reactivar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "usuarios",
+                "{{susp_usuario_id}}",
+                "reactivar"
+              ]
+            },
+            "description": "HU-20."
+          },
+          "response": []
+        },
+        {
+          "name": "17.14 Admin - Reactivar - Error Cuenta de Administrador (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Devuelve USER_REACTIVATION_NOT_ALLOWED', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('USER_REACTIVATION_NOT_ALLOWED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/usuarios/{{admin_usuario_id}}/reactivar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "usuarios",
+                "{{admin_usuario_id}}",
+                "reactivar"
+              ]
+            },
+            "description": "Solo se reactivan candidatos y empresas."
+          },
+          "response": []
+        },
+        {
+          "name": "17.15 Login Tras la Reactivación (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "La cuenta vuelve a poder iniciar sesión.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"pedro.suspension@example.com\",\n    \"password\": \"Password123@\"\n}"
             }
           },
           "response": []
