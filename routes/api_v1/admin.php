@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\V1\Admin\CarreraController;
 use App\Http\Controllers\Api\V1\Admin\InstitucionController;
 use App\Http\Controllers\Api\V1\Admin\NivelPuestoController;
 use App\Http\Controllers\Api\V1\Admin\OrganizacionController;
@@ -93,6 +94,12 @@ Route::prefix('admin')
         Route::patch('/puestos/{puesto}', [PuestoController::class, 'update']);
         Route::patch('/puestos/{puesto}/desactivar', [PuestoController::class, 'desactivar']);
         Route::patch('/puestos/{puesto}/reactivar', [PuestoController::class, 'reactivar']);
+
+        Route::get('/carreras', [CarreraController::class, 'index']);
+        Route::post('/carreras', [CarreraController::class, 'store']);
+        Route::patch('/carreras/{carrera}', [CarreraController::class, 'update']);
+        Route::patch('/carreras/{carrera}/desactivar', [CarreraController::class, 'desactivar']);
+        Route::patch('/carreras/{carrera}/reactivar', [CarreraController::class, 'reactivar']);
 
         Route::get('/niveles-puesto', [NivelPuestoController::class, 'index']);
         Route::post('/niveles-puesto', [NivelPuestoController::class, 'store']);

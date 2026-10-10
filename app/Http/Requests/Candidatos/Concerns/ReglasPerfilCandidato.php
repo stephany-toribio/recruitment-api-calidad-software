@@ -29,7 +29,14 @@ trait ReglasPerfilCandidato
             // "Sin estudios formales" solo lleva el área.
             'estudios.*.pais_id'         => ['nullable', 'integer', Rule::exists('paises', 'id')->where('activo', true)],
             'estudios.*.institucion_id'  => ['nullable', 'integer', Rule::exists('instituciones', 'id')->where('estado', 'activo')],
-            'estudios.*.carrera_id'      => ['nullable', 'integer', 'exists:carreras,id'],
+            // Carrera activa, o una que el candidato ya tenía aunque luego el admin la desactivara
+            'estudios.*.carrera_id'      => ['nullable', 'integer', Rule::exists('carreras', 'id')->where(function (Builder $query) {
+                $query->where('activo', true);
+
+                if (! empty($this->carrerasActuales())) {
+                    $query->orWhereIn('id', $this->carrerasActuales());
+                }
+            })],
             'estudios.*.estado'          => ['nullable', 'in:finalizado,en_curso,incompleto'],
             'estudios.*.ciclo_actual'    => ['nullable', 'integer', 'min:1', 'max:15', 'prohibited_unless:estudios.*.estado,en_curso'],
             'estudios.*.fecha_inicio'    => ['nullable', 'date_format:Y-m-d'],
@@ -449,37 +456,37 @@ trait ReglasPerfilCandidato
         }
     }
 
-    // Candidato que edita su perfil. En el registro todavía no existe (lo sobrescribe ActualizarCandidatoRequest)
+    // Candidato que edita su perfil
     protected function candidatoActualId(): ?int
     {
         return null;
     }
 
-    // Puestos que el candidato ya tiene en sus experiencias: los conserva aunque el administrador los deshabilite
+    // Puestos que el candidato ya tiene en sus experiencias
     protected function puestosActuales(): array
     {
         return [];
     }
 
-    // Organizaciones que el candidato ya tiene en sus experiencias: las conserva aunque el administrador las deshabilite
+    // Organizaciones que el candidato ya tiene en sus experiencia
     protected function organizacionesActuales(): array
     {
         return [];
     }
 
-    // Niveles que el candidato ya tiene en sus experiencias: los conserva aunque el administrador los deshabilite
+    // Carreras que el candidato ya tiene en sus estudios
+    protected function carrerasActuales(): array
+    {
+        return [];
+    }
+
+    // Niveles que el candidato ya tiene en sus experiencias:
     protected function nivelesActuales(): array
     {
         return [];
     }
 
-    /**
-     *  cada habilidad técnica debe pertenecer a un área de los estudios del candidato (las blandas no tienen área).
-     *
-     * @param array|null $habilidades ids de las habilidades finales
-     * @param array|null $areas       ids de las áreas de los estudios finales
-     * @param bool       $enviadas    true: llegaron en la petición (error por índice); false: son las ya guardadas
-     */
+   
     protected function validarHabilidadesSegunAreas(Validator $validator, ?array $habilidades, ?array $areas, bool $enviadas = true): void
     {
         if ($habilidades === null || $areas === null || $validator->errors()->has('habilidades')) {

@@ -62,6 +62,16 @@ class ActualizarCandidatoRequest extends FormRequest
 
     private ?array $nivelesActuales = null;
 
+    private ?array $carrerasActuales = null;
+
+    // Lo usa la regla de estudios.*.carrera_id: conserva las carreras que el admin desactivó después
+    protected function carrerasActuales(): array
+    {
+        return $this->carrerasActuales ??= $this->user()?->candidato?->estudios()
+            ->whereNotNull('carrera_id')
+            ->pluck('carrera_id')->map(fn ($id) => (int) $id)->unique()->values()->all() ?? [];
+    }
+
     protected function candidatoActualId(): ?int
     {
         return $this->user()?->candidato?->id;
