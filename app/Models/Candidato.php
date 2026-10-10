@@ -12,6 +12,9 @@ class Candidato extends Model
 {
     use HasFactory;
 
+    // Edad mínima para registrarse (la misma que valida el front en el registro)
+    public const EDAD_MINIMA = 17;
+
     protected $table= 'candidatos';
 
     protected $fillable = [

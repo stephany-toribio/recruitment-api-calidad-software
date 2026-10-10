@@ -6,6 +6,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use App\Exceptions\BusinessException;
 use App\Http\Requests\Candidatos\Concerns\ReglasPerfilCandidato;
+use App\Models\Candidato;
 use Illuminate\Contracts\Validation\Validator;
 
 
@@ -26,9 +27,9 @@ class ActualizarCandidatoRequest extends FormRequest
                 'nombre'           => ['sometimes', 'string', 'max:120'],
                 'apellidos'        => ['sometimes', 'string', 'max:255'],
                 'dni'              => ['sometimes', 'digits:8', Rule::unique('candidatos', 'dni')->ignore($this->user()?->id, 'usuario_id')],
-                'fecha_nacimiento' => ['sometimes', 'date'],
+                'fecha_nacimiento' => ['sometimes', 'date', 'before_or_equal:' . now()->subYears(Candidato::EDAD_MINIMA)->toDateString()],
                 'genero'           => ['sometimes', 'nullable', 'in:masculino,femenino,otro,prefiero no decir'],
-                'celular'          => ['sometimes', 'digits:9'],
+                'celular'          => ['sometimes', 'digits:9', Rule::unique('candidatos', 'celular')->ignore($this->user()?->id, 'usuario_id')],
             ],
             $this->reglasEstudios(parcial: true),
             $this->reglasIdiomas(parcial: true),
@@ -172,9 +173,12 @@ class ActualizarCandidatoRequest extends FormRequest
     {
         return array_merge([
             'dni.digits'             => 'El DNI debe tener exactamente 8 dígitos.',
+            'fecha_nacimiento.date'  => 'La fecha de nacimiento no es válida.',
+            'fecha_nacimiento.before_or_equal' => 'Debes tener al menos ' . Candidato::EDAD_MINIMA . ' años.',
             'dni.unique'             => 'El DNI ya pertenece a otro candidato registrado.',
             'genero.in'              => 'El género debe ser masculino, femenino, otro o prefiero no decir.',
             'celular.digits'         => 'El número de teléfono debe tener exactamente 9 dígitos.',
+            'celular.unique'         => 'El número de teléfono ya pertenece a otro candidato registrado.',
         ], $this->mensajesPerfil());
     }
 }
