@@ -1,6 +1,10 @@
 <?php
 
+use App\Http\Controllers\Api\V1\Admin\CarreraController;
+use App\Http\Controllers\Api\V1\Admin\IdiomaController;
 use App\Http\Controllers\Api\V1\Admin\InstitucionController;
+use App\Http\Controllers\Api\V1\Admin\NivelPuestoController;
+use App\Http\Controllers\Api\V1\Admin\OrganizacionController;
 use App\Http\Controllers\Api\V1\Admin\PaisController;
 use App\Http\Controllers\Api\V1\Admin\PuestoController;
 use App\Http\Controllers\Api\V1\Admin\UsuarioController;
@@ -87,6 +91,32 @@ Route::prefix('admin')
         Route::patch('/instituciones/{institucion}/reactivar', [InstitucionController::class, 'reactivar']);
 
         Route::get('/puestos', [PuestoController::class, 'index']);
+        Route::post('/puestos', [PuestoController::class, 'store']);
+        Route::patch('/puestos/{puesto}', [PuestoController::class, 'update']);
         Route::patch('/puestos/{puesto}/desactivar', [PuestoController::class, 'desactivar']);
         Route::patch('/puestos/{puesto}/reactivar', [PuestoController::class, 'reactivar']);
+
+        Route::get('/carreras', [CarreraController::class, 'index']);
+        Route::post('/carreras', [CarreraController::class, 'store']);
+        Route::patch('/carreras/{carrera}', [CarreraController::class, 'update']);
+        Route::patch('/carreras/{carrera}/desactivar', [CarreraController::class, 'desactivar']);
+        Route::patch('/carreras/{carrera}/reactivar', [CarreraController::class, 'reactivar']);
+
+        Route::get('/idiomas', [IdiomaController::class, 'index']);
+        Route::post('/idiomas', [IdiomaController::class, 'store']);
+        Route::patch('/idiomas/{idioma}', [IdiomaController::class, 'update']);
+        Route::patch('/idiomas/{idioma}/desactivar', [IdiomaController::class, 'desactivar']);
+        Route::patch('/idiomas/{idioma}/reactivar', [IdiomaController::class, 'reactivar']);
+
+        Route::get('/niveles-puesto', [NivelPuestoController::class, 'index']);
+        Route::post('/niveles-puesto', [NivelPuestoController::class, 'store']);
+        Route::patch('/niveles-puesto/{nivelPuesto}', [NivelPuestoController::class, 'update']);
+        Route::patch('/niveles-puesto/{nivelPuesto}/desactivar', [NivelPuestoController::class, 'desactivar']);
+        Route::patch('/niveles-puesto/{nivelPuesto}/reactivar', [NivelPuestoController::class, 'reactivar']);
+
+        Route::get('/organizaciones', [OrganizacionController::class, 'index']);
+        Route::post('/organizaciones', [OrganizacionController::class, 'store']);
+        Route::patch('/organizaciones/{organizacion}', [OrganizacionController::class, 'update']);
+        Route::patch('/organizaciones/{organizacion}/desactivar', [OrganizacionController::class, 'desactivar']);
+        Route::patch('/organizaciones/{organizacion}/reactivar', [OrganizacionController::class, 'reactivar']);
     });

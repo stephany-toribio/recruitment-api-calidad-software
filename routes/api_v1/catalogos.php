@@ -11,4 +11,5 @@ Route::get('/tipos-estudio', [CatalogoController::class, 'tiposEstudio']);
 Route::get('/instituciones', [CatalogoController::class, 'instituciones']);
 Route::get('/idiomas', [CatalogoController::class, 'idiomas']);
 Route::get('/puestos', [CatalogoController::class, 'puestos']);
+Route::get('/niveles-puesto', [CatalogoController::class, 'nivelesPuesto']);
 Route::get('/organizaciones', [CatalogoController::class, 'organizaciones']);

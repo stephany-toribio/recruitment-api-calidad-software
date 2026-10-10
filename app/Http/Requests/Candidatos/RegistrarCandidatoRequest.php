@@ -5,6 +5,7 @@ namespace App\Http\Requests\Candidatos;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Exceptions\BusinessException;
 use App\Http\Requests\Candidatos\Concerns\ReglasPerfilCandidato;
+use App\Models\Candidato;
 use App\Rules\PasswordSegura;
 use Illuminate\Contracts\Validation\Validator;
 
@@ -27,11 +28,12 @@ class RegistrarCandidatoRequest extends FormRequest
                 'nombre'           => ['required', 'string', 'max:120'],
                 'apellidos'        => ['required', 'string', 'max:255'],
                 'dni'              => ['required', 'digits:8', 'unique:candidatos,dni'],
-                'fecha_nacimiento' => ['required', 'date'],
+                // Al menos EDAD_MINIMA años cumplidos a la fecha de hoy
+                'fecha_nacimiento' => ['required', 'date', 'before_or_equal:' . now()->subYears(Candidato::EDAD_MINIMA)->toDateString()],
                 'genero'           => ['nullable', 'in:masculino,femenino,otro,prefiero no decir'],
                 'correo'           => ['required', 'email', 'max:120', 'unique:usuarios,correo'],
                 'password'         => ['required', 'confirmed', new PasswordSegura(), 'max:120'],
-                'celular'          => ['required', 'digits:9'],
+                'celular'          => ['required', 'digits:9', 'unique:candidatos,celular'],
             ],
             $this->reglasEstudios(),
             $this->reglasIdiomas(),
@@ -44,7 +46,6 @@ class RegistrarCandidatoRequest extends FormRequest
     {
         return [
             fn (Validator $validator) => $this->validarConsistencia($validator),
-            // Regla C. En el paso de habilidades de Precognition el frontend debe enviar también "estudios" en el body
             fn (Validator $validator) => $this->validarHabilidadesSegunAreas(
                 $validator,
                 is_array($this->input('habilidades')) ? $this->input('habilidades') : null,
@@ -84,6 +85,8 @@ class RegistrarCandidatoRequest extends FormRequest
             'dni.unique'                  => 'El DNI ya existe en la base de datos.',
 
             'fecha_nacimiento.required'   => 'La fecha de nacimiento es obligatoria.',
+            'fecha_nacimiento.date'       => 'La fecha de nacimiento no es válida.',
+            'fecha_nacimiento.before_or_equal' => 'Debes tener al menos ' . Candidato::EDAD_MINIMA . ' años para registrarte.',
             'genero.in'                   => 'El género debe ser masculino, femenino, otro o prefiero no decir.',
 
             'correo.required'             => 'El correo electrónico es obligatorio.',
@@ -93,6 +96,7 @@ class RegistrarCandidatoRequest extends FormRequest
 
             'celular.required'            => 'El número de teléfono es obligatorio.',
             'celular.digits'              => 'El número de teléfono debe tener exactamente 9 dígitos.',
+            'celular.unique'              => 'El número de teléfono ya está registrado.',
         ], $this->mensajesPerfil());
     }
 }

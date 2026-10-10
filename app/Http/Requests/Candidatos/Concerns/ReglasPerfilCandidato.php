@@ -5,7 +5,9 @@ namespace App\Http\Requests\Candidatos\Concerns;
 use App\Models\Carrera;
 use App\Models\Habilidad;
 use App\Models\Institucion;
+use App\Models\NivelPuesto;
 use App\Models\Organizacion;
+use App\Models\Puesto;
 use App\Models\TipoEstudio;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Database\Query\Builder;
@@ -23,12 +25,21 @@ trait ReglasPerfilCandidato
             'estudios'                   => [$parcial ? 'sometimes' : 'required', 'array', 'min:1'],
             'estudios.*.tipo_estudio_id' => ['required', 'integer', 'exists:tipos_estudio,id'],
             'estudios.*.area_estudio_id' => ['required', 'integer', Rule::exists('areas_estudio', 'id')->where('activo', true)],
-            'estudios.*.pais_id'         => ['required', 'integer', Rule::exists('paises', 'id')->where('activo', true)],
+            // país, estado y fecha de inicio: obligatorios según el tipo (validarEstudiosContraCatalogo).
+            // "Sin estudios formales" solo lleva el área.
+            'estudios.*.pais_id'         => ['nullable', 'integer', Rule::exists('paises', 'id')->where('activo', true)],
             'estudios.*.institucion_id'  => ['nullable', 'integer', Rule::exists('instituciones', 'id')->where('estado', 'activo')],
-            'estudios.*.carrera_id'      => ['nullable', 'integer', 'exists:carreras,id'],
-            'estudios.*.estado'          => ['required', 'in:finalizado,en_curso,incompleto'],
+            // Carrera activa, o una que el candidato ya tenía aunque luego el admin la desactivara
+            'estudios.*.carrera_id'      => ['nullable', 'integer', Rule::exists('carreras', 'id')->where(function (Builder $query) {
+                $query->where('activo', true);
+
+                if (! empty($this->carrerasActuales())) {
+                    $query->orWhereIn('id', $this->carrerasActuales());
+                }
+            })],
+            'estudios.*.estado'          => ['nullable', 'in:finalizado,en_curso,incompleto'],
             'estudios.*.ciclo_actual'    => ['nullable', 'integer', 'min:1', 'max:15', 'prohibited_unless:estudios.*.estado,en_curso'],
-            'estudios.*.fecha_inicio'    => ['required', 'date_format:Y-m-d'],
+            'estudios.*.fecha_inicio'    => ['nullable', 'date_format:Y-m-d'],
             'estudios.*.fecha_fin'       => ['nullable', 'date_format:Y-m-d', 'after_or_equal:estudios.*.fecha_inicio'],
         ];
     }
@@ -37,7 +48,14 @@ trait ReglasPerfilCandidato
     {
         return [
             'idiomas'                 => [$parcial ? 'sometimes' : 'required', 'array', 'min:1', 'max:10'],
-            'idiomas.*.idioma_id'     => ['required', 'integer', 'distinct', 'exists:idiomas,id'],
+            // Idioma activo, o uno que el candidato ya tenía aunque luego el admin lo desactivara
+            'idiomas.*.idioma_id'     => ['required', 'integer', 'distinct', Rule::exists('idiomas', 'id')->where(function (Builder $query) {
+                $query->where('activo', true);
+
+                if (! empty($this->idiomasActuales())) {
+                    $query->orWhereIn('id', $this->idiomasActuales());
+                }
+            })],
             'idiomas.*.nivel_escrito' => ['required', 'in:basico,intermedio,avanzado,nativo'],
             'idiomas.*.nivel_oral'    => ['required', 'in:basico,intermedio,avanzado,nativo'],
         ];
@@ -53,20 +71,88 @@ trait ReglasPerfilCandidato
                 'array', 'min:1', 'max:5',
             ],
             // Un puesto u organización del catálogo (id) o uno nuevo propuesto por el candidato (nombre)
+            // Puesto por id: global activo, personalizado propio activo, o uno que ya tenía aunque luego se deshabilitara
             'experiencias.*.puesto_id'           => [
                 'nullable',
                 'required_without:experiencias.*.puesto_nombre',
                 'prohibits:experiencias.*.puesto_nombre',
                 'integer',
-                Rule::exists('puestos', 'id')
-                    ->where('estado', 'activo')
-                    ->where('estado_catalogo', 'aprobado'),
+                Rule::exists('puestos', 'id')->where(function (Builder $query) {
+                    $candidatoId = $this->candidatoActualId();
+                    $puestosActuales = $this->puestosActuales();
+
+                    $query->where(function (Builder $query) use ($candidatoId) {
+                        $query->where('estado', 'activo')
+                            ->where(function (Builder $query) use ($candidatoId) {
+                                $query->whereNull('candidato_id');
+
+                                if ($candidatoId) {
+                                    $query->orWhere('candidato_id', $candidatoId);
+                                }
+                            });
+                    });
+
+                    if (! empty($puestosActuales)) {
+                        $query->orWhereIn('id', $puestosActuales);
+                    }
+                }),
             ],
             'experiencias.*.puesto_nombre'       => ['nullable', 'required_without:experiencias.*.puesto_id', 'prohibits:experiencias.*.puesto_id', 'string', 'max:200'],
-            'experiencias.*.organizacion_id'     => ['nullable', 'required_without:experiencias.*.organizacion_nombre', 'prohibits:experiencias.*.organizacion_nombre', 'integer', Rule::exists('organizaciones', 'id')->where('estado', 'activo')],
-            'experiencias.*.organizacion_nombre' => ['nullable', 'string', 'max:200'],
+            // Organización por id: misma regla que el puesto (global activa, propia activa o una que ya tenía)
+            'experiencias.*.organizacion_id'     => [
+                'nullable',
+                'required_without:experiencias.*.organizacion_nombre',
+                'prohibits:experiencias.*.organizacion_nombre',
+                'integer',
+                Rule::exists('organizaciones', 'id')->where(function (Builder $query) {
+                    $candidatoId = $this->candidatoActualId();
+                    $organizacionesActuales = $this->organizacionesActuales();
+
+                    $query->where(function (Builder $query) use ($candidatoId) {
+                        $query->where('estado', 'activo')
+                            ->where(function (Builder $query) use ($candidatoId) {
+                                $query->whereNull('candidato_id');
+
+                                if ($candidatoId) {
+                                    $query->orWhere('candidato_id', $candidatoId);
+                                }
+                            });
+                    });
+
+                    if (! empty($organizacionesActuales)) {
+                        $query->orWhereIn('id', $organizacionesActuales);
+                    }
+                }),
+            ],
+            'experiencias.*.organizacion_nombre' => ['nullable', 'required_without:experiencias.*.organizacion_id', 'prohibits:experiencias.*.organizacion_id', 'string', 'max:200'],
             'experiencias.*.pais_id'             => ['required', 'integer', Rule::exists('paises', 'id')->where('activo', true)],
-            'experiencias.*.nivel'               => ['required', 'in:practicante_pre,practicante_pro,trainee,junior,semi_senior,senior,jefe_supervisor,gerente_director'],
+            // Nivel por id: misma regla que el puesto (global activo, propio activo o uno que ya tenía)
+            'experiencias.*.nivel_puesto_id'     => [
+                'nullable',
+                'required_without:experiencias.*.nivel_puesto_nombre',
+                'prohibits:experiencias.*.nivel_puesto_nombre',
+                'integer',
+                Rule::exists('niveles_puesto', 'id')->where(function (Builder $query) {
+                    $candidatoId = $this->candidatoActualId();
+                    $nivelesActuales = $this->nivelesActuales();
+
+                    $query->where(function (Builder $query) use ($candidatoId) {
+                        $query->where('estado', 'activo')
+                            ->where(function (Builder $query) use ($candidatoId) {
+                                $query->whereNull('candidato_id');
+
+                                if ($candidatoId) {
+                                    $query->orWhere('candidato_id', $candidatoId);
+                                }
+                            });
+                    });
+
+                    if (! empty($nivelesActuales)) {
+                        $query->orWhereIn('id', $nivelesActuales);
+                    }
+                }),
+            ],
+            'experiencias.*.nivel_puesto_nombre' => ['nullable', 'required_without:experiencias.*.nivel_puesto_id', 'prohibits:experiencias.*.nivel_puesto_id', 'string', 'max:100'],
             'experiencias.*.fecha_inicio'        => ['required', 'date_format:Y-m-d'],
             'experiencias.*.fecha_fin'           => ['nullable', 'date_format:Y-m-d', 'after_or_equal:experiencias.*.fecha_inicio'],
             'experiencias.*.descripcion'         => ['nullable', 'string', 'max:1000'],
@@ -130,6 +216,7 @@ trait ReglasPerfilCandidato
         $paisesInstitucion = Institucion::whereIn('id', $this->idsDe($estudios, 'institucion_id'))->pluck('pais_id', 'id');
         $estudiosVistos = [];
         $cantidadPorTipo = [];
+        $areasSinEstudios = [];
 
         foreach ($estudios as $i => $estudio) {
             if (! is_array($estudio)) {
@@ -144,6 +231,21 @@ trait ReglasPerfilCandidato
             }
 
             $cantidadPorTipo[$tipo] = ($cantidadPorTipo[$tipo] ?? 0) + 1;
+
+            if (in_array($tipo, TipoEstudio::SOLO_AREA, true)) {
+                $this->validarEstudioSoloArea($validator, $i, $estudio, $tipo, $areasSinEstudios);
+                continue;
+            }
+
+            if (blank($estudio['pais_id'] ?? null)) {
+                $this->agregarError($validator, "estudios.$i.pais_id", 'El país del estudio es obligatorio.');
+            }
+            if (blank($estudio['estado'] ?? null)) {
+                $this->agregarError($validator, "estudios.$i.estado", 'El estado del estudio es obligatorio.');
+            }
+            if (blank($estudio['fecha_inicio'] ?? null)) {
+                $this->agregarError($validator, "estudios.$i.fecha_inicio", 'La fecha de inicio del estudio es obligatoria.');
+            }
 
             $carreraId = $this->entero($estudio['carrera_id'] ?? null);
             $institucionId = $this->entero($estudio['institucion_id'] ?? null);
@@ -192,6 +294,36 @@ trait ReglasPerfilCandidato
         }
 
         $this->validarMaximoEstudiosPorGrupo($validator, $cantidadPorTipo);
+
+        // "Sin estudios formales" es exclusivo: no se combina con estudios formales
+        $sinEstudios = array_sum(array_intersect_key($cantidadPorTipo, array_flip(TipoEstudio::SOLO_AREA)));
+        if ($sinEstudios > 0 && $sinEstudios < array_sum($cantidadPorTipo)) {
+            $this->agregarError($validator, 'estudios', 'Si eliges "Sin estudios formales", no puedes registrar otros tipos de estudio.');
+        }
+    }
+
+    /**
+     * "Sin estudios formales": solo el área de estudio (obligatoria por rules()), sin repetir el área.
+     *
+     * @param array<int, int|string> $areasVistas áreas ya usadas en otros estudios de este tipo (se actualiza)
+     */
+    private function validarEstudioSoloArea(Validator $validator, int|string $i, array $estudio, string $tipo, array &$areasVistas): void
+    {
+        foreach (['pais_id', 'institucion_id', 'carrera_id', 'estado', 'ciclo_actual', 'fecha_inicio', 'fecha_fin'] as $campo) {
+            if (filled($estudio[$campo] ?? null)) {
+                $this->agregarError($validator, "estudios.$i.$campo", "Los estudios de tipo {$tipo} solo llevan el área de estudio.");
+            }
+        }
+
+        $areaId = $this->entero($estudio['area_estudio_id'] ?? null);
+
+        if ($areaId !== null && in_array($areaId, $areasVistas, true)) {
+            $this->agregarError($validator, "estudios.$i.area_estudio_id", 'Ya registraste esta área de estudio.');
+        }
+
+        if ($areaId !== null) {
+            $areasVistas[] = $areaId;
+        }
     }
 
     /**
@@ -228,6 +360,10 @@ trait ReglasPerfilCandidato
                 continue;
             }
 
+            $this->validarPuestoEscrito($validator, $i, $experiencia);
+            $this->validarOrganizacionEscrita($validator, $i, $experiencia);
+            $this->validarNivelEscrito($validator, $i, $experiencia);
+
             $organizacionId = $this->entero($experiencia['organizacion_id'] ?? null);
             $paisOrganizacion = $organizacionId ? $this->entero($paisesOrganizacion[$organizacionId] ?? null) : null;
 
@@ -238,12 +374,132 @@ trait ReglasPerfilCandidato
     }
 
     /**
-     *  cada habilidad técnica debe pertenecer a un área de los estudios del candidato (las blandas no tienen área).
-     *
-     * @param array|null $habilidades ids de las habilidades finales
-     * @param array|null $areas       ids de las áreas de los estudios finales
-     * @param bool       $enviadas    true: llegaron en la petición (error por índice); false: son las ya guardadas
+     * Puesto escrito por nombre: resuelve igual que CandidatoService (primero el global, luego el propio)
+     * y rechaza el que el administrador deshabilitó, salvo que el candidato ya lo tuviera.
      */
+    private function validarPuestoEscrito(Validator $validator, int|string $i, array $experiencia): void
+    {
+        $nombre = $experiencia['puesto_nombre'] ?? null;
+
+        if (! is_string($nombre) || $nombre === '' || filled($experiencia['puesto_id'] ?? null)) {
+            return; // vacío o enviado junto al id: ya lo reporta rules()
+        }
+
+        $candidatoId = $this->candidatoActualId();
+
+        $puesto = Puesto::where('nombre', $nombre)
+            ->where(function ($query) use ($candidatoId) {
+                $query->whereNull('candidato_id');
+
+                if ($candidatoId) {
+                    $query->orWhere('candidato_id', $candidatoId);
+                }
+            })
+            ->orderByRaw('candidato_id IS NOT NULL') // el global primero
+            ->first();
+
+        if ($puesto && $puesto->estado !== 'activo' && ! in_array($puesto->id, $this->puestosActuales(), true)) {
+            $this->agregarError($validator, "experiencias.$i.puesto_nombre", "El puesto «{$puesto->nombre}» no está disponible. Selecciona otro o escribe uno distinto.");
+        }
+    }
+
+    /**
+     * Organización escrita por nombre: igual que el puesto, pero buscando dentro del país de la experiencia.
+     */
+    private function validarOrganizacionEscrita(Validator $validator, int|string $i, array $experiencia): void
+    {
+        $nombre = $experiencia['organizacion_nombre'] ?? null;
+        $paisId = $this->entero($experiencia['pais_id'] ?? null);
+
+        if (! is_string($nombre) || $nombre === '' || $paisId === null || filled($experiencia['organizacion_id'] ?? null)) {
+            return; // vacío, sin país o enviado junto al id: ya lo reporta rules()
+        }
+
+        $candidatoId = $this->candidatoActualId();
+
+        $organizacion = Organizacion::where('nombre', $nombre)
+            ->where('pais_id', $paisId)
+            ->where(function ($query) use ($candidatoId) {
+                $query->whereNull('candidato_id');
+
+                if ($candidatoId) {
+                    $query->orWhere('candidato_id', $candidatoId);
+                }
+            })
+            ->orderByRaw('candidato_id IS NOT NULL') // la global primero
+            ->first();
+
+        if ($organizacion && $organizacion->estado !== 'activo' && ! in_array($organizacion->id, $this->organizacionesActuales(), true)) {
+            $this->agregarError($validator, "experiencias.$i.organizacion_nombre", "La organización «{$organizacion->nombre}» no está disponible. Selecciona otra o escribe una distinta.");
+        }
+    }
+
+    /**
+     * Nivel escrito por nombre: igual que el puesto primero el global, luego el propio 
+     */
+    private function validarNivelEscrito(Validator $validator, int|string $i, array $experiencia): void
+    {
+        $nombre = $experiencia['nivel_puesto_nombre'] ?? null;
+
+        if (! is_string($nombre) || $nombre === '' || filled($experiencia['nivel_puesto_id'] ?? null)) {
+            return; // vacío o enviado junto al id: ya lo reporta rules()
+        }
+
+        $candidatoId = $this->candidatoActualId();
+
+        $nivel = NivelPuesto::where('nombre', $nombre)
+            ->where(function ($query) use ($candidatoId) {
+                $query->whereNull('candidato_id');
+
+                if ($candidatoId) {
+                    $query->orWhere('candidato_id', $candidatoId);
+                }
+            })
+            ->orderByRaw('candidato_id IS NOT NULL') // el global primero
+            ->first();
+
+        if ($nivel && $nivel->estado !== 'activo' && ! in_array($nivel->id, $this->nivelesActuales(), true)) {
+            $this->agregarError($validator, "experiencias.$i.nivel_puesto_nombre", "El nivel «{$nivel->nombre}» no está disponible. Selecciona otro o escribe uno distinto.");
+        }
+    }
+
+    // Candidato que edita su perfil
+    protected function candidatoActualId(): ?int
+    {
+        return null;
+    }
+
+    // Puestos que el candidato ya tiene en sus experiencias
+    protected function puestosActuales(): array
+    {
+        return [];
+    }
+
+    // Organizaciones que el candidato ya tiene en sus experiencia
+    protected function organizacionesActuales(): array
+    {
+        return [];
+    }
+
+    // Carreras que el candidato ya tiene en sus estudios
+    protected function carrerasActuales(): array
+    {
+        return [];
+    }
+
+    // Idiomas que el candidato ya tiene registrados: los conserva aunque el administrador los desactive
+    protected function idiomasActuales(): array
+    {
+        return [];
+    }
+
+    // Niveles que el candidato ya tiene en sus experiencias:
+    protected function nivelesActuales(): array
+    {
+        return [];
+    }
+
+   
     protected function validarHabilidadesSegunAreas(Validator $validator, ?array $habilidades, ?array $areas, bool $enviadas = true): void
     {
         if ($habilidades === null || $areas === null || $validator->errors()->has('habilidades')) {
@@ -333,14 +589,11 @@ trait ReglasPerfilCandidato
             'estudios.*.tipo_estudio_id.exists'  => 'El tipo de estudio no es válido.',
             'estudios.*.area_estudio_id.required' => 'El área de estudio es obligatoria.',
             'estudios.*.area_estudio_id.exists'  => 'El área de estudio no existe o está inactiva.',
-            'estudios.*.pais_id.required'        => 'El país del estudio es obligatorio.',
             'estudios.*.pais_id.exists'          => 'El país del estudio no existe o está inactivo.',
             'estudios.*.institucion_id.exists'   => 'La institución no existe o está inactiva.',
             'estudios.*.carrera_id.exists'       => 'La carrera seleccionada no es válida.',
-            'estudios.*.estado.required'         => 'El estado del estudio es obligatorio.',
             'estudios.*.estado.in'               => 'El estado del estudio debe ser finalizado, en_curso o incompleto.',
             'estudios.*.ciclo_actual.prohibited_unless' => 'El ciclo actual solo se indica en estudios en curso.',
-            'estudios.*.fecha_inicio.required'   => 'La fecha de inicio del estudio es obligatoria.',
             'estudios.*.fecha_inicio.date_format' => 'La fecha de inicio debe tener el formato AAAA-MM-DD.',
             'estudios.*.fecha_fin.date_format'   => 'La fecha de fin debe tener el formato AAAA-MM-DD.',
             'estudios.*.fecha_fin.after_or_equal' => 'La fecha de fin no puede ser anterior a la de inicio.',
@@ -364,18 +617,27 @@ trait ReglasPerfilCandidato
             'experiencias.max'                   => 'No puede registrar más de 5 experiencias laborales.',
             'experiencias.*.puesto_id.required_without'       => 'Seleccione un puesto o escriba uno nuevo.',
             'experiencias.*.puesto_id.prohibits'              => 'Envíe el puesto del catálogo o uno nuevo, no ambos.',
-            'experiencias.*.puesto_id.exists'                 => 'El puesto seleccionado no es válido.',
+            'experiencias.*.puesto_id.exists'                 => 'El puesto seleccionado no es válido o no está disponible.',
             'experiencias.*.puesto_nombre.required_without'   => 'Seleccione un puesto o escriba uno nuevo.',
             'experiencias.*.puesto_nombre.prohibits'          => 'Envíe el puesto del catálogo o uno nuevo, no ambos.',
             'experiencias.*.puesto_nombre.string'             => 'El nombre del puesto debe ser texto.',
             'experiencias.*.puesto_nombre.max'                => 'El nombre del puesto no puede superar los 200 caracteres.',
             'experiencias.*.organizacion_id.required_without' => 'Seleccione una organización o escriba una nueva.',
             'experiencias.*.organizacion_id.prohibits'        => 'Envíe la organización del catálogo o una nueva, no ambas.',
-            'experiencias.*.organizacion_id.exists'           => 'La organización seleccionada no es válida.',
+            'experiencias.*.organizacion_id.exists'           => 'La organización seleccionada no es válida o no está disponible.',
+            'experiencias.*.organizacion_nombre.required_without' => 'Seleccione una organización o escriba una nueva.',
+            'experiencias.*.organizacion_nombre.prohibits'    => 'Envíe la organización del catálogo o una nueva, no ambas.',
+            'experiencias.*.organizacion_nombre.string'       => 'El nombre de la organización debe ser texto.',
+            'experiencias.*.organizacion_nombre.max'          => 'El nombre de la organización no puede superar los 200 caracteres.',
             'experiencias.*.pais_id.required'    => 'El país de la experiencia es obligatorio.',
             'experiencias.*.pais_id.exists'      => 'El país de la experiencia no existe o está inactivo.',
-            'experiencias.*.nivel.required'      => 'El nivel del puesto es obligatorio.',
-            'experiencias.*.nivel.in'            => 'El nivel del puesto no es válido.',
+            'experiencias.*.nivel_puesto_id.required_without'     => 'Seleccione un nivel del puesto o escriba uno nuevo.',
+            'experiencias.*.nivel_puesto_id.prohibits'            => 'Envíe el nivel del catálogo o uno nuevo, no ambos.',
+            'experiencias.*.nivel_puesto_id.exists'               => 'El nivel del puesto seleccionado no es válido o no está disponible.',
+            'experiencias.*.nivel_puesto_nombre.required_without' => 'Seleccione un nivel del puesto o escriba uno nuevo.',
+            'experiencias.*.nivel_puesto_nombre.prohibits'        => 'Envíe el nivel del catálogo o uno nuevo, no ambos.',
+            'experiencias.*.nivel_puesto_nombre.string'           => 'El nivel del puesto debe ser texto.',
+            'experiencias.*.nivel_puesto_nombre.max'              => 'El nivel del puesto no puede superar los 100 caracteres.',
             'experiencias.*.fecha_inicio.required' => 'La fecha de inicio de la experiencia es obligatoria.',
             'experiencias.*.fecha_inicio.date_format' => 'La fecha de inicio debe tener el formato AAAA-MM-DD.',
             'experiencias.*.fecha_fin.date_format' => 'La fecha de fin debe tener el formato AAAA-MM-DD.',
@@ -402,15 +664,10 @@ trait ReglasPerfilCandidato
                 continue;
             }
 
-            if (
-                array_key_exists('puesto_nombre', $experiencia)
-                && is_string($experiencia['puesto_nombre'])
-            ) {
-                $experiencia['puesto_nombre'] = preg_replace(
-                    '/\s+/u',
-                    ' ',
-                    trim($experiencia['puesto_nombre'])
-                );
+            foreach (['puesto_nombre', 'organizacion_nombre', 'nivel_puesto_nombre'] as $campo) {
+                if (array_key_exists($campo, $experiencia) && is_string($experiencia[$campo])) {
+                    $experiencia[$campo] = preg_replace('/\s+/u', ' ', trim($experiencia[$campo]));
+                }
             }
         }
 

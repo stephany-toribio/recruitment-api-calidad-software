@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Puesto extends Model
@@ -12,12 +13,23 @@ class Puesto extends Model
 
     protected $table = 'puestos';
 
-    // estado: visible o no para el usuario. estado_catalogo: propuesto por un candidato (pendiente) o validado (aprobado).
+    // candidato_id: NULL = catálogo global; con valor = personalizado del candidato que lo escribió (no lo ven otros).
+    // estado: habilitado o deshabilitado por el administrador.
     protected $fillable = [
+        'candidato_id',
         'nombre',
         'estado',
-        'estado_catalogo',
     ];
+
+    public function esPersonalizado(): bool
+    {
+        return $this->candidato_id !== null;
+    }
+
+    public function creador(): BelongsTo
+    {
+        return $this->belongsTo(Candidato::class, 'candidato_id');
+    }
 
     public function experiencias(): HasMany
     {

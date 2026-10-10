@@ -13,6 +13,9 @@ class TipoEstudio extends Model
     // Reglas del estudio según su tipo 
     public const CON_CARRERA     = ['Universitario', 'Posgrado', 'Master', 'Doctorado']; 
     public const SIN_INSTITUCION = ['Secundario', 'Terciario'];
+    // Solo cursos externos: únicamente área de estudio (sin país, institución, carrera, estado ni fechas).
+    // Es exclusivo: no se combina con los demás tipos.
+    public const SOLO_AREA       = ['Sin estudios formales'];
 
     // Máximo de estudios por candidato según el grupo de tipos 
     public const MAXIMOS_POR_GRUPO = [
@@ -20,6 +23,7 @@ class TipoEstudio extends Model
         ['tipos' => ['Posgrado', 'Master', 'Doctorado'], 'maximo' => 5, 'descripcion' => 'posgrados (posgrado, maestría y doctorado)'],
         ['tipos' => ['Terciario'], 'maximo' => 1, 'descripcion' => 'estudio terciario'],
         ['tipos' => ['Secundario'], 'maximo' => 1, 'descripcion' => 'estudio secundario'],
+        ['tipos' => ['Sin estudios formales'], 'maximo' => 3, 'descripcion' => 'áreas sin estudios formales'],
     ];
 
     protected $table = 'tipos_estudio';
@@ -32,6 +36,11 @@ class TipoEstudio extends Model
     public function requiereCarrera(): bool
     {
         return in_array($this->nombre, self::CON_CARRERA, true);
+    }
+
+    public function soloArea(): bool
+    {
+        return in_array($this->nombre, self::SOLO_AREA, true);
     }
 
     public function carreras(): HasMany

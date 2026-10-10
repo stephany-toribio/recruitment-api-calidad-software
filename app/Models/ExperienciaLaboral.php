@@ -17,7 +17,7 @@ class ExperienciaLaboral extends Model
         'puesto_id',
         'organizacion_id',
         'pais_id',
-        'nivel',
+        'nivel_puesto_id',
         'fecha_inicio',
         'fecha_fin',
         'descripcion',
@@ -41,6 +41,11 @@ class ExperienciaLaboral extends Model
     public function organizacion(): BelongsTo
     {
         return $this->belongsTo(Organizacion::class, 'organizacion_id');
+    }
+
+    public function nivelPuesto(): BelongsTo
+    {
+        return $this->belongsTo(NivelPuesto::class, 'nivel_puesto_id');
     }
 
     public function pais(): BelongsTo

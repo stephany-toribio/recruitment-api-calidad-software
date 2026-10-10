@@ -28,20 +28,15 @@ class OrganizacionSeeder extends Seeder
 
         $paises = Pais::pluck('id', 'nombre');
 
-        // Los defaults de la tabla son inactivo/pendiente: el catálogo base se marca explícitamente
+        // Catálogo global (candidato_id NULL). El default de la tabla es inactivo: se marca activo explícitamente.
+        // Las personalizadas no se siembran: las crea cada candidato al escribir una organización que no está en el catálogo.
         foreach ($aprobadasPorPais as $pais => $organizaciones) {
             foreach ($organizaciones as $nombre) {
                 Organizacion::updateOrCreate(
-                    ['nombre' => $nombre, 'pais_id' => $paises[$pais]],
-                    ['estado' => 'activo', 'estado_catalogo' => 'aprobado']
+                    ['nombre' => $nombre, 'pais_id' => $paises[$pais], 'candidato_id' => null],
+                    ['estado' => 'activo']
                 );
             }
         }
-
-        // Ejemplo de organización propuesta por un candidato, para probar la moderación del admin
-        Organizacion::updateOrCreate(
-            ['nombre' => 'Consultora Andina SAC', 'pais_id' => $paises['Perú']],
-            ['estado' => 'inactivo', 'estado_catalogo' => 'pendiente']
-        );
     }
 }

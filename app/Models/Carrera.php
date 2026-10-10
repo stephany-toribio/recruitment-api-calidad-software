@@ -16,6 +16,11 @@ class Carrera extends Model
     protected $fillable = [
         'tipo_estudio_id',
         'nombre',
+        'activo',
+    ];
+
+    protected $casts = [
+        'activo' => 'boolean',
     ];
 
     public function tipoEstudio(): BelongsTo

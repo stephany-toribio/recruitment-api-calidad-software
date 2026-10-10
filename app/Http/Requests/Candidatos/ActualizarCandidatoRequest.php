@@ -6,6 +6,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use App\Exceptions\BusinessException;
 use App\Http\Requests\Candidatos\Concerns\ReglasPerfilCandidato;
+use App\Models\Candidato;
 use Illuminate\Contracts\Validation\Validator;
 
 
@@ -26,9 +27,9 @@ class ActualizarCandidatoRequest extends FormRequest
                 'nombre'           => ['sometimes', 'string', 'max:120'],
                 'apellidos'        => ['sometimes', 'string', 'max:255'],
                 'dni'              => ['sometimes', 'digits:8', Rule::unique('candidatos', 'dni')->ignore($this->user()?->id, 'usuario_id')],
-                'fecha_nacimiento' => ['sometimes', 'date'],
+                'fecha_nacimiento' => ['sometimes', 'date', 'before_or_equal:' . now()->subYears(Candidato::EDAD_MINIMA)->toDateString()],
                 'genero'           => ['sometimes', 'nullable', 'in:masculino,femenino,otro,prefiero no decir'],
-                'celular'          => ['sometimes', 'digits:9'],
+                'celular'          => ['sometimes', 'digits:9', Rule::unique('candidatos', 'celular')->ignore($this->user()?->id, 'usuario_id')],
             ],
             $this->reglasEstudios(parcial: true),
             $this->reglasIdiomas(parcial: true),
@@ -56,8 +57,58 @@ class ActualizarCandidatoRequest extends FormRequest
         return $this->user()?->candidato?->habilidades()->pluck('habilidades.id')->all() ?? [];
     }
 
-    // Regla C combinando lo enviado con lo guardado: si cambian los estudios o las habilidades, las técnicas finales
-    // deben seguir perteneciendo a las áreas de los estudios finales
+    private ?array $puestosActuales = null;
+
+    private ?array $organizacionesActuales = null;
+
+    private ?array $nivelesActuales = null;
+
+    private ?array $carrerasActuales = null;
+
+    private ?array $idiomasActuales = null;
+
+    // Lo usa la regla de idiomas.*.idioma_id: conserva los idiomas que el admin desactivó después
+    protected function idiomasActuales(): array
+    {
+        return $this->idiomasActuales ??= $this->user()?->candidato?->idiomas()
+            ->pluck('idioma_id')->map(fn ($id) => (int) $id)->unique()->values()->all() ?? [];
+    }
+
+    // Lo usa la regla de estudios.*.carrera_id: conserva las carreras que el admin desactivó después
+    protected function carrerasActuales(): array
+    {
+        return $this->carrerasActuales ??= $this->user()?->candidato?->estudios()
+            ->whereNotNull('carrera_id')
+            ->pluck('carrera_id')->map(fn ($id) => (int) $id)->unique()->values()->all() ?? [];
+    }
+
+    protected function candidatoActualId(): ?int
+    {
+        return $this->user()?->candidato?->id;
+    }
+
+    // Se consulta una sola vez: lo usan la regla de puesto_id y la validación de puesto_nombre
+    protected function puestosActuales(): array
+    {
+        return $this->puestosActuales ??= $this->user()?->candidato?->experiencias()
+            ->pluck('puesto_id')->map(fn ($id) => (int) $id)->unique()->values()->all() ?? [];
+    }
+
+    // Igual que los puestos: lo usan la regla de organizacion_id y la validación de organizacion_nombre
+    protected function organizacionesActuales(): array
+    {
+        return $this->organizacionesActuales ??= $this->user()?->candidato?->experiencias()
+            ->pluck('organizacion_id')->map(fn ($id) => (int) $id)->unique()->values()->all() ?? [];
+    }
+
+    // Igual que los puestos: lo usan la regla de nivel_puesto_id y la validación de nivel_puesto_nombre
+    protected function nivelesActuales(): array
+    {
+        return $this->nivelesActuales ??= $this->user()?->candidato?->experiencias()
+            ->pluck('nivel_puesto_id')->map(fn ($id) => (int) $id)->unique()->values()->all() ?? [];
+    }
+
+ 
     private function validarHabilidadesSegunAreasFinales(Validator $validator): void
     {
         if (! $this->has('habilidades') && ! $this->has('estudios')) {
@@ -122,9 +173,12 @@ class ActualizarCandidatoRequest extends FormRequest
     {
         return array_merge([
             'dni.digits'             => 'El DNI debe tener exactamente 8 dígitos.',
+            'fecha_nacimiento.date'  => 'La fecha de nacimiento no es válida.',
+            'fecha_nacimiento.before_or_equal' => 'Debes tener al menos ' . Candidato::EDAD_MINIMA . ' años.',
             'dni.unique'             => 'El DNI ya pertenece a otro candidato registrado.',
             'genero.in'              => 'El género debe ser masculino, femenino, otro o prefiero no decir.',
             'celular.digits'         => 'El número de teléfono debe tener exactamente 9 dígitos.',
+            'celular.unique'         => 'El número de teléfono ya pertenece a otro candidato registrado.',
         ], $this->mensajesPerfil());
     }
 }

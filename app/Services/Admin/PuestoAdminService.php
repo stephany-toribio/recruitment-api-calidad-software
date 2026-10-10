@@ -6,14 +6,55 @@ use App\Exceptions\BusinessException;
 use App\Models\Puesto;
 use Illuminate\Database\Eloquent\Collection;
 
-// El administrador solo habilita o deshabilita puestos; los puestos nuevos los proponen los candidatos al registrarse.
+/**
+ * Catálogo global: el administrador lo crea, edita, deshabilita y habilita.
+ * Personalizados (los escribe cada candidato): el administrador solo los ve y los deshabilita o habilita;
+ * no los edita ni los convierte en globales (HU-01).
+ */
 class PuestoAdminService
 {
-    public function listar(): Collection
+    /**
+     * @param array{tipo?: string, estado?: string} $filtros
+     */
+    public function listar(array $filtros): Collection
     {
         return Puesto::query()
+            ->with('creador')
+            // Personalizados con el mismo nombre (de distintos candidatos)
+            ->addSelect(['candidatos_con_mismo_nombre' => Puesto::from('puestos as mismos')
+                ->selectRaw('COUNT(*)')
+                ->whereColumn('mismos.nombre', 'puestos.nombre')
+                ->whereNotNull('mismos.candidato_id'),
+            ])
+            ->when(($filtros['tipo'] ?? null) === 'global', fn ($query) => $query->whereNull('candidato_id'))
+            ->when(($filtros['tipo'] ?? null) === 'personalizado', fn ($query) => $query->whereNotNull('candidato_id'))
+            ->when($filtros['estado'] ?? null, fn ($query, $estado) => $query->where('estado', $estado))
             ->orderBy('nombre')
+            ->orderBy('id')
             ->get();
+    }
+
+    public function crear(array $datos): Puesto
+    {
+        return Puesto::create([
+            'nombre' => $datos['nombre'],
+            'estado' => 'activo',
+        ])->load('creador');
+    }
+
+    public function actualizar(Puesto $puesto, array $datos): Puesto
+    {
+        if ($puesto->esPersonalizado()) {
+            throw new BusinessException(
+                'Un puesto personalizado no puede editarse: pertenece al candidato que lo escribió.',
+                409,
+                'PUESTO_PERSONALIZADO_NO_EDITABLE'
+            );
+        }
+
+        $puesto->update($datos);
+
+        return $puesto->fresh('creador');
     }
 
     public function desactivar(Puesto $puesto): Puesto
@@ -28,13 +69,10 @@ class PuestoAdminService
 
         $puesto->update(['estado' => 'inactivo']);
 
-        return $puesto->fresh();
+        return $puesto->fresh('creador');
     }
 
-    /**
-     * Activar un puesto propuesto por un candidato (pendiente) también lo aprueba:
-     * la tabla no admite un puesto activo que siga pendiente (chk_puestos_activo_solo_aprobado).
-     */
+    // Solo lo habilita: un personalizado sigue siendo del candidato y no pasa al catálogo global
     public function reactivar(Puesto $puesto): Puesto
     {
         if ($puesto->estado === 'activo') {
@@ -45,11 +83,8 @@ class PuestoAdminService
             );
         }
 
-        $puesto->update([
-            'estado'          => 'activo',
-            'estado_catalogo' => 'aprobado',
-        ]);
+        $puesto->update(['estado' => 'activo']);
 
-        return $puesto->fresh();
+        return $puesto->fresh('creador');
     }
 }

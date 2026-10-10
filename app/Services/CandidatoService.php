@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Candidato;
+use App\Models\NivelPuesto;
 use App\Models\Organizacion;
 use App\Models\Puesto;
 use App\Services\Auth\UsuarioService;
@@ -22,6 +23,7 @@ class CandidatoService
         'idiomas.idioma',
         'experiencias.puesto',
         'experiencias.organizacion',
+        'experiencias.nivelPuesto',
         'experiencias.pais',
     ];
 
@@ -132,12 +134,13 @@ class CandidatoService
             $candidato->estudios()->create([
                 'tipo_estudio_id' => $estudio['tipo_estudio_id'],
                 'area_estudio_id' => $estudio['area_estudio_id'],
-                'pais_id'         => $estudio['pais_id'],
+                // país, estado y fecha de inicio no van en "Sin estudios formales" (solo área)
+                'pais_id'         => $estudio['pais_id'] ?? null,
                 'institucion_id'  => $estudio['institucion_id'] ?? null,
                 'carrera_id'      => $estudio['carrera_id'] ?? null,
-                'estado'          => $estudio['estado'],
+                'estado'          => $estudio['estado'] ?? null,
                 'ciclo_actual'    => $estudio['ciclo_actual'] ?? null,
-                'fecha_inicio'    => $estudio['fecha_inicio'],
+                'fecha_inicio'    => $estudio['fecha_inicio'] ?? null,
                 'fecha_fin'       => $estudio['fecha_fin'] ?? null,
             ]);
         }
@@ -158,11 +161,12 @@ class CandidatoService
     {
         foreach ($experiencias as $experiencia) {
             $candidato->experiencias()->create([
-                'puesto_id'       => $experiencia['puesto_id'] ?? $this->resolverPuestoPropuesto($experiencia['puesto_nombre']),
+                'puesto_id'       => $experiencia['puesto_id'] ?? $this->resolverPuestoEscrito($experiencia['puesto_nombre'], $candidato),
                 'organizacion_id' => $experiencia['organizacion_id']
-                    ?? $this->resolverOrganizacionPropuesta($experiencia['organizacion_nombre'], $experiencia['pais_id']),
+                    ?? $this->resolverOrganizacionEscrita($experiencia['organizacion_nombre'], $experiencia['pais_id'], $candidato),
                 'pais_id'         => $experiencia['pais_id'],
-                'nivel'           => $experiencia['nivel'],
+                'nivel_puesto_id' => $experiencia['nivel_puesto_id']
+                    ?? $this->resolverNivelEscrito($experiencia['nivel_puesto_nombre'], $candidato),
                 'fecha_inicio'    => $experiencia['fecha_inicio'],
                 'fecha_fin'       => $experiencia['fecha_fin'] ?? null,
                 'descripcion'     => $experiencia['descripcion'] ?? null,
@@ -171,20 +175,61 @@ class CandidatoService
     }
 
     
-    private function resolverPuestoPropuesto(string $nombre): int
+    /**
+     * Puesto escrito por el candidato: si el nombre ya existe en el catálogo global se usa ese;
+     * si no, se usa o se crea su propio valor personalizado (no se comparte con otros candidatos).
+     * Que no esté deshabilitado ya lo valida ReglasPerfilCandidato.
+     */
+    private function resolverPuestoEscrito(string $nombre, Candidato $candidato): int
     {
+        $nombre = trim($nombre);
+
+        $global = Puesto::whereNull('candidato_id')->where('nombre', $nombre)->first();
+
+        if ($global) {
+            return $global->id;
+        }
+
         return Puesto::firstOrCreate(
-            ['nombre' => trim($nombre)],
-            ['estado' => 'inactivo', 'estado_catalogo' => 'pendiente']
+            ['nombre' => $nombre, 'candidato_id' => $candidato->id],
+            ['estado' => 'activo']
+        )->id;
+    }
+
+    // Igual que el puesto: primero el global, si no, el propio del candidato
+    private function resolverNivelEscrito(string $nombre, Candidato $candidato): int
+    {
+        $nombre = trim($nombre);
+
+        $global = NivelPuesto::whereNull('candidato_id')->where('nombre', $nombre)->first();
+
+        if ($global) {
+            return $global->id;
+        }
+
+        return NivelPuesto::firstOrCreate(
+            ['nombre' => $nombre, 'candidato_id' => $candidato->id],
+            ['estado' => 'activo']
         )->id;
     }
 
     // Igual que el puesto, pero la organización pertenece al país de la experiencia
-    private function resolverOrganizacionPropuesta(string $nombre, int $paisId): int
+    private function resolverOrganizacionEscrita(string $nombre, int $paisId, Candidato $candidato): int
     {
+        $nombre = trim($nombre);
+
+        $global = Organizacion::whereNull('candidato_id')
+            ->where('nombre', $nombre)
+            ->where('pais_id', $paisId)
+            ->first();
+
+        if ($global) {
+            return $global->id;
+        }
+
         return Organizacion::firstOrCreate(
-            ['nombre' => trim($nombre), 'pais_id' => $paisId],
-            ['estado' => 'inactivo', 'estado_catalogo' => 'pendiente']
+            ['nombre' => $nombre, 'pais_id' => $paisId, 'candidato_id' => $candidato->id],
+            ['estado' => 'activo']
         )->id;
     }
 };

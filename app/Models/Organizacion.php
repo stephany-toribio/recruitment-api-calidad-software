@@ -14,12 +14,24 @@ class Organizacion extends Model
 
     protected $table = 'organizaciones';
 
+    // candidato_id: NULL = catálogo global; con valor = personalizada del candidato que la escribió (no la ven otros).
+    // estado: habilitada o deshabilitada por el administrador.
     protected $fillable = [
+        'candidato_id',
         'nombre',
         'pais_id',
         'estado',
-        'estado_catalogo',
     ];
+
+    public function esPersonalizada(): bool
+    {
+        return $this->candidato_id !== null;
+    }
+
+    public function creador(): BelongsTo
+    {
+        return $this->belongsTo(Candidato::class, 'candidato_id');
+    }
 
     public function pais(): BelongsTo
     {

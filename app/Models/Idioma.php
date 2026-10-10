@@ -14,6 +14,11 @@ class Idioma extends Model
 
     protected $fillable = [
         'nombre',
+        'activo',
+    ];
+
+    protected $casts = [
+        'activo' => 'boolean',
     ];
 
     public function candidatoIdiomas(): HasMany

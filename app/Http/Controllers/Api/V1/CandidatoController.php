@@ -4,8 +4,11 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Requests\Candidatos\RegistrarCandidatoRequest;
 use App\Http\Requests\Candidatos\ActualizarCandidatoRequest;
+use App\Http\Requests\Catalogos\FiltrarPorPaisRequest;
 use App\Http\Resources\Api\V1\CandidatoResource;
-use App\Services\CandidatoService; 
+use App\Http\Resources\Api\V1\CatalogoResource;
+use App\Services\CandidatoService;
+use App\Services\Catalogos\CatalogoService;
 use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use App\Models\Candidato;  
@@ -14,7 +17,10 @@ use Illuminate\Http\Request;
 
 class CandidatoController extends BaseApiController
 {
-    public function __construct(private CandidatoService $candidatoService) {}
+    public function __construct(
+        private CandidatoService $candidatoService,
+        private CatalogoService $catalogoService,
+    ) {}
 
 
     // POST /api/v1/candidatos (Crear)
@@ -37,6 +43,44 @@ class CandidatoController extends BaseApiController
         return $this->successResponse(
             new CandidatoResource($candidato),
             'Perfil de candidato obtenido exitosamente'
+        );
+    }
+
+
+    // GET /api/v1/candidatos/me/puestos (Puestos que puede elegir: catálogo global + sus personalizados)
+    public function puestos(Request $request): JsonResponse
+    {
+        $candidato = $this->candidatoService->obtenerPorUsuario($request->user()->id);
+
+        return $this->successResponse(
+            CatalogoResource::collection($this->catalogoService->puestosParaCandidato($candidato->id)),
+            'Puestos disponibles obtenidos correctamente'
+        );
+    }
+
+
+    // GET /api/v1/candidatos/me/niveles-puesto Niveles que puede elegir catálogo global + sus personalizados
+    public function nivelesPuesto(Request $request): JsonResponse
+    {
+        $candidato = $this->candidatoService->obtenerPorUsuario($request->user()->id);
+
+        return $this->successResponse(
+            CatalogoResource::collection($this->catalogoService->nivelesPuestoParaCandidato($candidato->id)),
+            'Niveles del puesto disponibles obtenidos correctamente'
+        );
+    }
+
+
+    // GET /api/v1/candidatos/me/organizaciones?pais_id= Organizaciones que puede elegir: catálogo global + sus personalizadas
+    public function organizaciones(FiltrarPorPaisRequest $request): JsonResponse
+    {
+        $candidato = $this->candidatoService->obtenerPorUsuario($request->user()->id);
+
+        return $this->successResponse(
+            CatalogoResource::collection(
+                $this->catalogoService->organizacionesParaCandidato($candidato->id, $request->validated('pais_id'))
+            ),
+            'Organizaciones disponibles obtenidas correctamente'
         );
     }
 
