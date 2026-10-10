@@ -36,7 +36,7 @@ class CatalogoService
 
     public function idiomas(): Collection
     {
-        return Idioma::orderBy('nombre')->get(['id', 'nombre']);
+        return Idioma::where('activo', true)->orderBy('nombre')->get(['id', 'nombre']);
     }
 
     // Solo los globales habilitados: los personalizados que escribe cada candidato no se muestran a otros

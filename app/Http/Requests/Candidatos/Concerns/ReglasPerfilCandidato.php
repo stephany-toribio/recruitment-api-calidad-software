@@ -48,7 +48,14 @@ trait ReglasPerfilCandidato
     {
         return [
             'idiomas'                 => [$parcial ? 'sometimes' : 'required', 'array', 'min:1', 'max:10'],
-            'idiomas.*.idioma_id'     => ['required', 'integer', 'distinct', 'exists:idiomas,id'],
+            // Idioma activo, o uno que el candidato ya tenía aunque luego el admin lo desactivara
+            'idiomas.*.idioma_id'     => ['required', 'integer', 'distinct', Rule::exists('idiomas', 'id')->where(function (Builder $query) {
+                $query->where('activo', true);
+
+                if (! empty($this->idiomasActuales())) {
+                    $query->orWhereIn('id', $this->idiomasActuales());
+                }
+            })],
             'idiomas.*.nivel_escrito' => ['required', 'in:basico,intermedio,avanzado,nativo'],
             'idiomas.*.nivel_oral'    => ['required', 'in:basico,intermedio,avanzado,nativo'],
         ];
@@ -476,6 +483,12 @@ trait ReglasPerfilCandidato
 
     // Carreras que el candidato ya tiene en sus estudios
     protected function carrerasActuales(): array
+    {
+        return [];
+    }
+
+    // Idiomas que el candidato ya tiene registrados: los conserva aunque el administrador los desactive
+    protected function idiomasActuales(): array
     {
         return [];
     }

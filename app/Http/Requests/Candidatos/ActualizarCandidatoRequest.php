@@ -64,6 +64,15 @@ class ActualizarCandidatoRequest extends FormRequest
 
     private ?array $carrerasActuales = null;
 
+    private ?array $idiomasActuales = null;
+
+    // Lo usa la regla de idiomas.*.idioma_id: conserva los idiomas que el admin desactivó después
+    protected function idiomasActuales(): array
+    {
+        return $this->idiomasActuales ??= $this->user()?->candidato?->idiomas()
+            ->pluck('idioma_id')->map(fn ($id) => (int) $id)->unique()->values()->all() ?? [];
+    }
+
     // Lo usa la regla de estudios.*.carrera_id: conserva las carreras que el admin desactivó después
     protected function carrerasActuales(): array
     {

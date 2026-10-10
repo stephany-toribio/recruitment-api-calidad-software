@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\Admin\CarreraController;
+use App\Http\Controllers\Api\V1\Admin\IdiomaController;
 use App\Http\Controllers\Api\V1\Admin\InstitucionController;
 use App\Http\Controllers\Api\V1\Admin\NivelPuestoController;
 use App\Http\Controllers\Api\V1\Admin\OrganizacionController;
@@ -100,6 +101,12 @@ Route::prefix('admin')
         Route::patch('/carreras/{carrera}', [CarreraController::class, 'update']);
         Route::patch('/carreras/{carrera}/desactivar', [CarreraController::class, 'desactivar']);
         Route::patch('/carreras/{carrera}/reactivar', [CarreraController::class, 'reactivar']);
+
+        Route::get('/idiomas', [IdiomaController::class, 'index']);
+        Route::post('/idiomas', [IdiomaController::class, 'store']);
+        Route::patch('/idiomas/{idioma}', [IdiomaController::class, 'update']);
+        Route::patch('/idiomas/{idioma}/desactivar', [IdiomaController::class, 'desactivar']);
+        Route::patch('/idiomas/{idioma}/reactivar', [IdiomaController::class, 'reactivar']);
 
         Route::get('/niveles-puesto', [NivelPuestoController::class, 'index']);
         Route::post('/niveles-puesto', [NivelPuestoController::class, 'store']);
