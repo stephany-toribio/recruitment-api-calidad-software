@@ -1,13 +1,20 @@
 <?php
 
+use App\Http\Controllers\Api\V1\VacanteCandidatoController;
 use App\Http\Controllers\Api\V1\VacanteEmpresaController;
 use Illuminate\Support\Facades\Route;
 
-// VAC-01: niveles de experiencia. Acceso público.
 Route::get('/niveles-experiencia', [
     VacanteEmpresaController::class,
     'nivelesExperiencia',
 ]);
+
+Route::get('/vacantes', [
+    VacanteCandidatoController::class,
+    'index',
+])
+    ->middleware(['auth:sanctum', 'rol:candidato'])
+    ->name('vacantes.index');
 
 Route::prefix('empresas/me/vacantes')
     ->middleware(['auth:sanctum', 'rol:empresa'])
@@ -18,7 +25,6 @@ Route::prefix('empresas/me/vacantes')
             'store',
         ]);
 
-        // VAC-03: consultar una vacante propia, incluso eliminada.
         Route::get('/{vacante}', [
             VacanteEmpresaController::class,
             'show',

@@ -126,7 +126,9 @@ class Empleo extends Model
     public function publicadaEn(): ?Carbon
     {
         return $this->pagos
-            ->firstWhere('resultado', PagoVacante::EXITOSO)
+            ->where('resultado', PagoVacante::EXITOSO)
+            ->sortBy('created_at')
+            ->first()
             ?->created_at;
     }
 
