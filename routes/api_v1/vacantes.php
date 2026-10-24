@@ -25,4 +25,13 @@ Route::prefix('empresas/me/vacantes')
         ])
             ->whereNumber('vacante')
             ->withTrashed();
+
+        // Editar una vacante propia no pagada. Si estaba aprobada, vuelve a revisión.
+        // withTrashed: una vacante eliminada responde 409 VACANCY_DELETED (lo decide el servicio), no 404
+        Route::put('/{vacante}', [
+            VacanteEmpresaController::class,
+            'update',
+        ])
+            ->whereNumber('vacante')
+            ->withTrashed();
     });

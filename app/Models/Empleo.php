@@ -79,10 +79,16 @@ class Empleo extends Model
             ->withTimestamps();
     }
 
-    // Una sola decisión por vacante; sin fila = pendiente de revisión
+    // Revisión vigente: la que no fue invalidada por una edición. Sin revisión vigente = pendiente de revisión
     public function revision(): HasOne
     {
-        return $this->hasOne(RevisionVacante::class, 'empleo_id');
+        return $this->hasOne(RevisionVacante::class, 'empleo_id')->whereNull('invalidada_en');
+    }
+
+    // Historial de decisiones, incluidas las aprobaciones invalidadas por una edición
+    public function revisiones(): HasMany
+    {
+        return $this->hasMany(RevisionVacante::class, 'empleo_id');
     }
 
     // Intentos de pago simulado; la vacante está pagada si alguno fue exitoso

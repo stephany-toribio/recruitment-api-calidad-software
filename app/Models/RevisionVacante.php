@@ -6,7 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-// Decisión del administrador sobre una vacante (HU-22). Una vacante sin fila aquí está pendiente de revisión.
+/**
+ * Decisión del administrador sobre una vacante (HU-22).
+ * Una vacante sin revisión vigente (invalidada_en NULL) está pendiente de revisión.
+ * Si la empresa edita una vacante aprobada, esa aprobación se invalida y queda como historial.
+ */
 class RevisionVacante extends Model
 {
     use HasFactory;
@@ -20,13 +24,21 @@ class RevisionVacante extends Model
 
     protected $table = 'revisiones_vacante';
 
-    // Una vez creada no se modifica: la decisión es definitiva
+    // La decisión y el motivo no se modifican; solo se marca invalidada_en cuando la empresa edita la vacante
     protected $fillable = [
         'empleo_id',
         'admin_id',
         'decision',
         'motivo',
+        'invalidada_en',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'invalidada_en' => 'datetime',
+        ];
+    }
 
     public function empleo(): BelongsTo
     {
@@ -44,7 +56,7 @@ class RevisionVacante extends Model
         return $this->decision === self::APROBADA;
     }
 
-    // Estado de revisión de una vacante (estado.revision): 'pendiente' si aún no tiene fila
+    // Estado de revisión de una vacante (estado.revision): 'pendiente' si no tiene revisión vigente
     public static function estadoDe(?self $revision): string
     {
         return $revision?->decision ?? self::PENDIENTE;

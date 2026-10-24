@@ -9,8 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * Vacante vista por su empresa (objeto VacanteEmpresa del contrato de Luis).
- * La usan VAC-02 a VAC-08 (Luis), MOD-06 y PAG-02/03 (Gian): la empresa ve siempre el mismo objeto.
+ * Vacante vista por su empresa.
  * Necesita cargadas las relaciones habilidades, revision y pagos.
  *
  * @mixin \App\Models\Empleo
@@ -45,10 +44,13 @@ class VacanteEmpresaResource extends JsonResource
                 ])
                 ->values()),
 
-            // El motivo de no aprobación no se envía a la empresa, salvo que el dueño del negocio pida mostrarlo
             'estado' => [
                 'general'        => $this->estadoGeneral(),
                 'revision'       => RevisionVacante::estadoDe($this->revision),
+                // La empresa ve por qué no se aprobó su vacante; null en cualquier otro estado de revisión
+                'motivo_no_aprobacion' => $this->revision?->decision === RevisionVacante::NO_APROBADA
+                    ? $this->revision->motivo
+                    : null,
                 'pago'           => PagoVacante::estadoDe($this->pagos),
                 'disponibilidad' => $this->estadoDisponibilidad(),
                 'vigente'        => $this->estaVigente(),

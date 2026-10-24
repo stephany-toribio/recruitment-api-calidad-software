@@ -9,16 +9,15 @@ use App\Models\RevisionVacante;
 use Illuminate\Support\Facades\DB;
 
 /**
- * HU-03 (parte de Gian): pago simulado y publicación. Escribe solo en pagos_vacante; empleos se lee.
- * "Publicada" no se guarda: es aprobada + un pago exitoso. publicada_en = fecha de ese pago.
+ * 
  */
 class PagoVacanteService
 {
-    // Relaciones que usa VacanteEmpresaResource (Luis) para mostrar el estado actualizado
+    // Relaciones que usa VacanteEmpresaResource para mostrar el estado actualizado
     private const RELACIONES_EMPRESA = ['habilidades', 'revision', 'pagos'];
 
     /**
-     * PAG-01: monto a pagar e historial de intentos (del más reciente al más antiguo).
+     * monto a pagar e historial de intentos (del más reciente al más antiguo).
      *
      * @return array<string, mixed>
      */
@@ -42,26 +41,13 @@ class PagoVacanteService
     }
 
     /**
-     * PAG-02: el resultado lo decide la tarjeta de prueba (ya validada por PagarVacanteRequest).
-     * Un rechazo de la tarjeta no es un error HTTP: se registra como intento 'fallido'.
+     * La tarjeta ya llega validada por PagarVacanteRequest: por ahora todo pago simulado se aprueba.
      *
      * @return array{pago: PagoVacante, vacante: Empleo}
      */
     public function pagar(Empleo $vacante, int $usuarioId, array $datos): array
     {
-        $resultado = config('pago_vacantes.tarjetas_prueba')[$datos['numero_tarjeta']];
-
-        return $this->registrarIntento($vacante, $usuarioId, $resultado, substr($datos['numero_tarjeta'], -4));
-    }
-
-    /**
-     * PAG-03: la empresa cerró o canceló el formulario de pago. Conserva la aprobación.
-     *
-     * @return array{pago: PagoVacante, vacante: Empleo}
-     */
-    public function cancelar(Empleo $vacante, int $usuarioId): array
-    {
-        return $this->registrarIntento($vacante, $usuarioId, PagoVacante::CANCELADO, null);
+        return $this->registrarIntento($vacante, $usuarioId, PagoVacante::EXITOSO, substr($datos['numero_tarjeta'], -4));
     }
 
     /**
