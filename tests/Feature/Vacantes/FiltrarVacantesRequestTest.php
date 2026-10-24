@@ -17,15 +17,9 @@ class FiltrarVacantesRequestTest extends TestCase
     {
         parent::setUp();
 
-        $this->assertSame(
-            'sqlite',
-            DB::connection()->getDriverName()
-        );
-
-        $this->assertSame(
-            ':memory:',
-            DB::connection()->getDatabaseName()
-        );
+        $this->assertTrue($this->app->environment('testing'));
+        $this->assertSame('sqlite', DB::connection()->getDriverName());
+        $this->assertSame(':memory:', DB::connection()->getDatabaseName());
 
         Schema::create('areas_estudio', function (Blueprint $table): void {
             $table->id();
@@ -41,15 +35,49 @@ class FiltrarVacantesRequestTest extends TestCase
             $table->boolean('activo');
         });
 
+        Schema::create('niveles_puesto', function (Blueprint $table): void {
+            $table->id();
+            $table->unsignedBigInteger('candidato_id')->nullable();
+            $table->string('nombre');
+            $table->string('estado');
+        });
+
         DB::table('areas_estudio')->insert([
             ['id' => 1, 'nombre' => 'Área activa', 'activo' => true],
             ['id' => 2, 'nombre' => 'Área inactiva', 'activo' => false],
         ]);
 
+        DB::table('niveles_puesto')->insert([
+            [
+                'id' => 1,
+                'candidato_id' => null,
+                'nombre' => 'Junior',
+                'estado' => 'activo',
+            ],
+            [
+                'id' => 2,
+                'candidato_id' => null,
+                'nombre' => 'Senior',
+                'estado' => 'activo',
+            ],
+            [
+                'id' => 3,
+                'candidato_id' => null,
+                'nombre' => 'Nivel deshabilitado',
+                'estado' => 'inactivo',
+            ],
+            [
+                'id' => 4,
+                'candidato_id' => 99,
+                'nombre' => 'Nivel personalizado',
+                'estado' => 'activo',
+            ],
+        ]);
+
         foreach (range(1, 11) as $id) {
             DB::table('habilidades')->insert([
                 'id' => $id,
-                'nombre' => "Habilidad $id",
+                'nombre' => "Habilidad {$id}",
                 'tipo_habilidad' => 'tecnica',
                 'area_estudio_id' => 1,
                 'activo' => true,
@@ -110,68 +138,104 @@ class FiltrarVacantesRequestTest extends TestCase
         return $request->validated();
     }
 
-    public function test_acepta_busqueda_sin_filtros(): void
+    public function test_acepta_busqueda_sin_filtros_y_listas_vacias(): void
     {
         $this->assertSame([], $this->validar([]));
 
-        $this->assertSame(
-            ['habilidades' => []],
-            $this->validar(['habilidades' => []])
-        );
+        $entrada = [
+            'habilidades' => [],
+            'niveles_puesto' => [],
+        ];
+
+        $this->assertSame($entrada, $this->validar($entrada));
     }
 
     public function test_normaliza_el_titulo(): void
     {
-        $this->assertSame(
-            [],
-            $this->validar(['titulo' => '   '])
-        );
-
-        $this->assertSame(
-            [],
-            $this->validar(['titulo' => null])
-        );
+        foreach (['', '   ', null] as $titulo) {
+            $this->assertSame([], $this->validar(['titulo' => $titulo]));
+        }
 
         $this->assertSame(
             ['titulo' => 'Analista Python'],
             $this->validar(['titulo' => '  Analista Python  '])
         );
+
+        $titulo = str_repeat('a', 100);
+
+        $this->assertSame(
+            ['titulo' => $titulo],
+            $this->validar(['titulo' => $titulo])
+        );
     }
 
-    public function test_acepta_diez_habilidades_y_enteros_de_query_string(): void
+    public function test_acepta_tres_habilidades_y_filtros_de_query_string(): void
     {
-        $ids = array_map('strval', range(1, 10));
-
-        $datos = $this->validar([
-            'habilidades' => $ids,
-            'requisito' => 'must_have',
+        $entrada = [
+            'titulo' => 'Analista',
+            'habilidades' => ['1', '2', '3'],
+            'niveles_puesto' => ['1', '2'],
+            'area_estudio_id' => '1',
+            'solo_remoto' => '1',
+            'salario_minimo' => '3000',
             'page' => '2',
-        ]);
+        ];
 
-        $this->assertSame($ids, $datos['habilidades']);
-        $this->assertSame('must_have', $datos['requisito']);
-        $this->assertSame('2', $datos['page']);
+        $resultado = $this->validar($entrada);
+
+        ksort($entrada);
+        ksort($resultado);
+
+        $this->assertSame($entrada, $resultado);
     }
 
-    public function test_ambas_se_representa_sin_requisito(): void
+    public function test_acepta_los_cinco_minimos_salariales(): void
     {
-        $datos = $this->validar([
-            'titulo' => str_repeat('a', 100),
-            'habilidades' => [1, 2],
-        ]);
+        foreach ([1500, 3000, 5000, 7000, 9000] as $importe) {
+            $this->assertSame(
+                ['salario_minimo' => $importe],
+                $this->validar(['salario_minimo' => $importe])
+            );
 
-        $this->assertArrayNotHasKey('requisito', $datos);
-        $this->assertSame([1, 2], $datos['habilidades']);
+            $this->assertSame(
+                ['salario_minimo' => (string) $importe],
+                $this->validar(['salario_minimo' => (string) $importe])
+            );
+        }
     }
 
-    public function test_acepta_habilidad_deseable(): void
+    public function test_acepta_remoto_encendido_y_apagado(): void
     {
-        $datos = $this->validar([
-            'habilidades' => [1],
-            'requisito' => 'nice_to_have',
-        ]);
+        foreach ([0, 1, '0', '1', false, true] as $valor) {
+            $this->assertSame(
+                ['solo_remoto' => $valor],
+                $this->validar(['solo_remoto' => $valor])
+            );
+        }
+    }
 
-        $this->assertSame('nice_to_have', $datos['requisito']);
+    public function test_requisito_anterior_no_forma_parte_de_datos_validados(): void
+    {
+        $this->assertSame(
+            [],
+            $this->validar(['requisito' => 'must_have'])
+        );
+
+        $this->assertSame(
+            ['habilidades' => [1]],
+            $this->validar([
+                'habilidades' => [1],
+                'requisito' => 'nice_to_have',
+            ])
+        );
+    }
+
+    public function test_acepta_habilidad_blanda_activa_sin_area(): void
+    {
+        $this->assertSame(
+            ['habilidades' => [15]],
+            $this->validar(['habilidades' => [15]])
+        );
     }
 
     #[DataProvider('entradasInvalidas')]
@@ -181,11 +245,8 @@ class FiltrarVacantesRequestTest extends TestCase
     ): void {
         try {
             $this->validar($entrada);
-        } catch (ValidationException $exception) {
-            $this->assertArrayHasKey(
-                $campo,
-                $exception->errors()
-            );
+        } catch (ValidationException $error) {
+            $this->assertArrayHasKey($campo, $error->errors());
 
             return;
         }
@@ -197,116 +258,153 @@ class FiltrarVacantesRequestTest extends TestCase
     {
         return [
             'titulo largo' => [
-                ['titulo' => str_repeat('a', 101)],
-                'titulo',
+                ['titulo' => str_repeat('a', 101)], 'titulo',
             ],
             'titulo como lista' => [
-                ['titulo' => ['Python']],
-                'titulo',
+                ['titulo' => ['Python']], 'titulo',
             ],
             'habilidades como texto' => [
-                ['habilidades' => '1,2'],
-                'habilidades',
+                ['habilidades' => '1,2'], 'habilidades',
             ],
-            'once habilidades activas' => [
-                ['habilidades' => range(1, 11)],
-                'habilidades',
+            'cuatro habilidades activas' => [
+                ['habilidades' => [1, 2, 3, 4]], 'habilidades',
             ],
             'habilidades repetidas' => [
-                ['habilidades' => [1, '1']],
-                'habilidades.0',
+                ['habilidades' => [1, '1']], 'habilidades.0',
             ],
             'habilidad inexistente' => [
-                ['habilidades' => [999]],
-                'habilidades.0',
+                ['habilidades' => [999]], 'habilidades.0',
             ],
             'habilidad desactivada' => [
-                ['habilidades' => [12]],
-                'habilidades.0',
+                ['habilidades' => [12]], 'habilidades.0',
             ],
-            'identificador cero' => [
-                ['habilidades' => [0]],
-                'habilidades.0',
+            'habilidad cero' => [
+                ['habilidades' => [0]], 'habilidades.0',
             ],
-            'identificador negativo' => [
-                ['habilidades' => [-1]],
-                'habilidades.0',
+            'habilidad negativa' => [
+                ['habilidades' => [-1]], 'habilidades.0',
             ],
-            'identificador decimal' => [
-                ['habilidades' => [1.5]],
-                'habilidades.0',
+            'habilidad decimal' => [
+                ['habilidades' => [1.5]], 'habilidades.0',
             ],
-            'identificador como texto' => [
-                ['habilidades' => ['Python']],
-                'habilidades.0',
+            'habilidad como texto' => [
+                ['habilidades' => ['Python']], 'habilidades.0',
             ],
-            'lista anidada' => [
-                ['habilidades' => [[1]]],
-                'habilidades.0',
+            'habilidad nula' => [
+                ['habilidades' => [null]], 'habilidades.0',
             ],
-            'indices no consecutivos' => [
-                ['habilidades' => [2 => 1]],
-                'habilidades',
+            'habilidad anidada' => [
+                ['habilidades' => [[1]]], 'habilidades.0',
             ],
-            'obligatoriedad sin habilidades' => [
-                ['requisito' => 'must_have'],
-                'habilidades',
-            ],
-            'obligatoriedad con lista vacia' => [
-                ['habilidades' => [], 'requisito' => 'nice_to_have'],
-                'habilidades',
-            ],
-            'valor ambas literal' => [
-                ['habilidades' => [1], 'requisito' => 'ambas'],
-                'requisito',
-            ],
-            'obligatoriedad como lista' => [
-                ['habilidades' => [1], 'requisito' => ['must_have']],
-                'requisito',
-            ],
-            'pagina cero' => [
-                ['page' => 0],
-                'page',
-            ],
-            'pagina negativa' => [
-                ['page' => -1],
-                'page',
-            ],
-            'pagina decimal' => [
-                ['page' => 1.5],
-                'page',
-            ],
-            'pagina como texto' => [
-                ['page' => 'dos'],
-                'page',
-            ],
-            'pagina como lista' => [
-                ['page' => [1]],
-                'page',
+            'habilidades con indices no consecutivos' => [
+                ['habilidades' => [2 => 1]], 'habilidades',
             ],
             'tecnica con area inactiva' => [
-                ['habilidades' => [13]],
-                'habilidades.0',
+                ['habilidades' => [13]], 'habilidades.0',
             ],
             'tecnica sin area' => [
-                ['habilidades' => [14]],
-                'habilidades.0',
+                ['habilidades' => [14]], 'habilidades.0',
             ],
             'tecnica con area inexistente' => [
-                ['habilidades' => [16]],
-                'habilidades.0',
+                ['habilidades' => [16]], 'habilidades.0',
+            ],
+            'niveles como texto' => [
+                ['niveles_puesto' => '1,2'], 'niveles_puesto',
+            ],
+            'niveles repetidos' => [
+                ['niveles_puesto' => [1, '1']], 'niveles_puesto.0',
+            ],
+            'nivel inexistente' => [
+                ['niveles_puesto' => [999]], 'niveles_puesto.0',
+            ],
+            'nivel deshabilitado' => [
+                ['niveles_puesto' => [3]], 'niveles_puesto.0',
+            ],
+            'nivel personalizado' => [
+                ['niveles_puesto' => [4]], 'niveles_puesto.0',
+            ],
+            'nivel cero' => [
+                ['niveles_puesto' => [0]], 'niveles_puesto.0',
+            ],
+            'nivel negativo' => [
+                ['niveles_puesto' => [-1]], 'niveles_puesto.0',
+            ],
+            'nivel decimal' => [
+                ['niveles_puesto' => [1.5]], 'niveles_puesto.0',
+            ],
+            'nivel nulo' => [
+                ['niveles_puesto' => [null]], 'niveles_puesto.0',
+            ],
+            'nivel anidado' => [
+                ['niveles_puesto' => [[1]]], 'niveles_puesto.0',
+            ],
+            'niveles con indices no consecutivos' => [
+                ['niveles_puesto' => [2 => 1]], 'niveles_puesto',
+            ],
+            'area inexistente' => [
+                ['area_estudio_id' => 999], 'area_estudio_id',
+            ],
+            'area desactivada' => [
+                ['area_estudio_id' => 2], 'area_estudio_id',
+            ],
+            'area cero' => [
+                ['area_estudio_id' => 0], 'area_estudio_id',
+            ],
+            'area negativa' => [
+                ['area_estudio_id' => -1], 'area_estudio_id',
+            ],
+            'area decimal' => [
+                ['area_estudio_id' => 1.5], 'area_estudio_id',
+            ],
+            'area como lista' => [
+                ['area_estudio_id' => [1]], 'area_estudio_id',
+            ],
+            'area como texto null' => [
+                ['area_estudio_id' => 'null'], 'area_estudio_id',
+            ],
+            'remoto como texto true' => [
+                ['solo_remoto' => 'true'], 'solo_remoto',
+            ],
+            'remoto fuera de opciones' => [
+                ['solo_remoto' => 2], 'solo_remoto',
+            ],
+            'remoto como lista' => [
+                ['solo_remoto' => [1]], 'solo_remoto',
+            ],
+            'salario no ofrecido en selector' => [
+                ['salario_minimo' => 2000], 'salario_minimo',
+            ],
+            'salario cero' => [
+                ['salario_minimo' => 0], 'salario_minimo',
+            ],
+            'salario negativo' => [
+                ['salario_minimo' => -1500], 'salario_minimo',
+            ],
+            'salario decimal' => [
+                ['salario_minimo' => 1500.5], 'salario_minimo',
+            ],
+            'salario como texto' => [
+                ['salario_minimo' => 'tres mil'], 'salario_minimo',
+            ],
+            'salario como lista' => [
+                ['salario_minimo' => [1500]], 'salario_minimo',
+            ],
+            'pagina cero' => [
+                ['page' => 0], 'page',
+            ],
+            'pagina negativa' => [
+                ['page' => -1], 'page',
+            ],
+            'pagina decimal' => [
+                ['page' => 1.5], 'page',
+            ],
+            'pagina como texto' => [
+                ['page' => 'dos'], 'page',
+            ],
+            'pagina como lista' => [
+                ['page' => [1]], 'page',
             ],
         ];
-    }
-
-    public function test_acepta_habilidad_blanda_activa_sin_area(): void
-    {
-        $datos = $this->validar([
-            'habilidades' => [15],
-            'requisito' => 'nice_to_have',
-        ]);
-
-        $this->assertSame([15], $datos['habilidades']);
     }
 
     public function test_catalogo_excluye_habilidades_no_seleccionables(): void
@@ -321,7 +419,7 @@ class FiltrarVacantesRequestTest extends TestCase
         );
     }
 
-    public function test_filtrar_por_area_no_oculta_las_habilidades_blandas(): void
+    public function test_filtrar_catalogo_por_area_no_oculta_habilidades_blandas(): void
     {
         $habilidades = $this->app
             ->make(HabilidadService::class)

@@ -8,14 +8,9 @@ use App\Models\PagoVacante;
 use App\Models\RevisionVacante;
 use Illuminate\Support\Facades\DB;
 
-/**
- * HU-03 (parte de Gian): pago simulado y publicación. Escribe solo en pagos_vacante; empleos se lee.
- * "Publicada" no se guarda: es aprobada + un pago exitoso. publicada_en = fecha de ese pago.
- */
 class PagoVacanteService
 {
-    // Relaciones que usa VacanteEmpresaResource (Luis) para mostrar el estado actualizado
-    private const RELACIONES_EMPRESA = ['habilidades', 'revision', 'pagos'];
+    private const RELACIONES_EMPRESA = ['nivelPuesto', 'areaEstudio', 'habilidades', 'revision', 'pagos'];
 
     /**
      * PAG-01: monto a pagar e historial de intentos (del más reciente al más antiguo).

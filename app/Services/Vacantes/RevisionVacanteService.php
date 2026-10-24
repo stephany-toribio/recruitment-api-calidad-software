@@ -11,16 +11,12 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 
-// Revisión administrativa de vacantes. Escribe solo en revisiones_vacante; empleos se lee.
 class RevisionVacanteService
 {
-    // Relaciones que muestra VacanteRevisionResource
-    private const RELACIONES_ADMIN = ['empresa', 'habilidades', 'revision'];
+    private const RELACIONES_ADMIN = ['empresa', 'nivelPuesto', 'areaEstudio', 'habilidades', 'revision'];
 
-    // Relaciones que usa VacanteEmpresaResource (Luis) para el bloque `estado`
-    private const RELACIONES_EMPRESA = ['habilidades', 'revision', 'pagos'];
+    private const RELACIONES_EMPRESA = ['nivelPuesto', 'areaEstudio', 'habilidades', 'revision', 'pagos'];
 
-    // Sin fila de revisión = pendiente. SoftDeletes ya deja fuera las eliminadas.
     public function pendientes(): Collection
     {
         return Empleo::with(self::RELACIONES_ADMIN)
@@ -30,19 +26,16 @@ class RevisionVacanteService
             ->get();
     }
 
-    // MOD-02
     public function detalle(Empleo $vacante): Empleo
     {
         return $vacante->load(self::RELACIONES_ADMIN);
     }
 
-    // MOD-03
     public function aprobar(Empleo $vacante, int $adminId): Empleo
     {
         return $this->decidir($vacante, $adminId, RevisionVacante::APROBADA);
     }
 
-    // MOD-05: el motivo ya llega validado por NoAprobarVacanteRequest
     public function noAprobar(Empleo $vacante, int $adminId, string $motivo): Empleo
     {
         return $this->decidir($vacante, $adminId, RevisionVacante::NO_APROBADA, $motivo);
@@ -57,7 +50,6 @@ class RevisionVacanteService
     public function aprobarMasivo(array $ids, int $adminId): array
     {
         return DB::transaction(function () use ($ids, $adminId) {
-            // Se bloquean todas antes de revisarlas, para que nadie las decida mientras tanto
             $vacantes = Empleo::whereIn('id', $ids)
                 ->lockForUpdate()
                 ->with('revision')
@@ -86,13 +78,11 @@ class RevisionVacanteService
 
             return [
                 'aprobadas' => array_values($ids),
-                // Con todo o nada siempre va vacío; se mantiene para que el formato no cambie si se pasa a parcial
                 'no_procesadas' => [],
             ];
         });
     }
 
-    // MOD-06: vacantes no eliminadas de la empresa del token, de la más reciente a la más antigua
     public function vacantesDeEmpresa(int $usuarioId): Collection
     {
         $empresa = Empresa::where('usuario_id', $usuarioId)->firstOrFail();
@@ -131,7 +121,6 @@ class RevisionVacanteService
                 'motivo' => $motivo,
             ]);
         } catch (UniqueConstraintViolationException) {
-            // Respaldo del UNIQUE en empleo_id: otra decisión se registró justo antes (409, no 500)
             throw $this->yaRevisada();
         }
     }

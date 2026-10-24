@@ -9,6 +9,14 @@ use Illuminate\Support\Facades\DB;
 
 class VacanteService
 {
+    private const RELACIONES = [
+        'nivelPuesto',
+        'areaEstudio',
+        'habilidades',
+        'revision',
+        'pagos',
+    ];
+
     public function registrar(Empresa $empresa, array $datos): Empleo
     {
         return DB::transaction(function () use ($empresa, $datos) {
@@ -16,9 +24,12 @@ class VacanteService
                 'empresa_id' => $empresa->id,
                 'titulo' => $datos['titulo'],
                 'descripcion' => $datos['descripcion'],
-                'nivel_experiencia' => $datos['nivel_experiencia'],
-                'salario_min' => $datos['salario_min'],
-                'salario_max' => $datos['salario_max'],
+                'nivel_puesto_id' => $datos['nivel_puesto_id'],
+                'area_estudio_id' => $datos['area_estudio_id'],
+                'tipo_empleo' => $datos['tipo_empleo'],
+                'ubicacion' => $datos['ubicacion'] ?? null,
+                'salario_min' => $datos['salario_min'] ?? null,
+                'salario_max' => $datos['salario_max'] ?? null,
                 'fecha_inicio_vigencia' => $datos['fecha_inicio_vigencia'],
                 'fecha_fin_vigencia' => $datos['fecha_fin_vigencia'],
                 'numero_vacantes' => $datos['max_contrataciones'],
@@ -35,11 +46,7 @@ class VacanteService
 
             $vacante->habilidades()->attach($habilidades);
 
-            return $vacante->load([
-                'habilidades',
-                'revision',
-                'pagos',
-            ]);
+            return $vacante->load(self::RELACIONES);
         });
     }
 
@@ -53,10 +60,6 @@ class VacanteService
             );
         }
 
-        return $vacante->load([
-            'habilidades',
-            'revision',
-            'pagos',
-        ]);
+        return $vacante->load(self::RELACIONES);
     }
 }

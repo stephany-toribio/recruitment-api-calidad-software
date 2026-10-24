@@ -7,6 +7,7 @@ use App\Http\Requests\Vacantes\RegistrarVacanteRequest;
 use App\Http\Resources\Api\V1\VacanteEmpresaResource;
 use App\Models\Empleo;
 use App\Models\Empresa;
+use App\Models\NivelPuesto;
 use App\Models\Usuario;
 use App\Services\Vacantes\VacanteService;
 use Illuminate\Http\JsonResponse;
@@ -16,23 +17,20 @@ class VacanteEmpresaController extends BaseApiController
 {
     public function __construct(
         private VacanteService $vacanteService
-    ) {
-    }
+    ) {}
 
     public function nivelesExperiencia(): JsonResponse
     {
-        $niveles = [];
-
-        foreach (Empleo::NIVELES as $codigo => $nombre) {
-            $niveles[] = [
-                'codigo' => $codigo,
-                'nombre' => $nombre,
-            ];
-        }
+        $niveles = NivelPuesto::query()
+            ->whereNull('candidato_id')
+            ->where('estado', 'activo')
+            ->orderBy('orden')
+            ->orderBy('id')
+            ->get(['id', 'nombre']);
 
         return $this->successResponse(
             $niveles,
-            'Niveles de experiencia obtenidos correctamente'
+            'Niveles del puesto obtenidos correctamente'
         );
     }
 
