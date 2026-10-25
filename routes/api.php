@@ -19,6 +19,7 @@ Route::prefix('v1')->group(function () {
     require __DIR__.'/api_v1/vacantes.php';
     require __DIR__.'/api_v1/moderacion.php';
     require __DIR__.'/api_v1/postulaciones.php';
+    require __DIR__.'/api_v1/kanban.php';
     require __DIR__.'/api_v1/match.php';
     require __DIR__.'/api_v1/admin.php';
 });
