@@ -75,6 +75,9 @@ class VacanteEmpresaResource extends JsonResource
             'estado' => [
                 'general' => $this->estadoGeneral(),
                 'revision' => RevisionVacante::estadoDe($this->revision),
+                'motivo_no_aprobacion' => $this->revision?->decision === RevisionVacante::NO_APROBADA
+                    ? $this->revision->motivo
+                    : null,
                 'pago' => PagoVacante::estadoDe($this->pagos),
                 'disponibilidad' => $this->estadoDisponibilidad(),
                 'vigente' => $this->estaVigente(),

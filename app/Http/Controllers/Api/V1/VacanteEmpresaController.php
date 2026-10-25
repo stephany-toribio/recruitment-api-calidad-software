@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Exceptions\BusinessException;
+use App\Http\Requests\Vacantes\ActualizarVacanteRequest;
 use App\Http\Requests\Vacantes\RegistrarVacanteRequest;
 use App\Http\Resources\Api\V1\VacanteEmpresaResource;
 use App\Models\Empleo;
@@ -62,6 +63,22 @@ class VacanteEmpresaController extends BaseApiController
         return $this->successResponse(
             new VacanteEmpresaResource($vacante),
             'Vacante obtenida correctamente'
+        );
+    }
+
+    public function update(ActualizarVacanteRequest $request, Empleo $vacante): JsonResponse
+    {
+        $empresa = $this->empresaAutenticada($request);
+
+        $vacante = $this->vacanteService->actualizar(
+            $empresa,
+            $vacante,
+            $request->validated()
+        );
+
+        return $this->successResponse(
+            new VacanteEmpresaResource($vacante),
+            'Vacante actualizada. Quedó pendiente de revisión.'
         );
     }
 

@@ -13,8 +13,6 @@ class PagoVacanteService
     private const RELACIONES_EMPRESA = ['nivelPuesto', 'areaEstudio', 'habilidades', 'revision', 'pagos'];
 
     /**
-     * PAG-01: monto a pagar e historial de intentos (del más reciente al más antiguo).
-     *
      * @return array<string, mixed>
      */
     public function resumen(Empleo $vacante, int $usuarioId): array
@@ -37,26 +35,11 @@ class PagoVacanteService
     }
 
     /**
-     * PAG-02: el resultado lo decide la tarjeta de prueba (ya validada por PagarVacanteRequest).
-     * Un rechazo de la tarjeta no es un error HTTP: se registra como intento 'fallido'.
-     *
      * @return array{pago: PagoVacante, vacante: Empleo}
      */
     public function pagar(Empleo $vacante, int $usuarioId, array $datos): array
     {
-        $resultado = config('pago_vacantes.tarjetas_prueba')[$datos['numero_tarjeta']];
-
-        return $this->registrarIntento($vacante, $usuarioId, $resultado, substr($datos['numero_tarjeta'], -4));
-    }
-
-    /**
-     * PAG-03: la empresa cerró o canceló el formulario de pago. Conserva la aprobación.
-     *
-     * @return array{pago: PagoVacante, vacante: Empleo}
-     */
-    public function cancelar(Empleo $vacante, int $usuarioId): array
-    {
-        return $this->registrarIntento($vacante, $usuarioId, PagoVacante::CANCELADO, null);
+        return $this->registrarIntento($vacante, $usuarioId, PagoVacante::EXITOSO, substr($datos['numero_tarjeta'], -4));
     }
 
     /**

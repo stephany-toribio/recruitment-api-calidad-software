@@ -31,4 +31,11 @@ Route::prefix('empresas/me/vacantes')
         ])
             ->whereNumber('vacante')
             ->withTrashed();
+
+        Route::put('/{vacante}', [
+            VacanteEmpresaController::class,
+            'update',
+        ])
+            ->whereNumber('vacante')
+            ->withTrashed();
     });

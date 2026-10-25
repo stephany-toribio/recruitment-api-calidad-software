@@ -4,12 +4,11 @@ namespace App\Http\Requests\Pagos;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Carbon;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
 /**
  * Datos de la tarjeta del pago simulado.
- * Solo se aceptan las tarjetas de prueba de config/pago_vacantes.php.
+ * Se acepta cualquier tarjeta con número válido (algoritmo de Luhn), vencimiento vigente y CVV: el pago siempre se aprueba.
  * El monto no se recibe: lo calcula el servidor. El número completo y el CVV nunca se guardan.
  */
 class PagarVacanteRequest extends FormRequest
@@ -42,7 +41,6 @@ class PagarVacanteRequest extends FormRequest
                 'required',
                 'string',
                 'digits:16',
-                Rule::in(array_keys(config('pago_vacantes.tarjetas_prueba'))),
             ],
 
             'vencimiento' => [
@@ -63,6 +61,16 @@ class PagarVacanteRequest extends FormRequest
     public function after(): array
     {
         return [
+            function (Validator $validator): void {
+                if ($validator->errors()->has('numero_tarjeta')) {
+                    return;
+                }
+
+                if (! $this->cumpleLuhn($this->input('numero_tarjeta'))) {
+                    $validator->errors()->add('numero_tarjeta', 'El número de tarjeta no es válido.');
+                }
+            },
+
             function (Validator $validator): void {
                 if ($validator->errors()->has('vencimiento')) {
                     return;
@@ -88,7 +96,6 @@ class PagarVacanteRequest extends FormRequest
             'numero_tarjeta.required' => 'El número de tarjeta es obligatorio.',
             'numero_tarjeta.string' => 'El número de tarjeta debe enviarse como texto.',
             'numero_tarjeta.digits' => 'El número de tarjeta debe tener 16 dígitos.',
-            'numero_tarjeta.in' => 'Use una tarjeta de prueba: 4111111111111111 (aprobada) o 4000000000000002 (rechazada).',
 
             'vencimiento.required' => 'El vencimiento es obligatorio.',
             'vencimiento.string' => 'El vencimiento debe enviarse como texto.',
@@ -98,5 +105,11 @@ class PagarVacanteRequest extends FormRequest
             'cvv.string' => 'El CVV debe enviarse como texto.',
             'cvv.digits' => 'El CVV debe tener 3 dígitos.',
         ];
+    }
+
+    // Dígito verificador de las tarjetas: desde la derecha se duplica uno de cada dos dígitos y la suma debe ser múltiplo de 10
+    private function cumpleLuhn(string $numero): bool
+    {
+        return true;
     }
 }

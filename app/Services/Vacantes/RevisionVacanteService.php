@@ -8,7 +8,6 @@ use App\Models\Empleo;
 use App\Models\Empresa;
 use App\Models\RevisionVacante;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 
 class RevisionVacanteService
@@ -42,8 +41,7 @@ class RevisionVacanteService
     }
 
     /**
-     * MOD-04, todo o nada: si una vacante del lote no existe o ya fue revisada, no se aprueba ninguna.
-     *
+     
      * @param  array<int, int>  $ids
      * @return array{aprobadas: array<int, int>, no_procesadas: array<int, mixed>}
      */
@@ -83,6 +81,14 @@ class RevisionVacanteService
         });
     }
 
+    public function reabrirRevision(Empleo $vacante): void
+    {
+        RevisionVacante::where('empleo_id', $vacante->id)
+            ->whereNull('invalidada_en')
+            ->where('decision', RevisionVacante::APROBADA)
+            ->update(['invalidada_en' => now()]);
+    }
+
     public function vacantesDeEmpresa(int $usuarioId): Collection
     {
         $empresa = Empresa::where('usuario_id', $usuarioId)->firstOrFail();
@@ -113,16 +119,12 @@ class RevisionVacanteService
 
     private function registrar(Empleo $vacante, int $adminId, string $decision, ?string $motivo = null): void
     {
-        try {
-            RevisionVacante::create([
-                'empleo_id' => $vacante->id,
-                'admin_id' => $adminId,
-                'decision' => $decision,
-                'motivo' => $motivo,
-            ]);
-        } catch (UniqueConstraintViolationException) {
-            throw $this->yaRevisada();
-        }
+        RevisionVacante::create([
+            'empleo_id' => $vacante->id,
+            'admin_id' => $adminId,
+            'decision' => $decision,
+            'motivo' => $motivo,
+        ]);
     }
 
     private function yaRevisada(): BusinessException

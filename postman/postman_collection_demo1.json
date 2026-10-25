@@ -19385,6 +19385,4801 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "18. Vacantes - Moderación y Pago Simulado (Dev 2)",
+      "description": "HU-22 (moderación) y HU-03 (pago simulado). Antes de correrla, ejecutar `docker compose exec app php artisan db:seed --class=VacantesPruebaSeeder`. Correr en orden: cada request deja el estado que necesita el siguiente.",
+      "item": [
+        {
+          "name": "18.0 Preparar - Login Admin (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Es admin y guarda token_admin', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    pm.expect(data.rol).to.eql('admin');",
+                  "    pm.environment.set('token_admin', data.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "ANTES de correr esta carpeta: docker compose exec app php artisan db:seed --class=VacantesPruebaSeeder (crea las vacantes 9001-9006). Usa admin_correo / admin_password del environment.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"{{admin_correo}}\",\n    \"password\": \"{{admin_password}}\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "18.1 Preparar - Login Empresa de Prueba EP02 (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Es empresa y guarda token_empresa_ep02', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    pm.expect(data.rol).to.eql('empresa');",
+                  "    pm.environment.set('token_empresa_ep02', data.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Cuenta creada por VacantesPruebaSeeder. Es dueña de las vacantes 9001-9004 y 9006.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"empresa.ep02@prueba.com\",\n    \"password\": \"EmpresaEp02#\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "18.2 Vacantes Pendientes - Error Sin Token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "pm.test('Devuelve UNAUTHENTICATED', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('UNAUTHENTICATED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/vacantes/pendientes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "vacantes",
+                "pendientes"
+              ]
+            },
+            "description": "MOD-01."
+          },
+          "response": []
+        },
+        {
+          "name": "18.3 Vacantes Pendientes - Error Token de Empresa (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 403 Forbidden', function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});",
+                  "pm.test('Devuelve FORBIDDEN', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('FORBIDDEN');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_empresa_ep02}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/vacantes/pendientes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "vacantes",
+                "pendientes"
+              ]
+            },
+            "description": "MOD-01. Solo el admin revisa vacantes."
+          },
+          "response": []
+        },
+        {
+          "name": "18.4 Vacantes Pendientes - Éxito (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Incluye las 5 vacantes pendientes de prueba', function () {",
+                  "    var ids = pm.response.json().data.map(function (v) { return v.id; });",
+                  "    [9001, 9002, 9003, 9004, 9005].forEach(function (id) { pm.expect(ids).to.include(id); });",
+                  "});",
+                  "pm.test('No incluye la vacante eliminada (9006)', function () {",
+                  "    var ids = pm.response.json().data.map(function (v) { return v.id; });",
+                  "    pm.expect(ids).to.not.include(9006);",
+                  "});",
+                  "pm.test('Todas están pendientes', function () {",
+                  "    pm.response.json().data.forEach(function (v) { pm.expect(v.revision.estado).to.eql('pendiente'); });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/vacantes/pendientes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "vacantes",
+                "pendientes"
+              ]
+            },
+            "description": "MOD-01. Pendiente = vacante sin fila en revisiones_vacante."
+          },
+          "response": []
+        },
+        {
+          "name": "18.5 Detalle de Vacante - Éxito (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Muestra la empresa, las habilidades y la revisión', function () {",
+                  "    var v = pm.response.json().data;",
+                  "    pm.expect(v.empresa.razon_social).to.eql('Empresa Prueba EP02 S.A.C.');",
+                  "    pm.expect(v.habilidades.length).to.be.above(0);",
+                  "    pm.expect(v.habilidades[0]).to.have.property('requisito');",
+                  "    pm.expect(v.max_contrataciones).to.eql(2);",
+                  "    pm.expect(v.revision.estado).to.eql('pendiente');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/vacantes/9001",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "vacantes",
+                "9001"
+              ]
+            },
+            "description": "MOD-02."
+          },
+          "response": []
+        },
+        {
+          "name": "18.6 Detalle de Vacante - Error Vacante Eliminada (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 404 Not Found', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test('Devuelve RESOURCE_NOT_FOUND', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('RESOURCE_NOT_FOUND');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/vacantes/9006",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "vacantes",
+                "9006"
+              ]
+            },
+            "description": "MOD-02. Las eliminadas no se revisan."
+          },
+          "response": []
+        },
+        {
+          "name": "18.7 Pagar - Error Vacante Pendiente de Revisión (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 409 Conflict', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "pm.test('Devuelve VACANCY_NOT_APPROVED', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('VACANCY_NOT_APPROVED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_empresa_ep02}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes/9001/pago",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes",
+                "9001",
+                "pago"
+              ]
+            },
+            "description": "PAG-02. Sin aprobación no se puede pagar ni publicar.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titular\": \"Carlos Medina\",\n    \"numero_tarjeta\": \"4111111111111111\",\n    \"vencimiento\": \"12/28\",\n    \"cvv\": \"123\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "18.8 Aprobar Vacante - Éxito (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Queda aprobada con fecha de revisión', function () {",
+                  "    var r = pm.response.json().data.revision;",
+                  "    pm.expect(r.estado).to.eql('aprobada');",
+                  "    pm.expect(r.revisado_en).to.not.be.null;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/vacantes/9001/aprobar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "vacantes",
+                "9001",
+                "aprobar"
+              ]
+            },
+            "description": "MOD-03. Aprobar no publica: solo habilita el pago."
+          },
+          "response": []
+        },
+        {
+          "name": "18.9 Aprobar Vacante - Error Ya Revisada (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 409 Conflict', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "pm.test('Devuelve VACANCY_ALREADY_REVIEWED', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('VACANCY_ALREADY_REVIEWED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/vacantes/9001/aprobar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "vacantes",
+                "9001",
+                "aprobar"
+              ]
+            },
+            "description": "MOD-03. La decisión es definitiva."
+          },
+          "response": []
+        },
+        {
+          "name": "18.10 No Aprobar - Error Sin Motivo (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Devuelve VALIDATION_ERROR', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('VALIDATION_ERROR');",
+                  "});",
+                  "pm.test('Error en motivo', function () {",
+                  "    pm.expect(pm.response.json().errors).to.have.property('motivo');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/vacantes/9002/no-aprobar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "vacantes",
+                "9002",
+                "no-aprobar"
+              ]
+            },
+            "description": "MOD-05. El motivo es obligatorio.",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "18.11 No Aprobar - Error Motivo Solo Espacios (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Devuelve VALIDATION_ERROR', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('VALIDATION_ERROR');",
+                  "});",
+                  "pm.test('Error en motivo', function () {",
+                  "    pm.expect(pm.response.json().errors).to.have.property('motivo');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/vacantes/9002/no-aprobar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "vacantes",
+                "9002",
+                "no-aprobar"
+              ]
+            },
+            "description": "MOD-05. Un motivo de solo espacios cuenta como vacío.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"motivo\": \"     \"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "18.12 No Aprobar - Éxito (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Queda no aprobada con su motivo', function () {",
+                  "    var r = pm.response.json().data.revision;",
+                  "    pm.expect(r.estado).to.eql('no_aprobada');",
+                  "    pm.expect(r.motivo).to.include('datos de contacto');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/vacantes/9002/no-aprobar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "vacantes",
+                "9002",
+                "no-aprobar"
+              ]
+            },
+            "description": "MOD-05.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"motivo\": \"La descripción incluye datos de contacto personales, lo que no está permitido.\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "18.13 Aprobar - Error Vacante No Aprobada (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 409 Conflict', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "pm.test('Devuelve VACANCY_ALREADY_REVIEWED', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('VACANCY_ALREADY_REVIEWED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/vacantes/9002/aprobar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "vacantes",
+                "9002",
+                "aprobar"
+              ]
+            },
+            "description": "MOD-03. Una vacante no aprobada no se puede aprobar después."
+          },
+          "response": []
+        },
+        {
+          "name": "18.14 Aprobación Masiva - Error Lista Vacía (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Devuelve VALIDATION_ERROR', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('VALIDATION_ERROR');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/vacantes/aprobar-masivo",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "vacantes",
+                "aprobar-masivo"
+              ]
+            },
+            "description": "MOD-04.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"vacantes\": []\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "18.15 Aprobación Masiva - Error Incluye Vacante Revisada (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Devuelve BULK_APPROVAL_REJECTED', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('BULK_APPROVAL_REJECTED');",
+                  "});",
+                  "pm.test('Indica cuál vacante falló', function () {",
+                  "    pm.expect(pm.response.json().errors['vacantes.1'][0]).to.eql('La vacante 9001 ya fue revisada.');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/vacantes/aprobar-masivo",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "vacantes",
+                "aprobar-masivo"
+              ]
+            },
+            "description": "MOD-04, todo o nada: 9001 ya está aprobada, así que tampoco se aprueba 9003 (lo confirma 18.16).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"vacantes\": [\n        9003,\n        9001\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "18.16 Aprobación Masiva - Éxito (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Aprueba las dos vacantes', function () {",
+                  "    var d = pm.response.json().data;",
+                  "    pm.expect(d.aprobadas).to.eql([9003, 9004]);",
+                  "    pm.expect(d.no_procesadas).to.eql([]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/vacantes/aprobar-masivo",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "vacantes",
+                "aprobar-masivo"
+              ]
+            },
+            "description": "MOD-04. Si 18.15 hubiera aprobado 9003, aquí respondería 422.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"vacantes\": [\n        9003,\n        9004\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "18.17 Aprobación Masiva - Error Token de Empresa (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 403 Forbidden', function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});",
+                  "pm.test('Devuelve FORBIDDEN', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('FORBIDDEN');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_empresa_ep02}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/vacantes/aprobar-masivo",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "vacantes",
+                "aprobar-masivo"
+              ]
+            },
+            "description": "MOD-04.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"vacantes\": [\n        9005\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "18.18 Mis Vacantes - Éxito (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Muestra el estado de revisión de cada vacante', function () {",
+                  "    var porId = {};",
+                  "    pm.response.json().data.forEach(function (v) { porId[v.id] = v; });",
+                  "    pm.expect(porId[9001].estado.general).to.eql('pendiente_pago');",
+                  "    pm.expect(porId[9002].estado.general).to.eql('no_aprobada');",
+                  "    pm.expect(porId[9003].estado.revision).to.eql('aprobada');",
+                  "});",
+                  "pm.test('No muestra vacantes de otra empresa ni eliminadas', function () {",
+                  "    var ids = pm.response.json().data.map(function (v) { return v.id; });",
+                  "    pm.expect(ids).to.not.include(9005);",
+                  "    pm.expect(ids).to.not.include(9006);",
+                  "});",
+                  "pm.test('La empresa ve el motivo solo en la vacante no aprobada', function () {",
+                  "    var porId = {};",
+                  "    pm.response.json().data.forEach(function (v) { porId[v.id] = v; });",
+                  "    pm.expect(porId[9002].estado.motivo_no_aprobacion).to.include('datos de contacto');",
+                  "    pm.expect(porId[9001].estado.motivo_no_aprobacion).to.be.null;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_empresa_ep02}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes"
+              ]
+            },
+            "description": "MOD-06. La empresa consulta el resultado de la revisión."
+          },
+          "response": []
+        },
+        {
+          "name": "18.19 Mis Vacantes - Error Token de Admin (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 403 Forbidden', function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});",
+                  "pm.test('Devuelve FORBIDDEN', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('FORBIDDEN');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes"
+              ]
+            },
+            "description": "MOD-06."
+          },
+          "response": []
+        },
+        {
+          "name": "18.20 Resumen de Pago - Éxito (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Calcula el monto en el servidor: S/ 100 x 2 puestos', function () {",
+                  "    var d = pm.response.json().data;",
+                  "    pm.expect(d.monto).to.eql(200);",
+                  "    pm.expect(d.moneda).to.eql('PEN');",
+                  "    pm.expect(d.puede_pagar).to.be.true;",
+                  "    pm.expect(d.estado_pago).to.eql('sin_pago');",
+                  "    pm.expect(d.intentos).to.eql([]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_empresa_ep02}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes/9001/pago",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes",
+                "9001",
+                "pago"
+              ]
+            },
+            "description": "PAG-01."
+          },
+          "response": []
+        },
+        {
+          "name": "18.21 Resumen de Pago - Error Vacante de Otra Empresa (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 403 Forbidden', function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});",
+                  "pm.test('Devuelve FORBIDDEN', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('FORBIDDEN');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_empresa_ep02}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes/9005/pago",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes",
+                "9005",
+                "pago"
+              ]
+            },
+            "description": "PAG-01. Solo la empresa dueña ve y paga su vacante."
+          },
+          "response": []
+        },
+        {
+          "name": "18.22 Resumen de Pago - Error Vacante Eliminada (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 409 Conflict', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "pm.test('Devuelve VACANCY_DELETED', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('VACANCY_DELETED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_empresa_ep02}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes/9006/pago",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes",
+                "9006",
+                "pago"
+              ]
+            },
+            "description": "PAG-01."
+          },
+          "response": []
+        },
+        {
+          "name": "18.23 Pagar - Error Número de Tarjeta Inválido (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Devuelve VALIDATION_ERROR', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('VALIDATION_ERROR');",
+                  "});",
+                  "pm.test('Mensaje de número de tarjeta inválido', function () {",
+                  "    pm.expect(pm.response.json().errors.numero_tarjeta).to.include('El número de tarjeta no es válido.');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_empresa_ep02}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes/9001/pago",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes",
+                "9001",
+                "pago"
+              ]
+            },
+            "description": "PAG-02. Se acepta cualquier tarjeta, pero el número debe pasar el dígito verificador (algoritmo de Luhn).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titular\": \"Carlos Medina\",\n    \"numero_tarjeta\": \"4111111111111112\",\n    \"vencimiento\": \"12/28\",\n    \"cvv\": \"123\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "18.24 Pagar - Error Tarjeta Vencida (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Devuelve VALIDATION_ERROR', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('VALIDATION_ERROR');",
+                  "});",
+                  "pm.test('Error en vencimiento', function () {",
+                  "    pm.expect(pm.response.json().errors.vencimiento[0]).to.eql('La tarjeta está vencida.');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_empresa_ep02}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes/9001/pago",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes",
+                "9001",
+                "pago"
+              ]
+            },
+            "description": "PAG-02.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titular\": \"Carlos Medina\",\n    \"numero_tarjeta\": \"4111111111111111\",\n    \"vencimiento\": \"01/24\",\n    \"cvv\": \"123\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "18.25 Pagar - Éxito (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('El pago se aprueba y la vacante queda publicada', function () {",
+                  "    var d = pm.response.json().data;",
+                  "    pm.expect(d.pago.resultado).to.eql('exitoso');",
+                  "    pm.expect(d.pago.tarjeta).to.eql('**** 4444');",
+                  "    pm.expect(d.vacante.estado.pago).to.eql('pagado');",
+                  "    pm.expect(d.vacante.estado.general).to.eql('publicada');",
+                  "    pm.expect(d.vacante.estado.publicada_en).to.not.be.null;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_empresa_ep02}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes/9001/pago",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes",
+                "9001",
+                "pago"
+              ]
+            },
+            "description": "PAG-02. Cualquier tarjeta válida (aquí una Mastercard) se aprueba: la vacante aprobada queda publicada.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titular\": \"Carlos Medina\",\n    \"numero_tarjeta\": \"5555555555554444\",\n    \"vencimiento\": \"12/28\",\n    \"cvv\": \"123\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "18.26 Pagar - Error Ya Pagada (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 409 Conflict', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "pm.test('Devuelve VACANCY_ALREADY_PAID', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('VACANCY_ALREADY_PAID');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_empresa_ep02}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes/9001/pago",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes",
+                "9001",
+                "pago"
+              ]
+            },
+            "description": "PAG-02.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titular\": \"Carlos Medina\",\n    \"numero_tarjeta\": \"4111111111111111\",\n    \"vencimiento\": \"12/28\",\n    \"cvv\": \"123\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "18.27 Resumen de Pago - Tras el Pago (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Queda pagada con un solo intento exitoso', function () {",
+                  "    var d = pm.response.json().data;",
+                  "    pm.expect(d.estado_pago).to.eql('pagado');",
+                  "    pm.expect(d.puede_pagar).to.be.false;",
+                  "    pm.expect(d.intentos.length).to.eql(1);",
+                  "    pm.expect(d.intentos[0].resultado).to.eql('exitoso');",
+                  "    pm.expect(d.intentos[0].tarjeta).to.eql('**** 4444');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_empresa_ep02}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes/9001/pago",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes",
+                "9001",
+                "pago"
+              ]
+            },
+            "description": "PAG-01. Después del pago exitoso ya no se puede volver a pagar."
+          },
+          "response": []
+        },
+        {
+          "name": "18.28 Pagar - Error Sin Token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "pm.test('Devuelve UNAUTHENTICATED', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('UNAUTHENTICATED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes/9001/pago",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes",
+                "9001",
+                "pago"
+              ]
+            },
+            "description": "PAG-02.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titular\": \"Carlos Medina\",\n    \"numero_tarjeta\": \"4111111111111111\",\n    \"vencimiento\": \"12/28\",\n    \"cvv\": \"123\"\n}"
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "19. Vacantes - Registrar y Aprobar (flujo completo)",
+      "description": "HU-03 (registro de vacantes) + HU-22 (aprobación individual y masiva). No necesita VacantesPruebaSeeder: crea su propia empresa y sus vacantes en cada corrida, así que se puede repetir. Requisitos: admin_correo / admin_password en el environment y el candidato Juan registrado (carpeta 2). Correr en orden: cada request deja el estado que necesita el siguiente.",
+      "item": [
+        {
+          "name": "19.0 Preparar - Login Admin (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Es admin y guarda token_admin', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    pm.expect(data.rol).to.eql('admin');",
+                  "    pm.environment.set('token_admin', data.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Usa admin_correo / admin_password del environment.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"{{admin_correo}}\",\n    \"password\": \"{{admin_password}}\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "19.1 Preparar - Login Juan (refresca token_candidato) (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Es candidato y guarda token_candidato', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    pm.expect(data.rol).to.eql('candidato');",
+                  "    pm.environment.set('token_candidato', data.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Candidato registrado en la carpeta 2. Se usa para comprobar que un candidato no puede aprobar (19.17).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"juan.perez@example.com\",\n    \"password\": \"Password123@\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "19.2 Preparar - Registrar Empresa del Flujo (201)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Datos únicos en cada corrida: la carpeta se puede repetir sin chocar con correo o RUC ya usados",
+                  "var sufijo = String(Date.now()).slice(-9);",
+                  "pm.environment.set('ep02_sufijo', sufijo);",
+                  "pm.environment.set('ep02_correo_empresa', 'empresa.flujo.' + sufijo + '@prueba.com');",
+                  "pm.environment.set('ep02_ruc_empresa', '20' + sufijo);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Empresa registrada', function () {",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas"
+              ]
+            },
+            "description": "Crea una empresa nueva en cada corrida (correo y RUC con sufijo). Así la carpeta no depende de VacantesPruebaSeeder.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"{{ep02_correo_empresa}}\",\n    \"password\": \"EmpresaFlujo2026#\",\n    \"encargado_empresa\": \"Encargado Flujo EP02\",\n    \"razon_social\": \"Empresa Flujo EP02 {{ep02_sufijo}} S.A.C.\",\n    \"sector\": \"Tecnología e Informática\",\n    \"ruc\": \"{{ep02_ruc_empresa}}\",\n    \"descripcion\": \"Empresa creada por la carpeta 19 de Postman para probar el registro y la aprobación de vacantes.\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "19.3 Preparar - Login Empresa del Flujo (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Es empresa y guarda ep02_token_empresa', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    pm.expect(data.rol).to.eql('empresa');",
+                  "    pm.environment.set('ep02_token_empresa', data.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"{{ep02_correo_empresa}}\",\n    \"password\": \"EmpresaFlujo2026#\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "19.4 Preparar - Habilidades Activas (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Guarda una habilidad técnica y otra distinta (blanda si existe)', function () {",
+                  "    var lista = pm.response.json().data;",
+                  "    pm.expect(lista.length).to.be.at.least(2);",
+                  "    var tecnica = lista.find(function (h) { return h.tipo_habilidad === 'tecnica'; }) || lista[0];",
+                  "    var blanda = lista.find(function (h) { return h.tipo_habilidad === 'blanda' && h.id !== tecnica.id; })",
+                  "        || lista.find(function (h) { return h.id !== tecnica.id; });",
+                  "    pm.environment.set('ep02_hab_tecnica_id', tecnica.id);",
+                  "    pm.environment.set('ep02_hab_blanda_id', blanda.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/habilidades",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "habilidades"
+              ]
+            },
+            "description": "Catálogo público: solo devuelve habilidades activas, que son las que acepta el registro de vacantes."
+          },
+          "response": []
+        },
+        {
+          "name": "19.5 Niveles de Experiencia - Éxito (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Incluye junior, semi_senior y senior', function () {",
+                  "    var codigos = pm.response.json().data.map(function (n) { return n.codigo; });",
+                  "    pm.expect(codigos).to.have.members(['junior', 'semi_senior', 'senior']);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/niveles-experiencia",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "niveles-experiencia"
+              ]
+            },
+            "description": "VAC-01 (HU-03). Público."
+          },
+          "response": []
+        },
+        {
+          "name": "19.6 Crear Vacante - Error Sin Token (401)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "var limaHoy = new Date(Date.now() - 5 * 60 * 60 * 1000);",
+                  "function dia(offset) {",
+                  "    var d = new Date(limaHoy.getTime() + offset * 24 * 60 * 60 * 1000);",
+                  "    return d.toISOString().slice(0, 10);",
+                  "}",
+                  "pm.environment.set('ep02_fecha_ayer', dia(-1));",
+                  "pm.environment.set('ep02_fecha_inicio', dia(0));",
+                  "pm.environment.set('ep02_fecha_fin', dia(30));"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "pm.test('Devuelve UNAUTHENTICATED', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('UNAUTHENTICATED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titulo\": \"Vacante sin token {{ep02_sufijo}}\",\n    \"descripcion\": \"## Sobre el puesto\\nBuscamos una persona para el equipo de producto que trabaje con Laravel, MySQL y APIs REST.\",\n    \"nivel_experiencia\": \"semi_senior\",\n    \"salario_min\": 3500,\n    \"salario_max\": 5000,\n    \"fecha_inicio_vigencia\": \"{{ep02_fecha_inicio}}\",\n    \"fecha_fin_vigencia\": \"{{ep02_fecha_fin}}\",\n    \"max_contrataciones\": 2,\n    \"habilidades\": [\n        { \"habilidad_id\": {{ep02_hab_tecnica_id}}, \"requisito\": \"must_have\" },\n        { \"habilidad_id\": {{ep02_hab_blanda_id}}, \"requisito\": \"nice_to_have\" }\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "19.7 Crear Vacante - Error Token de Admin (403)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "var limaHoy = new Date(Date.now() - 5 * 60 * 60 * 1000);",
+                  "function dia(offset) {",
+                  "    var d = new Date(limaHoy.getTime() + offset * 24 * 60 * 60 * 1000);",
+                  "    return d.toISOString().slice(0, 10);",
+                  "}",
+                  "pm.environment.set('ep02_fecha_ayer', dia(-1));",
+                  "pm.environment.set('ep02_fecha_inicio', dia(0));",
+                  "pm.environment.set('ep02_fecha_fin', dia(30));"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 403 Forbidden', function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});",
+                  "pm.test('Devuelve FORBIDDEN', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('FORBIDDEN');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes"
+              ]
+            },
+            "description": "Solo una empresa registra vacantes.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titulo\": \"Vacante con token de admin {{ep02_sufijo}}\",\n    \"descripcion\": \"## Sobre el puesto\\nBuscamos una persona para el equipo de producto que trabaje con Laravel, MySQL y APIs REST.\",\n    \"nivel_experiencia\": \"semi_senior\",\n    \"salario_min\": 3500,\n    \"salario_max\": 5000,\n    \"fecha_inicio_vigencia\": \"{{ep02_fecha_inicio}}\",\n    \"fecha_fin_vigencia\": \"{{ep02_fecha_fin}}\",\n    \"max_contrataciones\": 2,\n    \"habilidades\": [\n        { \"habilidad_id\": {{ep02_hab_tecnica_id}}, \"requisito\": \"must_have\" },\n        { \"habilidad_id\": {{ep02_hab_blanda_id}}, \"requisito\": \"nice_to_have\" }\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "19.8 Crear Vacante - Error Datos Inválidos (422)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "var limaHoy = new Date(Date.now() - 5 * 60 * 60 * 1000);",
+                  "function dia(offset) {",
+                  "    var d = new Date(limaHoy.getTime() + offset * 24 * 60 * 60 * 1000);",
+                  "    return d.toISOString().slice(0, 10);",
+                  "}",
+                  "pm.environment.set('ep02_fecha_ayer', dia(-1));",
+                  "pm.environment.set('ep02_fecha_inicio', dia(0));",
+                  "pm.environment.set('ep02_fecha_fin', dia(30));"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Devuelve VALIDATION_ERROR', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('VALIDATION_ERROR');",
+                  "});",
+                  "pm.test('Marca salario, fecha de inicio y habilidades', function () {",
+                  "    var errors = pm.response.json().errors;",
+                  "    pm.expect(errors).to.have.property('salario_max');",
+                  "    pm.expect(errors).to.have.property('fecha_inicio_vigencia');",
+                  "    pm.expect(errors).to.have.property('habilidades');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep02_token_empresa}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes"
+              ]
+            },
+            "description": "Salario máximo menor que el mínimo, inicio de vigencia ayer y sin habilidades. No se crea nada.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titulo\": \"Vacante con datos inválidos\",\n    \"descripcion\": \"## Sobre el puesto\\nBuscamos una persona para el equipo de producto que trabaje con Laravel, MySQL y APIs REST.\",\n    \"nivel_experiencia\": \"semi_senior\",\n    \"salario_min\": 5000,\n    \"salario_max\": 3500,\n    \"fecha_inicio_vigencia\": \"{{ep02_fecha_ayer}}\",\n    \"fecha_fin_vigencia\": \"{{ep02_fecha_fin}}\",\n    \"max_contrataciones\": 2,\n    \"habilidades\": []\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "19.9 Crear Vacante A - Éxito (201)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "var limaHoy = new Date(Date.now() - 5 * 60 * 60 * 1000);",
+                  "function dia(offset) {",
+                  "    var d = new Date(limaHoy.getTime() + offset * 24 * 60 * 60 * 1000);",
+                  "    return d.toISOString().slice(0, 10);",
+                  "}",
+                  "pm.environment.set('ep02_fecha_ayer', dia(-1));",
+                  "pm.environment.set('ep02_fecha_inicio', dia(0));",
+                  "pm.environment.set('ep02_fecha_fin', dia(30));"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Queda pendiente de revisión y guarda ep02_vacante_a', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    pm.environment.set('ep02_vacante_a', data.id);",
+                  "    pm.expect(data.estado.general).to.eql('pendiente_revision');",
+                  "    pm.expect(data.estado.revision).to.eql('pendiente');",
+                  "    pm.expect(data.estado.pago).to.eql('sin_pago');",
+                  "    pm.expect(data.estado.publicada_en).to.be.null;",
+                  "});",
+                  "pm.test('Guarda las 2 habilidades con su requisito', function () {",
+                  "    var requisitos = pm.response.json().data.habilidades.map(function (h) { return h.requisito; });",
+                  "    pm.expect(requisitos).to.have.members(['must_have', 'nice_to_have']);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep02_token_empresa}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes"
+              ]
+            },
+            "description": "VAC-02 (HU-03). Toda vacante nueva queda pendiente de revisión: no se publica ni se puede pagar.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titulo\": \"Desarrollador Backend Laravel {{ep02_sufijo}}\",\n    \"descripcion\": \"## Sobre el puesto\\nBuscamos una persona para el equipo de producto que trabaje con Laravel, MySQL y APIs REST.\",\n    \"nivel_experiencia\": \"semi_senior\",\n    \"salario_min\": 3500,\n    \"salario_max\": 5000,\n    \"fecha_inicio_vigencia\": \"{{ep02_fecha_inicio}}\",\n    \"fecha_fin_vigencia\": \"{{ep02_fecha_fin}}\",\n    \"max_contrataciones\": 2,\n    \"habilidades\": [\n        { \"habilidad_id\": {{ep02_hab_tecnica_id}}, \"requisito\": \"must_have\" },\n        { \"habilidad_id\": {{ep02_hab_blanda_id}}, \"requisito\": \"nice_to_have\" }\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "19.10 Crear Vacante B - Éxito (201)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "var limaHoy = new Date(Date.now() - 5 * 60 * 60 * 1000);",
+                  "function dia(offset) {",
+                  "    var d = new Date(limaHoy.getTime() + offset * 24 * 60 * 60 * 1000);",
+                  "    return d.toISOString().slice(0, 10);",
+                  "}",
+                  "pm.environment.set('ep02_fecha_ayer', dia(-1));",
+                  "pm.environment.set('ep02_fecha_inicio', dia(0));",
+                  "pm.environment.set('ep02_fecha_fin', dia(30));"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Queda pendiente de revisión y guarda ep02_vacante_b', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    pm.environment.set('ep02_vacante_b', data.id);",
+                  "    pm.expect(data.estado.general).to.eql('pendiente_revision');",
+                  "    pm.expect(data.estado.revision).to.eql('pendiente');",
+                  "    pm.expect(data.estado.pago).to.eql('sin_pago');",
+                  "    pm.expect(data.estado.publicada_en).to.be.null;",
+                  "});",
+                  "pm.test('Guarda las 2 habilidades con su requisito', function () {",
+                  "    var requisitos = pm.response.json().data.habilidades.map(function (h) { return h.requisito; });",
+                  "    pm.expect(requisitos).to.have.members(['must_have', 'nice_to_have']);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep02_token_empresa}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes"
+              ]
+            },
+            "description": "VAC-02 (HU-03). Toda vacante nueva queda pendiente de revisión: no se publica ni se puede pagar.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titulo\": \"Analista QA {{ep02_sufijo}}\",\n    \"descripcion\": \"## Sobre el puesto\\nBuscamos una persona para el equipo de producto que trabaje con Laravel, MySQL y APIs REST.\",\n    \"nivel_experiencia\": \"semi_senior\",\n    \"salario_min\": 3500,\n    \"salario_max\": 5000,\n    \"fecha_inicio_vigencia\": \"{{ep02_fecha_inicio}}\",\n    \"fecha_fin_vigencia\": \"{{ep02_fecha_fin}}\",\n    \"max_contrataciones\": 2,\n    \"habilidades\": [\n        { \"habilidad_id\": {{ep02_hab_tecnica_id}}, \"requisito\": \"must_have\" },\n        { \"habilidad_id\": {{ep02_hab_blanda_id}}, \"requisito\": \"nice_to_have\" }\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "19.11 Crear Vacante C - Éxito (201)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "var limaHoy = new Date(Date.now() - 5 * 60 * 60 * 1000);",
+                  "function dia(offset) {",
+                  "    var d = new Date(limaHoy.getTime() + offset * 24 * 60 * 60 * 1000);",
+                  "    return d.toISOString().slice(0, 10);",
+                  "}",
+                  "pm.environment.set('ep02_fecha_ayer', dia(-1));",
+                  "pm.environment.set('ep02_fecha_inicio', dia(0));",
+                  "pm.environment.set('ep02_fecha_fin', dia(30));"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Queda pendiente de revisión y guarda ep02_vacante_c', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    pm.environment.set('ep02_vacante_c', data.id);",
+                  "    pm.expect(data.estado.general).to.eql('pendiente_revision');",
+                  "    pm.expect(data.estado.revision).to.eql('pendiente');",
+                  "    pm.expect(data.estado.pago).to.eql('sin_pago');",
+                  "    pm.expect(data.estado.publicada_en).to.be.null;",
+                  "});",
+                  "pm.test('Guarda las 2 habilidades con su requisito', function () {",
+                  "    var requisitos = pm.response.json().data.habilidades.map(function (h) { return h.requisito; });",
+                  "    pm.expect(requisitos).to.have.members(['must_have', 'nice_to_have']);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep02_token_empresa}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes"
+              ]
+            },
+            "description": "VAC-02 (HU-03). Toda vacante nueva queda pendiente de revisión: no se publica ni se puede pagar.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titulo\": \"Diseñador UX {{ep02_sufijo}}\",\n    \"descripcion\": \"## Sobre el puesto\\nBuscamos una persona para el equipo de producto que trabaje con Laravel, MySQL y APIs REST.\",\n    \"nivel_experiencia\": \"semi_senior\",\n    \"salario_min\": 3500,\n    \"salario_max\": 5000,\n    \"fecha_inicio_vigencia\": \"{{ep02_fecha_inicio}}\",\n    \"fecha_fin_vigencia\": \"{{ep02_fecha_fin}}\",\n    \"max_contrataciones\": 2,\n    \"habilidades\": [\n        { \"habilidad_id\": {{ep02_hab_tecnica_id}}, \"requisito\": \"must_have\" },\n        { \"habilidad_id\": {{ep02_hab_blanda_id}}, \"requisito\": \"nice_to_have\" }\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "19.12 Detalle de Vacante Propia - Pendiente de Revisión (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('La empresa la ve pendiente de revisión', function () {",
+                  "    var estado = pm.response.json().data.estado;",
+                  "    pm.expect(estado.revision).to.eql('pendiente');",
+                  "    pm.expect(estado.general).to.eql('pendiente_revision');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep02_token_empresa}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes/{{ep02_vacante_a}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes",
+                "{{ep02_vacante_a}}"
+              ]
+            },
+            "description": "VAC-03 (HU-03)."
+          },
+          "response": []
+        },
+        {
+          "name": "19.13 Vacantes Pendientes - Incluye las Creadas (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Incluye las vacantes A, B y C recién creadas', function () {",
+                  "    var ids = pm.response.json().data.map(function (v) { return v.id; });",
+                  "    ['ep02_vacante_a', 'ep02_vacante_b', 'ep02_vacante_c'].forEach(function (v) {",
+                  "        pm.expect(ids).to.include(Number(pm.environment.get(v)));",
+                  "    });",
+                  "});",
+                  "pm.test('Todas están pendientes', function () {",
+                  "    pm.response.json().data.forEach(function (v) { pm.expect(v.revision.estado).to.eql('pendiente'); });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/vacantes/pendientes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "vacantes",
+                "pendientes"
+              ]
+            },
+            "description": "MOD-01 (HU-22)."
+          },
+          "response": []
+        },
+        {
+          "name": "19.14 Detalle para Revisar - Datos Registrados por la Empresa (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Muestra lo que registró la empresa', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    pm.expect(data.titulo).to.eql('Desarrollador Backend Laravel ' + pm.environment.get('ep02_sufijo'));",
+                  "    pm.expect(data.salario_min).to.eql(3500);",
+                  "    pm.expect(data.salario_max).to.eql(5000);",
+                  "    pm.expect(data.max_contrataciones).to.eql(2);",
+                  "    pm.expect(data.fecha_inicio_vigencia).to.eql(pm.environment.get('ep02_fecha_inicio'));",
+                  "    pm.expect(data.fecha_fin_vigencia).to.eql(pm.environment.get('ep02_fecha_fin'));",
+                  "    pm.expect(data.habilidades).to.have.lengthOf(2);",
+                  "});",
+                  "pm.test('Identifica a la empresa que la registró', function () {",
+                  "    var empresa = pm.response.json().data.empresa;",
+                  "    pm.expect(empresa.ruc).to.eql(pm.environment.get('ep02_ruc_empresa'));",
+                  "});",
+                  "pm.test('Sigue pendiente', function () {",
+                  "    pm.expect(pm.response.json().data.revision.estado).to.eql('pendiente');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/vacantes/{{ep02_vacante_a}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "vacantes",
+                "{{ep02_vacante_a}}"
+              ]
+            },
+            "description": "MOD-02 (HU-22). El admin solo consulta: no hay endpoint para editar la vacante (ver 19.29)."
+          },
+          "response": []
+        },
+        {
+          "name": "19.15 Aprobar - Error Sin Token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "pm.test('Devuelve UNAUTHENTICATED', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('UNAUTHENTICATED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/vacantes/{{ep02_vacante_a}}/aprobar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "vacantes",
+                "{{ep02_vacante_a}}",
+                "aprobar"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "19.16 Aprobar - Error Token de Empresa (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 403 Forbidden', function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});",
+                  "pm.test('Devuelve FORBIDDEN', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('FORBIDDEN');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep02_token_empresa}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/vacantes/{{ep02_vacante_a}}/aprobar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "vacantes",
+                "{{ep02_vacante_a}}",
+                "aprobar"
+              ]
+            },
+            "description": "La empresa no puede aprobar ni siquiera su propia vacante."
+          },
+          "response": []
+        },
+        {
+          "name": "19.17 Aprobar - Error Token de Candidato (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 403 Forbidden', function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});",
+                  "pm.test('Devuelve FORBIDDEN', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('FORBIDDEN');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_candidato}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/vacantes/{{ep02_vacante_a}}/aprobar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "vacantes",
+                "{{ep02_vacante_a}}",
+                "aprobar"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "19.18 Aprobar - Error Vacante Inexistente (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 404 Not Found', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test('Devuelve RESOURCE_NOT_FOUND', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('RESOURCE_NOT_FOUND');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/vacantes/999999999/aprobar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "vacantes",
+                "999999999",
+                "aprobar"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "19.19 Aprobar Vacante A - Éxito (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Queda aprobada con fecha de revisión', function () {",
+                  "    var r = pm.response.json().data.revision;",
+                  "    pm.expect(r.estado).to.eql('aprobada');",
+                  "    pm.expect(r.revisado_en).to.not.be.null;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/vacantes/{{ep02_vacante_a}}/aprobar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "vacantes",
+                "{{ep02_vacante_a}}",
+                "aprobar"
+              ]
+            },
+            "description": "MOD-03 (HU-22). Aprobar no publica: solo habilita el pago (lo comprueba 19.21)."
+          },
+          "response": []
+        },
+        {
+          "name": "19.20 Aprobar Vacante A - Error Ya Revisada (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 409 Conflict', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "pm.test('Devuelve VACANCY_ALREADY_REVIEWED', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('VACANCY_ALREADY_REVIEWED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/vacantes/{{ep02_vacante_a}}/aprobar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "vacantes",
+                "{{ep02_vacante_a}}",
+                "aprobar"
+              ]
+            },
+            "description": "La decisión es única y definitiva."
+          },
+          "response": []
+        },
+        {
+          "name": "19.21 Detalle de Vacante Propia - Aprobada pero No Publicada (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('La empresa la ve aprobada y pendiente de pago, no publicada', function () {",
+                  "    var estado = pm.response.json().data.estado;",
+                  "    pm.expect(estado.revision).to.eql('aprobada');",
+                  "    pm.expect(estado.pago).to.eql('sin_pago');",
+                  "    pm.expect(estado.general).to.eql('pendiente_pago');",
+                  "    pm.expect(estado.publicada_en).to.be.null;",
+                  "});",
+                  "pm.test('Una vacante aprobada no trae motivo de no aprobación', function () {",
+                  "    pm.expect(pm.response.json().data.estado.motivo_no_aprobacion).to.be.null;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep02_token_empresa}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes/{{ep02_vacante_a}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes",
+                "{{ep02_vacante_a}}"
+              ]
+            },
+            "description": "VAC-03. Confirma que la aprobación por sí sola no publica la vacante."
+          },
+          "response": []
+        },
+        {
+          "name": "19.22 Aprobación Masiva - Error Incluye Vacante Revisada (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Devuelve BULK_APPROVAL_REJECTED', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('BULK_APPROVAL_REJECTED');",
+                  "});",
+                  "pm.test('Indica cuál vacante falló', function () {",
+                  "    pm.expect(pm.response.json().errors['vacantes.1'][0])",
+                  "        .to.eql('La vacante ' + pm.environment.get('ep02_vacante_a') + ' ya fue revisada.');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/vacantes/aprobar-masivo",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "vacantes",
+                "aprobar-masivo"
+              ]
+            },
+            "description": "MOD-04, todo o nada: A ya está aprobada, así que tampoco se aprueba B (lo confirma 19.24).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"vacantes\": [\n        {{ep02_vacante_b}},\n        {{ep02_vacante_a}}\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "19.23 Aprobación Masiva - Error Vacante Inexistente (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Devuelve BULK_APPROVAL_REJECTED', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('BULK_APPROVAL_REJECTED');",
+                  "});",
+                  "pm.test('Indica que la vacante no existe', function () {",
+                  "    pm.expect(pm.response.json().errors['vacantes.1'][0]).to.eql('La vacante 999999999 no existe.');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/vacantes/aprobar-masivo",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "vacantes",
+                "aprobar-masivo"
+              ]
+            },
+            "description": "MOD-04. Cada vacante del lote se valida por separado.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"vacantes\": [\n        {{ep02_vacante_b}},\n        999999999\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "19.24 Detalle para Revisar - B Sigue Pendiente (todo o nada) (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Los lotes rechazados no aprobaron B', function () {",
+                  "    pm.expect(pm.response.json().data.revision.estado).to.eql('pendiente');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/vacantes/{{ep02_vacante_b}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "vacantes",
+                "{{ep02_vacante_b}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "19.25 Aprobación Masiva - Error Vacantes Repetidas (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Devuelve VALIDATION_ERROR', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('VALIDATION_ERROR');",
+                  "});",
+                  "pm.test('Mensaje de vacantes repetidas', function () {",
+                  "    var errors = pm.response.json().errors;",
+                  "    pm.expect(errors['vacantes.0'] || errors['vacantes.1']).to.include('No puede repetir vacantes.');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/vacantes/aprobar-masivo",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "vacantes",
+                "aprobar-masivo"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"vacantes\": [\n        {{ep02_vacante_b}},\n        {{ep02_vacante_b}}\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "19.26 Aprobación Masiva - Éxito B y C (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Aprueba B y C sin vacantes no procesadas', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.message).to.eql('Se aprobaron 2 vacantes.');",
+                  "    pm.expect(json.data.aprobadas).to.eql([",
+                  "        Number(pm.environment.get('ep02_vacante_b')),",
+                  "        Number(pm.environment.get('ep02_vacante_c'))",
+                  "    ]);",
+                  "    pm.expect(json.data.no_procesadas).to.eql([]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/vacantes/aprobar-masivo",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "vacantes",
+                "aprobar-masivo"
+              ]
+            },
+            "description": "MOD-04. Equivale a marcar los checkboxes de B y C (o \"Seleccionar todas\") en el panel del admin.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"vacantes\": [\n        {{ep02_vacante_b}},\n        {{ep02_vacante_c}}\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "19.27 Vacantes Pendientes - Ya No Incluye las Aprobadas (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('A, B y C ya no están pendientes', function () {",
+                  "    var ids = pm.response.json().data.map(function (v) { return v.id; });",
+                  "    ['ep02_vacante_a', 'ep02_vacante_b', 'ep02_vacante_c'].forEach(function (v) {",
+                  "        pm.expect(ids).to.not.include(Number(pm.environment.get(v)));",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/vacantes/pendientes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "vacantes",
+                "pendientes"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "19.28 Mis Vacantes - Aprobadas y Pendientes de Pago (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Solo trae las 3 vacantes de esta empresa', function () {",
+                  "    pm.expect(pm.response.json().data).to.have.lengthOf(3);",
+                  "});",
+                  "pm.test('Todas aprobadas y pendientes de pago, ninguna publicada', function () {",
+                  "    pm.response.json().data.forEach(function (v) {",
+                  "        pm.expect(v.estado.revision).to.eql('aprobada');",
+                  "        pm.expect(v.estado.general).to.eql('pendiente_pago');",
+                  "        pm.expect(v.estado.publicada_en).to.be.null;",
+                  "    });",
+                  "});",
+                  "pm.test('De la más reciente a la más antigua', function () {",
+                  "    var ids = pm.response.json().data.map(function (v) { return v.id; });",
+                  "    pm.expect(ids[0]).to.eql(Number(pm.environment.get('ep02_vacante_c')));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep02_token_empresa}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes"
+              ]
+            },
+            "description": "MOD-06 (HU-22). La empresa consulta el resultado de la revisión de sus propias vacantes."
+          },
+          "response": []
+        },
+        {
+          "name": "19.29 Editar Vacante como Admin - No Permitido (405)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 405 Method Not Allowed', function () {",
+                  "    pm.response.to.have.status(405);",
+                  "});",
+                  "pm.test('Devuelve METHOD_NOT_ALLOWED', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('METHOD_NOT_ALLOWED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/vacantes/{{ep02_vacante_a}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "vacantes",
+                "{{ep02_vacante_a}}"
+              ]
+            },
+            "description": "La revisión administrativa no permite modificar el contenido de la vacante: no existe esa ruta.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titulo\": \"Título cambiado por el admin\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "19.30 No Aprobación Masiva - No Existe (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 404 Not Found', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test('Devuelve RESOURCE_NOT_FOUND', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('RESOURCE_NOT_FOUND');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/vacantes/no-aprobar-masivo",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "vacantes",
+                "no-aprobar-masivo"
+              ]
+            },
+            "description": "La no aprobación masiva está fuera del alcance de HU-22: no existe esa ruta.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"vacantes\": [\n        {{ep02_vacante_a}}\n    ],\n    \"motivo\": \"Prueba\"\n}"
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "20. Vacantes - Editar y Volver a Revisión (flujo completo)",
+      "description": "Edición de vacantes por la empresa (PUT /empresas/me/vacantes/{id}). Editar una vacante aprobada la devuelve a pendiente de revisión; una vez pagada ya no se puede editar; una no aprobada tampoco. Crea sus propias empresas y vacantes en cada corrida, así que se puede repetir. Requisito: admin_correo / admin_password en el environment. Correr en orden.",
+      "item": [
+        {
+          "name": "20.0 Preparar - Login Admin (200)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Sufijo nuevo en cada corrida para los datos únicos de las empresas (correo y RUC)",
+                  "pm.environment.set('ep02ed_sufijo', String(Date.now()).slice(-8));"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Es admin y guarda token_admin', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    pm.expect(data.rol).to.eql('admin');",
+                  "    pm.environment.set('token_admin', data.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Usa admin_correo / admin_password del environment.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"{{admin_correo}}\",\n    \"password\": \"{{admin_password}}\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "20.1 Preparar - Registrar Empresa del Flujo (201)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// El sufijo lo genera 20.0 en cada corrida: correo y RUC no chocan con corridas anteriores",
+                  "var sufijo = pm.environment.get('ep02ed_sufijo');",
+                  "var digito = '1';",
+                  "pm.environment.set('ep02ed_correo_principal', 'empresa.edicion.principal.' + sufijo + '@prueba.com');",
+                  "pm.environment.set('ep02ed_ruc_principal', '20' + digito + sufijo);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"{{ep02ed_correo_principal}}\",\n    \"password\": \"EmpresaFlujo2026#\",\n    \"encargado_empresa\": \"Encargado Edición EP02\",\n    \"razon_social\": \"Empresa Edición EP02 principal {{ep02ed_sufijo}} S.A.C.\",\n    \"sector\": \"Tecnología e Informática\",\n    \"ruc\": \"{{ep02ed_ruc_principal}}\",\n    \"descripcion\": \"Empresa creada por la carpeta 20 de Postman para probar la edición de vacantes.\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "20.2 Preparar - Login Empresa del Flujo (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Es empresa y guarda ep02ed_token_empresa', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    pm.expect(data.rol).to.eql('empresa');",
+                  "    pm.environment.set('ep02ed_token_empresa', data.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"{{ep02ed_correo_principal}}\",\n    \"password\": \"EmpresaFlujo2026#\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "20.3 Preparar - Registrar Otra Empresa (201)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// El sufijo lo genera 20.0 en cada corrida: correo y RUC no chocan con corridas anteriores",
+                  "var sufijo = pm.environment.get('ep02ed_sufijo');",
+                  "var digito = '2';",
+                  "pm.environment.set('ep02ed_correo_otra', 'empresa.edicion.otra.' + sufijo + '@prueba.com');",
+                  "pm.environment.set('ep02ed_ruc_otra', '20' + digito + sufijo);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"{{ep02ed_correo_otra}}\",\n    \"password\": \"EmpresaFlujo2026#\",\n    \"encargado_empresa\": \"Encargado Edición EP02\",\n    \"razon_social\": \"Empresa Edición EP02 otra {{ep02ed_sufijo}} S.A.C.\",\n    \"sector\": \"Tecnología e Informática\",\n    \"ruc\": \"{{ep02ed_ruc_otra}}\",\n    \"descripcion\": \"Empresa creada por la carpeta 20 de Postman para probar la edición de vacantes.\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "20.4 Preparar - Login Otra Empresa (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Es empresa y guarda ep02ed_token_otra', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    pm.expect(data.rol).to.eql('empresa');",
+                  "    pm.environment.set('ep02ed_token_otra', data.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"{{ep02ed_correo_otra}}\",\n    \"password\": \"EmpresaFlujo2026#\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "20.5 Preparar - Habilidades Activas (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Guarda una habilidad técnica y otra distinta (blanda si existe)', function () {",
+                  "    var lista = pm.response.json().data;",
+                  "    pm.expect(lista.length).to.be.at.least(2);",
+                  "    var tecnica = lista.find(function (h) { return h.tipo_habilidad === 'tecnica'; }) || lista[0];",
+                  "    var blanda = lista.find(function (h) { return h.tipo_habilidad === 'blanda' && h.id !== tecnica.id; })",
+                  "        || lista.find(function (h) { return h.id !== tecnica.id; });",
+                  "    pm.environment.set('ep02ed_hab_tecnica_id', tecnica.id);",
+                  "    pm.environment.set('ep02ed_hab_blanda_id', blanda.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/habilidades",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "habilidades"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "20.6 Crear Vacante - Éxito (201)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "var limaHoy = new Date(Date.now() - 5 * 60 * 60 * 1000);",
+                  "function dia(offset) {",
+                  "    var d = new Date(limaHoy.getTime() + offset * 24 * 60 * 60 * 1000);",
+                  "    return d.toISOString().slice(0, 10);",
+                  "}",
+                  "pm.environment.set('ep02ed_fecha_inicio', dia(0));",
+                  "pm.environment.set('ep02ed_fecha_fin', dia(30));",
+                  "pm.environment.set('ep02ed_fecha_fin_editada', dia(45));"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Revisión pendiente · estado general pendiente_revision', function () {",
+                  "    var estado = pm.response.json().data.estado;",
+                  "    pm.expect(estado.revision).to.eql('pendiente');",
+                  "    pm.expect(estado.general).to.eql('pendiente_revision');",
+                  "});",
+                  "pm.test('Guarda ep02ed_vacante', function () {",
+                  "    pm.environment.set('ep02ed_vacante', pm.response.json().data.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep02ed_token_empresa}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titulo\": \"Desarrollador Backend {{ep02ed_sufijo}}\",\n    \"descripcion\": \"## Sobre el puesto\\nBuscamos una persona para el equipo de producto que trabaje con Laravel, MySQL y APIs REST.\",\n    \"nivel_experiencia\": \"semi_senior\",\n    \"salario_min\": 3500,\n    \"salario_max\": 5000,\n    \"fecha_inicio_vigencia\": \"{{ep02ed_fecha_inicio}}\",\n    \"fecha_fin_vigencia\": \"{{ep02ed_fecha_fin}}\",\n    \"max_contrataciones\": 2,\n    \"habilidades\": [\n        { \"habilidad_id\": {{ep02ed_hab_tecnica_id}}, \"requisito\": \"must_have\" },\n        { \"habilidad_id\": {{ep02ed_hab_blanda_id}}, \"requisito\": \"nice_to_have\" }\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "20.7 Editar Vacante Pendiente - Éxito (200)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "var limaHoy = new Date(Date.now() - 5 * 60 * 60 * 1000);",
+                  "function dia(offset) {",
+                  "    var d = new Date(limaHoy.getTime() + offset * 24 * 60 * 60 * 1000);",
+                  "    return d.toISOString().slice(0, 10);",
+                  "}",
+                  "pm.environment.set('ep02ed_fecha_inicio', dia(0));",
+                  "pm.environment.set('ep02ed_fecha_fin', dia(30));",
+                  "pm.environment.set('ep02ed_fecha_fin_editada', dia(45));"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Revisión pendiente · estado general pendiente_revision', function () {",
+                  "    var estado = pm.response.json().data.estado;",
+                  "    pm.expect(estado.revision).to.eql('pendiente');",
+                  "    pm.expect(estado.general).to.eql('pendiente_revision');",
+                  "});",
+                  "pm.test('Guarda los datos editados', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    pm.expect(data.titulo).to.eql('Desarrollador Backend Laravel ' + pm.environment.get('ep02ed_sufijo'));",
+                  "    pm.expect(data.max_contrataciones).to.eql(3);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep02ed_token_empresa}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes/{{ep02ed_vacante}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes",
+                "{{ep02ed_vacante}}"
+              ]
+            },
+            "description": "Editar una vacante que todavía no se revisó la deja pendiente.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titulo\": \"Desarrollador Backend Laravel {{ep02ed_sufijo}}\",\n    \"descripcion\": \"## Sobre el puesto\\nBuscamos una persona para el equipo de producto que trabaje con Laravel, MySQL y APIs REST.\",\n    \"nivel_experiencia\": \"semi_senior\",\n    \"salario_min\": 3500,\n    \"salario_max\": 5000,\n    \"fecha_inicio_vigencia\": \"{{ep02ed_fecha_inicio}}\",\n    \"fecha_fin_vigencia\": \"{{ep02ed_fecha_fin}}\",\n    \"max_contrataciones\": 3,\n    \"habilidades\": [\n        { \"habilidad_id\": {{ep02ed_hab_tecnica_id}}, \"requisito\": \"must_have\" },\n        { \"habilidad_id\": {{ep02ed_hab_blanda_id}}, \"requisito\": \"nice_to_have\" }\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "20.8 Editar Vacante - Error Sin Token (401)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "var limaHoy = new Date(Date.now() - 5 * 60 * 60 * 1000);",
+                  "function dia(offset) {",
+                  "    var d = new Date(limaHoy.getTime() + offset * 24 * 60 * 60 * 1000);",
+                  "    return d.toISOString().slice(0, 10);",
+                  "}",
+                  "pm.environment.set('ep02ed_fecha_inicio', dia(0));",
+                  "pm.environment.set('ep02ed_fecha_fin', dia(30));",
+                  "pm.environment.set('ep02ed_fecha_fin_editada', dia(45));"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "pm.test('Devuelve UNAUTHENTICATED', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('UNAUTHENTICATED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes/{{ep02ed_vacante}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes",
+                "{{ep02ed_vacante}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titulo\": \"Sin token {{ep02ed_sufijo}}\",\n    \"descripcion\": \"## Sobre el puesto\\nBuscamos una persona para el equipo de producto que trabaje con Laravel, MySQL y APIs REST.\",\n    \"nivel_experiencia\": \"semi_senior\",\n    \"salario_min\": 3500,\n    \"salario_max\": 5000,\n    \"fecha_inicio_vigencia\": \"{{ep02ed_fecha_inicio}}\",\n    \"fecha_fin_vigencia\": \"{{ep02ed_fecha_fin}}\",\n    \"max_contrataciones\": 2,\n    \"habilidades\": [\n        { \"habilidad_id\": {{ep02ed_hab_tecnica_id}}, \"requisito\": \"must_have\" },\n        { \"habilidad_id\": {{ep02ed_hab_blanda_id}}, \"requisito\": \"nice_to_have\" }\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "20.9 Editar Vacante - Error Vacante de Otra Empresa (403)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "var limaHoy = new Date(Date.now() - 5 * 60 * 60 * 1000);",
+                  "function dia(offset) {",
+                  "    var d = new Date(limaHoy.getTime() + offset * 24 * 60 * 60 * 1000);",
+                  "    return d.toISOString().slice(0, 10);",
+                  "}",
+                  "pm.environment.set('ep02ed_fecha_inicio', dia(0));",
+                  "pm.environment.set('ep02ed_fecha_fin', dia(30));",
+                  "pm.environment.set('ep02ed_fecha_fin_editada', dia(45));"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 403 Forbidden', function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});",
+                  "pm.test('Devuelve FORBIDDEN', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('FORBIDDEN');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep02ed_token_otra}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes/{{ep02ed_vacante}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes",
+                "{{ep02ed_vacante}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titulo\": \"Otra empresa {{ep02ed_sufijo}}\",\n    \"descripcion\": \"## Sobre el puesto\\nBuscamos una persona para el equipo de producto que trabaje con Laravel, MySQL y APIs REST.\",\n    \"nivel_experiencia\": \"semi_senior\",\n    \"salario_min\": 3500,\n    \"salario_max\": 5000,\n    \"fecha_inicio_vigencia\": \"{{ep02ed_fecha_inicio}}\",\n    \"fecha_fin_vigencia\": \"{{ep02ed_fecha_fin}}\",\n    \"max_contrataciones\": 2,\n    \"habilidades\": [\n        { \"habilidad_id\": {{ep02ed_hab_tecnica_id}}, \"requisito\": \"must_have\" },\n        { \"habilidad_id\": {{ep02ed_hab_blanda_id}}, \"requisito\": \"nice_to_have\" }\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "20.10 Editar Vacante - Error Token de Admin (403)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "var limaHoy = new Date(Date.now() - 5 * 60 * 60 * 1000);",
+                  "function dia(offset) {",
+                  "    var d = new Date(limaHoy.getTime() + offset * 24 * 60 * 60 * 1000);",
+                  "    return d.toISOString().slice(0, 10);",
+                  "}",
+                  "pm.environment.set('ep02ed_fecha_inicio', dia(0));",
+                  "pm.environment.set('ep02ed_fecha_fin', dia(30));",
+                  "pm.environment.set('ep02ed_fecha_fin_editada', dia(45));"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 403 Forbidden', function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});",
+                  "pm.test('Devuelve FORBIDDEN', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('FORBIDDEN');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes/{{ep02ed_vacante}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes",
+                "{{ep02ed_vacante}}"
+              ]
+            },
+            "description": "El admin no edita vacantes; solo la empresa dueña.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titulo\": \"Admin {{ep02ed_sufijo}}\",\n    \"descripcion\": \"## Sobre el puesto\\nBuscamos una persona para el equipo de producto que trabaje con Laravel, MySQL y APIs REST.\",\n    \"nivel_experiencia\": \"semi_senior\",\n    \"salario_min\": 3500,\n    \"salario_max\": 5000,\n    \"fecha_inicio_vigencia\": \"{{ep02ed_fecha_inicio}}\",\n    \"fecha_fin_vigencia\": \"{{ep02ed_fecha_fin}}\",\n    \"max_contrataciones\": 2,\n    \"habilidades\": [\n        { \"habilidad_id\": {{ep02ed_hab_tecnica_id}}, \"requisito\": \"must_have\" },\n        { \"habilidad_id\": {{ep02ed_hab_blanda_id}}, \"requisito\": \"nice_to_have\" }\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "20.11 Editar Vacante - Error Datos Inválidos (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Devuelve VALIDATION_ERROR', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('VALIDATION_ERROR');",
+                  "});",
+                  "pm.test('Exige los mismos campos que el registro', function () {",
+                  "    var errors = pm.response.json().errors;",
+                  "    ['titulo', 'descripcion', 'salario_min', 'fecha_inicio_vigencia', 'max_contrataciones', 'habilidades']",
+                  "        .forEach(function (campo) { pm.expect(errors).to.have.property(campo); });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep02ed_token_empresa}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes/{{ep02ed_vacante}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes",
+                "{{ep02ed_vacante}}"
+              ]
+            },
+            "description": "PUT: se envían todos los campos, con las mismas reglas que el registro.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titulo\": \"\",\n    \"habilidades\": []\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "20.12 Aprobar Vacante - Éxito (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Queda aprobada', function () {",
+                  "    pm.expect(pm.response.json().data.revision.estado).to.eql('aprobada');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/vacantes/{{ep02ed_vacante}}/aprobar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "vacantes",
+                "{{ep02ed_vacante}}",
+                "aprobar"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "20.13 Detalle de Vacante Propia - Aprobada, Pendiente de Pago (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Revisión aprobada · estado general pendiente_pago', function () {",
+                  "    var estado = pm.response.json().data.estado;",
+                  "    pm.expect(estado.revision).to.eql('aprobada');",
+                  "    pm.expect(estado.general).to.eql('pendiente_pago');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep02ed_token_empresa}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes/{{ep02ed_vacante}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes",
+                "{{ep02ed_vacante}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "20.14 Editar Vacante Aprobada - Vuelve a Revisión (200)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "var limaHoy = new Date(Date.now() - 5 * 60 * 60 * 1000);",
+                  "function dia(offset) {",
+                  "    var d = new Date(limaHoy.getTime() + offset * 24 * 60 * 60 * 1000);",
+                  "    return d.toISOString().slice(0, 10);",
+                  "}",
+                  "pm.environment.set('ep02ed_fecha_inicio', dia(0));",
+                  "pm.environment.set('ep02ed_fecha_fin', dia(30));",
+                  "pm.environment.set('ep02ed_fecha_fin_editada', dia(45));"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Revisión pendiente · estado general pendiente_revision', function () {",
+                  "    var estado = pm.response.json().data.estado;",
+                  "    pm.expect(estado.revision).to.eql('pendiente');",
+                  "    pm.expect(estado.general).to.eql('pendiente_revision');",
+                  "});",
+                  "pm.test('Guarda la nueva vigencia y los requisitos cambiados', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    pm.expect(data.fecha_fin_vigencia).to.eql(pm.environment.get('ep02ed_fecha_fin_editada'));",
+                  "    var tecnica = data.habilidades.find(function (h) { return h.id === Number(pm.environment.get('ep02ed_hab_tecnica_id')); });",
+                  "    pm.expect(tecnica.requisito).to.eql('nice_to_have');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep02ed_token_empresa}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes/{{ep02ed_vacante}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes",
+                "{{ep02ed_vacante}}"
+              ]
+            },
+            "description": "La aprobación anterior se invalida (queda como historial) y la vacante vuelve a pendiente de revisión.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titulo\": \"Desarrollador Backend Laravel Senior {{ep02ed_sufijo}}\",\n    \"descripcion\": \"## Sobre el puesto\\nBuscamos una persona para el equipo de producto que trabaje con Laravel, MySQL y APIs REST.\",\n    \"nivel_experiencia\": \"semi_senior\",\n    \"salario_min\": 3500,\n    \"salario_max\": 5000,\n    \"fecha_inicio_vigencia\": \"{{ep02ed_fecha_inicio}}\",\n    \"fecha_fin_vigencia\": \"{{ep02ed_fecha_fin_editada}}\",\n    \"max_contrataciones\": 3,\n    \"habilidades\": [\n        { \"habilidad_id\": {{ep02ed_hab_tecnica_id}}, \"requisito\": \"nice_to_have\" },\n        { \"habilidad_id\": {{ep02ed_hab_blanda_id}}, \"requisito\": \"must_have\" }\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "20.15 Pagar - Error Vacante Editada Sin Nueva Aprobación (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 409 Conflict', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "pm.test('Devuelve VACANCY_NOT_APPROVED', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('VACANCY_NOT_APPROVED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep02ed_token_empresa}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes/{{ep02ed_vacante}}/pago",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes",
+                "{{ep02ed_vacante}}",
+                "pago"
+              ]
+            },
+            "description": "No se puede pagar con datos que el admin todavía no revisó.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titular\": \"Carlos Medina\",\n    \"numero_tarjeta\": \"4111111111111111\",\n    \"vencimiento\": \"12/28\",\n    \"cvv\": \"123\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "20.16 Vacantes Pendientes - Incluye la Vacante Editada (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('La vacante editada vuelve a la lista del admin', function () {",
+                  "    var ids = pm.response.json().data.map(function (v) { return v.id; });",
+                  "    pm.expect(ids).to.include(Number(pm.environment.get('ep02ed_vacante')));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/vacantes/pendientes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "vacantes",
+                "pendientes"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "20.17 Detalle para Revisar - Muestra los Datos Editados (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('El admin revisa la versión editada', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    pm.expect(data.titulo).to.eql('Desarrollador Backend Laravel Senior ' + pm.environment.get('ep02ed_sufijo'));",
+                  "    pm.expect(data.revision.estado).to.eql('pendiente');",
+                  "    pm.expect(data.revision.revisado_en).to.be.null;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/vacantes/{{ep02ed_vacante}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "vacantes",
+                "{{ep02ed_vacante}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "20.18 Aprobar Vacante Editada - Éxito (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Queda aprobada otra vez', function () {",
+                  "    pm.expect(pm.response.json().data.revision.estado).to.eql('aprobada');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/vacantes/{{ep02ed_vacante}}/aprobar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "vacantes",
+                "{{ep02ed_vacante}}",
+                "aprobar"
+              ]
+            },
+            "description": "Se registra una nueva decisión; la anterior sigue en el historial."
+          },
+          "response": []
+        },
+        {
+          "name": "20.19 Aprobar Vacante Editada - Error Ya Revisada (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 409 Conflict', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "pm.test('Devuelve VACANCY_ALREADY_REVIEWED', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('VACANCY_ALREADY_REVIEWED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/vacantes/{{ep02ed_vacante}}/aprobar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "vacantes",
+                "{{ep02ed_vacante}}",
+                "aprobar"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "20.20 Pagar - Éxito (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('La vacante queda publicada', function () {",
+                  "    var d = pm.response.json().data;",
+                  "    pm.expect(d.pago.resultado).to.eql('exitoso');",
+                  "    pm.expect(d.vacante.estado.general).to.eql('publicada');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep02ed_token_empresa}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes/{{ep02ed_vacante}}/pago",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes",
+                "{{ep02ed_vacante}}",
+                "pago"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titular\": \"Carlos Medina\",\n    \"numero_tarjeta\": \"4111111111111111\",\n    \"vencimiento\": \"12/28\",\n    \"cvv\": \"123\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "20.21 Editar Vacante Pagada - Error No Editable (409)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "var limaHoy = new Date(Date.now() - 5 * 60 * 60 * 1000);",
+                  "function dia(offset) {",
+                  "    var d = new Date(limaHoy.getTime() + offset * 24 * 60 * 60 * 1000);",
+                  "    return d.toISOString().slice(0, 10);",
+                  "}",
+                  "pm.environment.set('ep02ed_fecha_inicio', dia(0));",
+                  "pm.environment.set('ep02ed_fecha_fin', dia(30));",
+                  "pm.environment.set('ep02ed_fecha_fin_editada', dia(45));"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 409 Conflict', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "pm.test('Devuelve VACANCY_ALREADY_PAID', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('VACANCY_ALREADY_PAID');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep02ed_token_empresa}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes/{{ep02ed_vacante}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes",
+                "{{ep02ed_vacante}}"
+              ]
+            },
+            "description": "Una vez pagada (publicada) la vacante ya no se puede editar.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titulo\": \"Cambio después de pagar {{ep02ed_sufijo}}\",\n    \"descripcion\": \"## Sobre el puesto\\nBuscamos una persona para el equipo de producto que trabaje con Laravel, MySQL y APIs REST.\",\n    \"nivel_experiencia\": \"semi_senior\",\n    \"salario_min\": 3500,\n    \"salario_max\": 5000,\n    \"fecha_inicio_vigencia\": \"{{ep02ed_fecha_inicio}}\",\n    \"fecha_fin_vigencia\": \"{{ep02ed_fecha_fin}}\",\n    \"max_contrataciones\": 3,\n    \"habilidades\": [\n        { \"habilidad_id\": {{ep02ed_hab_tecnica_id}}, \"requisito\": \"must_have\" },\n        { \"habilidad_id\": {{ep02ed_hab_blanda_id}}, \"requisito\": \"nice_to_have\" }\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "20.22 Detalle de Vacante Propia - Sigue Publicada sin Cambios (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Revisión aprobada · estado general publicada', function () {",
+                  "    var estado = pm.response.json().data.estado;",
+                  "    pm.expect(estado.revision).to.eql('aprobada');",
+                  "    pm.expect(estado.general).to.eql('publicada');",
+                  "});",
+                  "pm.test('El intento de edición no cambió nada', function () {",
+                  "    pm.expect(pm.response.json().data.titulo)",
+                  "        .to.eql('Desarrollador Backend Laravel Senior ' + pm.environment.get('ep02ed_sufijo'));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep02ed_token_empresa}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes/{{ep02ed_vacante}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes",
+                "{{ep02ed_vacante}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "20.23 Crear Vacante para No Aprobar - Éxito (201)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "var limaHoy = new Date(Date.now() - 5 * 60 * 60 * 1000);",
+                  "function dia(offset) {",
+                  "    var d = new Date(limaHoy.getTime() + offset * 24 * 60 * 60 * 1000);",
+                  "    return d.toISOString().slice(0, 10);",
+                  "}",
+                  "pm.environment.set('ep02ed_fecha_inicio', dia(0));",
+                  "pm.environment.set('ep02ed_fecha_fin', dia(30));",
+                  "pm.environment.set('ep02ed_fecha_fin_editada', dia(45));"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Guarda ep02ed_vacante_no_aprobada', function () {",
+                  "    pm.environment.set('ep02ed_vacante_no_aprobada', pm.response.json().data.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep02ed_token_empresa}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titulo\": \"Analista de Datos {{ep02ed_sufijo}}\",\n    \"descripcion\": \"## Sobre el puesto\\nBuscamos una persona para el equipo de producto que trabaje con Laravel, MySQL y APIs REST.\",\n    \"nivel_experiencia\": \"semi_senior\",\n    \"salario_min\": 3500,\n    \"salario_max\": 5000,\n    \"fecha_inicio_vigencia\": \"{{ep02ed_fecha_inicio}}\",\n    \"fecha_fin_vigencia\": \"{{ep02ed_fecha_fin}}\",\n    \"max_contrataciones\": 2,\n    \"habilidades\": [\n        { \"habilidad_id\": {{ep02ed_hab_tecnica_id}}, \"requisito\": \"must_have\" },\n        { \"habilidad_id\": {{ep02ed_hab_blanda_id}}, \"requisito\": \"nice_to_have\" }\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "20.24 No Aprobar - Éxito (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Queda no aprobada', function () {",
+                  "    pm.expect(pm.response.json().data.revision.estado).to.eql('no_aprobada');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/vacantes/{{ep02ed_vacante_no_aprobada}}/no-aprobar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "vacantes",
+                "{{ep02ed_vacante_no_aprobada}}",
+                "no-aprobar"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"motivo\": \"La descripción no detalla las funciones del puesto.\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "20.25 Detalle de Vacante Propia - No Aprobada con Motivo (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('La empresa ve que no fue aprobada y por qué', function () {",
+                  "    var estado = pm.response.json().data.estado;",
+                  "    pm.expect(estado.revision).to.eql('no_aprobada');",
+                  "    pm.expect(estado.general).to.eql('no_aprobada');",
+                  "    pm.expect(estado.motivo_no_aprobacion).to.eql('La descripción no detalla las funciones del puesto.');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep02ed_token_empresa}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes/{{ep02ed_vacante_no_aprobada}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes",
+                "{{ep02ed_vacante_no_aprobada}}"
+              ]
+            },
+            "description": "HU-22: la empresa consulta el resultado de la revisión y ve el motivo de la no aprobación."
+          },
+          "response": []
+        },
+        {
+          "name": "20.26 Editar Vacante No Aprobada - Error No Editable (409)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "var limaHoy = new Date(Date.now() - 5 * 60 * 60 * 1000);",
+                  "function dia(offset) {",
+                  "    var d = new Date(limaHoy.getTime() + offset * 24 * 60 * 60 * 1000);",
+                  "    return d.toISOString().slice(0, 10);",
+                  "}",
+                  "pm.environment.set('ep02ed_fecha_inicio', dia(0));",
+                  "pm.environment.set('ep02ed_fecha_fin', dia(30));",
+                  "pm.environment.set('ep02ed_fecha_fin_editada', dia(45));"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 409 Conflict', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "pm.test('Devuelve VACANCY_NOT_EDITABLE', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('VACANCY_NOT_EDITABLE');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep02ed_token_empresa}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes/{{ep02ed_vacante_no_aprobada}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes",
+                "{{ep02ed_vacante_no_aprobada}}"
+              ]
+            },
+            "description": "La no aprobación es definitiva (HU-22): editar no la reenvía a revisión.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titulo\": \"Analista de Datos corregido {{ep02ed_sufijo}}\",\n    \"descripcion\": \"## Sobre el puesto\\nBuscamos una persona para el equipo de producto que trabaje con Laravel, MySQL y APIs REST.\",\n    \"nivel_experiencia\": \"semi_senior\",\n    \"salario_min\": 3500,\n    \"salario_max\": 5000,\n    \"fecha_inicio_vigencia\": \"{{ep02ed_fecha_inicio}}\",\n    \"fecha_fin_vigencia\": \"{{ep02ed_fecha_fin}}\",\n    \"max_contrataciones\": 2,\n    \"habilidades\": [\n        { \"habilidad_id\": {{ep02ed_hab_tecnica_id}}, \"requisito\": \"must_have\" },\n        { \"habilidad_id\": {{ep02ed_hab_blanda_id}}, \"requisito\": \"nice_to_have\" }\n    ]\n}"
+            }
+          },
+          "response": []
+        }
+      ]
     }
   ]
 }

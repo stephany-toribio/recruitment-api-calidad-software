@@ -21,10 +21,4 @@ return [
 
     'moneda' => 'PEN',
 
-    // El resultado del pago simulado depende de la tarjeta de prueba enviada; cualquier otro número se rechaza (422)
-    'tarjetas_prueba' => [
-        '4111111111111111' => 'exitoso',
-        '4000000000000002' => 'fallido',
-    ],
-
 ];

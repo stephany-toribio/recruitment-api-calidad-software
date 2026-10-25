@@ -23,7 +23,15 @@ class RevisionVacante extends Model
         'admin_id',
         'decision',
         'motivo',
+        'invalidada_en',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'invalidada_en' => 'datetime',
+        ];
+    }
 
     public function empleo(): BelongsTo
     {

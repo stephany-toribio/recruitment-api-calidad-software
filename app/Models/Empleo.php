@@ -89,7 +89,12 @@ class Empleo extends Model
 
     public function revision(): HasOne
     {
-        return $this->hasOne(RevisionVacante::class, 'empleo_id');
+        return $this->hasOne(RevisionVacante::class, 'empleo_id')->whereNull('invalidada_en');
+    }
+
+    public function revisiones(): HasMany
+    {
+        return $this->hasMany(RevisionVacante::class, 'empleo_id');
     }
 
     public function pagos(): HasMany

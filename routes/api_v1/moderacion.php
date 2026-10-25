@@ -30,5 +30,4 @@ Route::prefix('empresas/me/vacantes')
         // withTrashed: una vacante eliminada responde 409 VACANCY_DELETED (lo decide el servicio), no 404
         Route::get('/{vacante}/pago', [PagoVacanteController::class, 'show'])->whereNumber('vacante')->withTrashed();
         Route::post('/{vacante}/pago', [PagoVacanteController::class, 'store'])->whereNumber('vacante')->withTrashed();
-        Route::post('/{vacante}/pago/cancelar', [PagoVacanteController::class, 'cancelar'])->whereNumber('vacante')->withTrashed();
     });
