@@ -12,6 +12,13 @@ Route::middleware(['auth:sanctum', 'rol:candidato'])
         ])
             ->name('candidatos.postulaciones.store');
 
+        Route::patch(
+            '/candidatos/me/postulaciones/{postulacion}/retirar',
+            [PostulacionController::class, 'retirar']
+        )
+            ->whereNumber('postulacion')
+            ->name('candidatos.postulaciones.retirar');
+
         Route::get(
             '/candidatos/me/postulaciones/{postulacion}/vacante',
             [VacanteCandidatoController::class, 'historico']
