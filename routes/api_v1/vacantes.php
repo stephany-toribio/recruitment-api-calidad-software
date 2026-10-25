@@ -18,6 +18,15 @@ Route::get('/vacantes', [
     ->middleware(['auth:sanctum', 'rol:candidato'])
     ->name('vacantes.index');
 
+// Detalle de una vacante disponible para candidatos.
+Route::get('/vacantes/{vacante}', [
+    VacanteCandidatoController::class,
+    'show',
+])
+    ->whereNumber('vacante')
+    ->middleware(['auth:sanctum', 'rol:candidato'])
+    ->name('vacantes.show');
+
 // Registro, consulta y gestión de vacantes propias.
 Route::prefix('empresas/me/vacantes')
     ->middleware(['auth:sanctum', 'rol:empresa'])
