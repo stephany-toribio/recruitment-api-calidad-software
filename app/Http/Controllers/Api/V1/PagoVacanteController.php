@@ -30,27 +30,13 @@ class PagoVacanteController extends BaseApiController
         );
     }
 
-    // Un pago rechazado también responde 201: el intento quedó registrado
     public function store(PagarVacanteRequest $request, Empleo $vacante): JsonResponse
     {
         $resultado = $this->pagoService->pagar($vacante, $request->user()->id, $request->validated());
 
         return $this->successResponse(
             $this->respuestaIntento($resultado),
-            $resultado['pago']->fueExitoso()
-                ? 'Pago simulado aprobado. La vacante ya está publicada.'
-                : 'El pago simulado fue rechazado. Puedes intentarlo nuevamente.',
-            201
-        );
-    }
-
-    public function cancelar(Request $request, Empleo $vacante): JsonResponse
-    {
-        $resultado = $this->pagoService->cancelar($vacante, $request->user()->id);
-
-        return $this->successResponse(
-            $this->respuestaIntento($resultado),
-            'Pago cancelado. Puedes intentarlo cuando quieras.',
+            'Pago simulado aprobado. La vacante ya está publicada.',
             201
         );
     }
