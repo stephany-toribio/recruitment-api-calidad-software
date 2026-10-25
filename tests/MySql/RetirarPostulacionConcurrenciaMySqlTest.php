@@ -2,7 +2,13 @@
 
 namespace Tests\MySql;
 
+use App\Models\Candidato;
+use App\Models\Empleo;
+use App\Models\Empresa;
 use App\Models\EstadoPostulacion;
+use App\Services\Postulaciones\KanbanService;
+use App\Services\Postulaciones\NotificacionPostulacionService;
+use App\Services\Postulaciones\RetiroPostulacionService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -72,9 +78,23 @@ class RetirarPostulacionConcurrenciaMySqlTest extends TestCase
                 }
 
                 DB::transaction(function (): void {
-                    foreach (
-                        array_reverse($this->registrosCreados) as [$tabla, $id]
-                    ) {
+                    $registros = array_reverse($this->registrosCreados);
+
+                    foreach ($registros as [$tabla, $id]) {
+                        if (in_array($tabla, ['roles', 'estados_postulacion'], true)) {
+                            continue;
+                        }
+
+                        DB::table($tabla)
+                            ->where('id', $id)
+                            ->delete();
+                    }
+
+                    foreach ($registros as [$tabla, $id]) {
+                        if (! in_array($tabla, ['roles', 'estados_postulacion'], true)) {
+                            continue;
+                        }
+
                         DB::table($tabla)
                             ->where('id', $id)
                             ->delete();
@@ -169,6 +189,35 @@ class RetirarPostulacionConcurrenciaMySqlTest extends TestCase
 
     public function test_contratacion_confirmada_antes_del_bloqueo_impide_retirar(): void
     {
+        $entrevistaId = $this->catalogoId(
+            'estados_postulacion',
+            EstadoPostulacion::ENTREVISTA
+        );
+
+        DB::table('postulaciones')
+            ->where('id', $this->postulacionId)
+            ->update([
+                'estado_postulacion_id' => $entrevistaId,
+                'updated_at' => now(),
+            ]);
+
+        $vacante = Empleo::findOrFail(
+            $this->vacanteId
+        );
+
+        $empresa = Empresa::findOrFail(
+            $vacante->empresa_id
+        );
+
+        $this->mock(
+            NotificacionPostulacionService::class,
+            function ($mock): void {
+                $mock->shouldReceive('notificarDecision')
+                    ->once()
+                    ->andReturnNull();
+            }
+        );
+
         $worker = $this->iniciarWorker(false);
         $listo = $this->esperarEvento($worker, 'LISTO');
 
@@ -176,22 +225,36 @@ class RetirarPostulacionConcurrenciaMySqlTest extends TestCase
 
         DB::beginTransaction();
 
-        DB::table('empleos')
-            ->where('id', $this->vacanteId)
-            ->lockForUpdate()
-            ->first();
+        $resultadoKanban = app(
+            KanbanService::class
+        )->contratar(
+            $empresa,
+            $this->vacanteId,
+            $this->postulacionId
+        );
 
-        DB::table('postulaciones')
-            ->where('id', $this->postulacionId)
-            ->lockForUpdate()
-            ->first();
+        $this->assertSame(
+            'contratado',
+            $resultadoKanban['estado']['codigo']
+        );
 
-        DB::table('postulaciones')
-            ->where('id', $this->postulacionId)
-            ->update([
-                'estado_postulacion_id' => $this->estadoContratadoId,
-                'updated_at' => now(),
-            ]);
+        $movimientos = DB::table('historial_postulaciones')
+            ->where('postulacion_id', $this->postulacionId)
+            ->get(['id', 'estado_postulacion_id']);
+
+        foreach ($movimientos as $movimiento) {
+            $this->registrosCreados[] = [
+                'historial_postulaciones',
+                (int) $movimiento->id,
+            ];
+        }
+
+        $this->assertCount(1, $movimientos);
+
+        $this->assertSame(
+            $this->estadoContratadoId,
+            (int) $movimientos->first()->estado_postulacion_id
+        );
 
         $worker['entrada']->write("INICIAR\n");
 
@@ -214,12 +277,13 @@ class RetirarPostulacionConcurrenciaMySqlTest extends TestCase
 
         DB::commit();
 
-        $resultado = $this->terminarWorker($worker);
+        $resultadoRetiro = $this->terminarWorker($worker);
 
-        $this->assertSame(409, $resultado['status']);
+        $this->assertSame(409, $resultadoRetiro['status']);
+
         $this->assertSame(
             'APPLICATION_NOT_WITHDRAWABLE',
-            $resultado['error_code']
+            $resultadoRetiro['error_code']
         );
 
         $this->assertDatabaseHas('postulaciones', [
@@ -227,6 +291,13 @@ class RetirarPostulacionConcurrenciaMySqlTest extends TestCase
             'estado_postulacion_id' => $this->estadoContratadoId,
             'retirada_en' => null,
         ]);
+
+        $this->assertSame(
+            1,
+            DB::table('historial_postulaciones')
+                ->where('postulacion_id', $this->postulacionId)
+                ->count()
+        );
     }
 
     public function test_suspension_confirmada_antes_del_bloqueo_impide_retirar(): void
@@ -542,5 +613,137 @@ class RetirarPostulacionConcurrenciaMySqlTest extends TestCase
         $this->registrosCreados[] = [$tabla, $id];
 
         return $id;
+    }
+
+    public function test_retiro_confirmado_mientras_kanban_espera_impide_contratar(): void
+    {
+        $entrevistaId = $this->catalogoId(
+            'estados_postulacion',
+            EstadoPostulacion::ENTREVISTA
+        );
+
+        DB::table('postulaciones')
+            ->where('id', $this->postulacionId)
+            ->update([
+                'estado_postulacion_id' => $entrevistaId,
+                'updated_at' => now(),
+            ]);
+
+        $empresaId = (int) DB::table('empleos')
+            ->where('id', $this->vacanteId)
+            ->value('empresa_id');
+
+        $entrada = new InputStream;
+
+        $entrada->write(json_encode([
+            'empresa_id' => $empresaId,
+            'vacante_id' => $this->vacanteId,
+            'postulacion_id' => $this->postulacionId,
+        ], JSON_THROW_ON_ERROR).PHP_EOL);
+
+        $configuracion = DB::connection()->getConfig();
+
+        $proceso = new Process(
+            [
+                PHP_BINARY,
+                base_path('tests/Support/hu16_kanban_worker.php'),
+            ],
+            base_path(),
+            [
+                'APP_ENV' => 'testing',
+                'DB_CONNECTION' => 'mysql',
+                'DB_HOST' => (string) $configuracion['host'],
+                'DB_PORT' => (string) $configuracion['port'],
+                'DB_DATABASE' => 'portalempleoshu04testing',
+                'DB_USERNAME' => (string) $configuracion['username'],
+                'DB_PASSWORD' => (string) $configuracion['password'],
+                'DB_URL' => '',
+                'CACHE_STORE' => 'array',
+                'SESSION_DRIVER' => 'array',
+                'QUEUE_CONNECTION' => 'sync',
+                'MAIL_MAILER' => 'array',
+            ],
+            $entrada,
+            30
+        );
+
+        $worker = [
+            'proceso' => $proceso,
+            'entrada' => $entrada,
+        ];
+
+        $this->procesos[] = $worker;
+        $proceso->start();
+
+        $listo = $this->esperarEvento($worker, 'LISTO');
+        $this->assertConexionIndependiente($listo);
+
+        DB::beginTransaction();
+
+        $retirada = app(
+            RetiroPostulacionService::class
+        )->retirar(
+            Candidato::findOrFail($this->candidatoId),
+            $this->postulacionId
+        );
+
+        $this->assertTrue($retirada->estaRetirada());
+
+        $registroRetirado = (array) DB::table('postulaciones')
+            ->where('id', $this->postulacionId)
+            ->first();
+
+        $worker['entrada']->write("INICIAR\n");
+
+        $intento = $this->esperarEvento(
+            $worker,
+            'INTENTO_POSTULACION'
+        );
+
+        $this->assertGreaterThan(
+            0,
+            $intento['nivel_transaccion']
+        );
+
+        $this->assertNull(
+            $this->buscarEvento($proceso, 'RESULTADO')
+        );
+
+        DB::commit();
+
+        $resultado = $this->terminarWorker($worker);
+
+        $this->assertSame(409, $resultado['status']);
+
+        $this->assertSame(
+            'APPLICATION_WITHDRAWN',
+            $resultado['error_code']
+        );
+
+        $this->assertSame(
+            $registroRetirado,
+            (array) DB::table('postulaciones')
+                ->where('id', $this->postulacionId)
+                ->first()
+        );
+
+        $this->assertSame(
+            $entrevistaId,
+            (int) $registroRetirado['estado_postulacion_id']
+        );
+
+        $this->assertSame(
+            0,
+            DB::table('historial_postulaciones')
+                ->where('postulacion_id', $this->postulacionId)
+                ->count()
+        );
+
+        $this->assertSame(
+            0,
+            DB::table('notificaciones_postulacion')
+                ->where('postulacion_id', $this->postulacionId)
+                ->count()
+        );
     }
 }

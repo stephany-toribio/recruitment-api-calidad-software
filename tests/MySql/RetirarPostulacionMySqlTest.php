@@ -889,6 +889,16 @@ class RetirarPostulacionMySqlTest extends TestCase
 
     private function prepararDatos(): void
     {
+        foreach ([
+            EstadoPostulacion::RECIBIDO,
+            EstadoPostulacion::EN_REVISION,
+            EstadoPostulacion::ENTREVISTA,
+            EstadoPostulacion::CONTRATADO,
+            EstadoPostulacion::RECHAZADO,
+        ] as $nombre) {
+            $this->estadoId($nombre);
+        }
+
         $this->candidato = $this->crearCandidato();
         $this->empresaUsuarioId = $this->crearUsuario('empresa');
 
@@ -1034,6 +1044,242 @@ class RetirarPostulacionMySqlTest extends TestCase
         if ($id === null) {
             $id = DB::table('estados_postulacion')->insertGetId([
                 'nombre' => $nombre,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        return (int) $id;
+    }
+
+    public function test_http_retiro_se_refleja_en_kanban_e_historial(): void
+    {
+        $tokenEmpresa = $this->tokenHttp($this->empresaUsuarioId);
+        $tokenCandidato = $this->tokenHttp();
+
+        $base = '/api/v1/empresas/me/vacantes/'
+            .$this->vacante->getKey()
+            .'/postulaciones';
+
+        $rutaPostulacion = $base.'/'.$this->postulacion->getKey();
+
+        // Genera movimientos reales antes del retiro.
+        foreach (['en_revision', 'entrevista'] as $codigo) {
+            $this->reiniciarAutenticacionHttp();
+
+            $this->patchJson(
+                $rutaPostulacion.'/avanzar',
+                [],
+                ['Authorization' => 'Bearer '.$tokenEmpresa]
+            )
+                ->assertOk()
+                ->assertJsonPath('data.estado.codigo', $codigo);
+        }
+
+        $historialAntes = DB::table('historial_postulaciones')
+            ->where('postulacion_id', $this->postulacion->getKey())
+            ->orderBy('id')
+            ->get()
+            ->map(fn ($fila): array => (array) $fila)
+            ->all();
+
+        $this->assertGreaterThanOrEqual(2, count($historialAntes));
+
+        $notificacionesAntes = DB::table('notificaciones_postulacion')
+            ->where('postulacion_id', $this->postulacion->getKey())
+            ->orderBy('id')
+            ->get()
+            ->map(fn ($fila): array => (array) $fila)
+            ->all();
+
+        $this->retirarHttp($tokenCandidato)
+            ->assertOk()
+            ->assertJsonPath('data.retirada', true)
+            ->assertJsonPath('data.estado.codigo', 'entrevista');
+
+        $registroRetirado = $this->registroPostulacion();
+
+        $this->reiniciarAutenticacionHttp();
+
+        $tablero = $this->getJson(
+            $base,
+            ['Authorization' => 'Bearer '.$tokenEmpresa]
+        )
+            ->assertOk();
+
+        $idsVisibles = collect($tablero->json('data.columnas'))
+            ->pluck('postulaciones')
+            ->flatten(1)
+            ->pluck('id')
+            ->all();
+
+        $this->assertNotContains(
+            (int) $this->postulacion->getKey(),
+            $idsVisibles
+        );
+
+        $this->reiniciarAutenticacionHttp();
+
+        $historico = $this->getJson(
+            $base.'/historial',
+            ['Authorization' => 'Bearer '.$tokenEmpresa]
+        )
+            ->assertOk();
+
+        $fila = collect($historico->json('data.postulaciones'))
+            ->firstWhere('id', $this->postulacion->getKey());
+
+        $this->assertNotNull($fila);
+        $this->assertTrue($fila['retirada']);
+        $this->assertSame('entrevista', $fila['estado']['codigo']);
+
+        $this->assertTrue(
+            Carbon::parse($fila['retirada_en'])->equalTo(
+                Carbon::parse(
+                    $registroRetirado['retirada_en'],
+                    config('app.timezone')
+                )
+            )
+        );
+
+        $this->assertSame(
+            array_map(
+                fn (array $movimiento): int => (int) $movimiento['id'],
+                $historialAntes
+            ),
+            array_column($fila['movimientos'], 'id')
+        );
+
+        $motivoId = $this->motivoValidoIntegracion();
+
+        foreach (['avanzar', 'rechazar', 'contratar'] as $accion) {
+            $this->reiniciarAutenticacionHttp();
+
+            $body = $accion === 'rechazar'
+                ? ['motivo_rechazo_id' => $motivoId]
+                : [];
+
+            $this->patchJson(
+                $rutaPostulacion.'/'.$accion,
+                $body,
+                ['Authorization' => 'Bearer '.$tokenEmpresa]
+            )
+                ->assertConflict()
+                ->assertJsonPath(
+                    'error_code',
+                    'APPLICATION_WITHDRAWN'
+                );
+
+            $this->assertSame(
+                $registroRetirado,
+                $this->registroPostulacion()
+            );
+        }
+
+        $this->assertSame(
+            $historialAntes,
+            DB::table('historial_postulaciones')
+                ->where('postulacion_id', $this->postulacion->getKey())
+                ->orderBy('id')
+                ->get()
+                ->map(fn ($fila): array => (array) $fila)
+                ->all()
+        );
+
+        $this->assertSame(
+            $notificacionesAntes,
+            DB::table('notificaciones_postulacion')
+                ->where('postulacion_id', $this->postulacion->getKey())
+                ->orderBy('id')
+                ->get()
+                ->map(fn ($fila): array => (array) $fila)
+                ->all()
+        );
+    }
+
+    #[DataProvider('etapasTerminales')]
+    public function test_http_decision_real_del_kanban_impide_retirar(
+        string $etapa
+    ): void {
+        $tokenEmpresa = $this->tokenHttp($this->empresaUsuarioId);
+        $tokenCandidato = $this->tokenHttp();
+
+        $base = '/api/v1/empresas/me/vacantes/'
+            .$this->vacante->getKey()
+            .'/postulaciones/'
+            .$this->postulacion->getKey();
+
+        foreach (['en_revision', 'entrevista'] as $codigo) {
+            $this->reiniciarAutenticacionHttp();
+
+            $this->patchJson(
+                $base.'/avanzar',
+                [],
+                ['Authorization' => 'Bearer '.$tokenEmpresa]
+            )
+                ->assertOk()
+                ->assertJsonPath('data.estado.codigo', $codigo);
+        }
+
+        $accion = $etapa === EstadoPostulacion::CONTRATADO
+            ? 'contratar'
+            : 'rechazar';
+
+        $body = $accion === 'rechazar'
+            ? ['motivo_rechazo_id' => $this->motivoValidoIntegracion()]
+            : [];
+
+        $this->reiniciarAutenticacionHttp();
+
+        $this->patchJson(
+            $base.'/'.$accion,
+            $body,
+            ['Authorization' => 'Bearer '.$tokenEmpresa]
+        )
+            ->assertOk()
+            ->assertJsonPath('data.estado.nombre', $etapa);
+
+        $antes = $this->registroPostulacion();
+
+        $historialAntes = DB::table('historial_postulaciones')
+            ->where('postulacion_id', $this->postulacion->getKey())
+            ->orderBy('id')
+            ->get()
+            ->map(fn ($fila): array => (array) $fila)
+            ->all();
+
+        $this->retirarHttp($tokenCandidato)
+            ->assertConflict()
+            ->assertJsonPath(
+                'error_code',
+                'APPLICATION_NOT_WITHDRAWABLE'
+            );
+
+        $this->assertNull($antes['retirada_en']);
+        $this->assertSame($antes, $this->registroPostulacion());
+
+        $this->assertSame(
+            $historialAntes,
+            DB::table('historial_postulaciones')
+                ->where('postulacion_id', $this->postulacion->getKey())
+                ->orderBy('id')
+                ->get()
+                ->map(fn ($fila): array => (array) $fila)
+                ->all()
+        );
+    }
+
+    private function motivoValidoIntegracion(): int
+    {
+        $nombre = 'Perfil no se ajusta';
+
+        $id = DB::table('motivos_rechazo')
+            ->where('motivo', $nombre)
+            ->value('id');
+
+        if ($id === null) {
+            $id = DB::table('motivos_rechazo')->insertGetId([
+                'motivo' => $nombre,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
