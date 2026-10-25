@@ -8,17 +8,11 @@ use App\Models\PagoVacante;
 use App\Models\RevisionVacante;
 use Illuminate\Support\Facades\DB;
 
-/**
- * 
- */
 class PagoVacanteService
 {
-    // Relaciones que usa VacanteEmpresaResource para mostrar el estado actualizado
-    private const RELACIONES_EMPRESA = ['habilidades', 'revision', 'pagos'];
+    private const RELACIONES_EMPRESA = ['nivelPuesto', 'areaEstudio', 'habilidades', 'revision', 'pagos'];
 
     /**
-     * monto a pagar e historial de intentos (del más reciente al más antiguo).
-     *
      * @return array<string, mixed>
      */
     public function resumen(Empleo $vacante, int $usuarioId): array
@@ -41,8 +35,6 @@ class PagoVacanteService
     }
 
     /**
-     * La tarjeta ya llega validada por PagarVacanteRequest: por ahora todo pago simulado se aprueba.
-     *
      * @return array{pago: PagoVacante, vacante: Empleo}
      */
     public function pagar(Empleo $vacante, int $usuarioId, array $datos): array

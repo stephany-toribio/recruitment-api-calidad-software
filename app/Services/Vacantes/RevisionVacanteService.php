@@ -10,16 +10,12 @@ use App\Models\RevisionVacante;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
-// Revisión administrativa de vacantes. Escribe solo en revisiones_vacante; empleos se lee.
 class RevisionVacanteService
 {
-    // Relaciones que muestra VacanteRevisionResource
-    private const RELACIONES_ADMIN = ['empresa', 'habilidades', 'revision'];
+    private const RELACIONES_ADMIN = ['empresa', 'nivelPuesto', 'areaEstudio', 'habilidades', 'revision'];
 
-    // Relaciones que usa VacanteEmpresaResource para el bloque estado
-    private const RELACIONES_EMPRESA = ['habilidades', 'revision', 'pagos'];
+    private const RELACIONES_EMPRESA = ['nivelPuesto', 'areaEstudio', 'habilidades', 'revision', 'pagos'];
 
-    // Sin revisión vigente = pendiente (también las aprobadas que la empresa editó). SoftDeletes ya deja fuera las eliminadas.
     public function pendientes(): Collection
     {
         return Empleo::with(self::RELACIONES_ADMIN)
@@ -28,7 +24,7 @@ class RevisionVacanteService
             ->orderBy('id')
             ->get();
     }
-   
+
     public function detalle(Empleo $vacante): Empleo
     {
         return $vacante->load(self::RELACIONES_ADMIN);
@@ -52,7 +48,6 @@ class RevisionVacanteService
     public function aprobarMasivo(array $ids, int $adminId): array
     {
         return DB::transaction(function () use ($ids, $adminId) {
-            // Se bloquean todas antes de revisarlas, para que nadie las decida mientras tanto
             $vacantes = Empleo::whereIn('id', $ids)
                 ->lockForUpdate()
                 ->with('revision')
@@ -81,17 +76,11 @@ class RevisionVacanteService
 
             return [
                 'aprobadas' => array_values($ids),
-                // Con todo o nada siempre va vacío; se mantiene para que el formato no cambie si se pasa a parcial
                 'no_procesadas' => [],
             ];
         });
     }
 
-    /**
-     * La empresa editó una vacante aprobada: la aprobación deja de valer y la vacante vuelve a pendiente.
-     * No se borra la decisión anterior, queda como historial. La llama VacanteService::actualizar(),
-     * dentro de su transacción y con la vacante ya bloqueada.
-     */
     public function reabrirRevision(Empleo $vacante): void
     {
         RevisionVacante::where('empleo_id', $vacante->id)
@@ -100,7 +89,6 @@ class RevisionVacanteService
             ->update(['invalidada_en' => now()]);
     }
 
-    // MOD-06: vacantes no eliminadas de la empresa del token, de la más reciente a la más antigua
     public function vacantesDeEmpresa(int $usuarioId): Collection
     {
         $empresa = Empresa::where('usuario_id', $usuarioId)->firstOrFail();
@@ -115,7 +103,7 @@ class RevisionVacanteService
     private function decidir(Empleo $vacante, int $adminId, string $decision, ?string $motivo = null): Empleo
     {
         return DB::transaction(function () use ($vacante, $adminId, $decision, $motivo) {
-            // Bloqueo de lectura: si otro admin decide o la empresa la edita o elimina a la vez, se espera el turno.
+            // Bloqueo de lectura: si otro admin decide o la empresa la elimina a la vez, se espera el turno.
             // Si la eliminaron mientras tanto, firstOrFail responde 404.
             $bloqueada = Empleo::whereKey($vacante->getKey())->lockForUpdate()->firstOrFail();
 
@@ -129,7 +117,6 @@ class RevisionVacanteService
         });
     }
 
-    // Sin UNIQUE en empleo_id (hay historial): evitar dos decisiones vigentes depende del lockForUpdate de quien llama
     private function registrar(Empleo $vacante, int $adminId, string $decision, ?string $motivo = null): void
     {
         RevisionVacante::create([

@@ -11,6 +11,14 @@ use Illuminate\Support\Facades\DB;
 
 class VacanteService
 {
+    private const RELACIONES = [
+        'nivelPuesto',
+        'areaEstudio',
+        'habilidades',
+        'revision',
+        'pagos',
+    ];
+
     public function __construct(
         private RevisionVacanteService $revisionService
     ) {
@@ -27,11 +35,7 @@ class VacanteService
 
             $vacante->habilidades()->attach($this->habilidades($datos));
 
-            return $vacante->load([
-                'habilidades',
-                'revision',
-                'pagos',
-            ]);
+            return $vacante->load(self::RELACIONES);
         });
     }
 
@@ -39,21 +43,12 @@ class VacanteService
     {
         $this->verificarPropiedad($empresa, $vacante);
 
-        return $vacante->load([
-            'habilidades',
-            'revision',
-            'pagos',
-        ]);
+        return $vacante->load(self::RELACIONES);
     }
 
-    /**
-     * Se puede editar mientras no esté pagada. Si estaba aprobada, vuelve a pendiente de revisión
-     * y no se puede pagar hasta que el admin la apruebe otra vez.
-     */
     public function actualizar(Empresa $empresa, Empleo $vacante, array $datos): Empleo
     {
         return DB::transaction(function () use ($empresa, $vacante, $datos) {
-            // Mismo bloqueo que la aprobación y el pago: una edición no se cruza con ellos
             $bloqueada = Empleo::withTrashed()
                 ->whereKey($vacante->getKey())
                 ->lockForUpdate()
@@ -81,7 +76,6 @@ class VacanteService
 
             $revision = RevisionVacante::estadoDe($bloqueada->revision);
 
-            // La no aprobación es definitiva (HU-22)
             if ($revision === RevisionVacante::NO_APROBADA) {
                 throw new BusinessException(
                     'La vacante no fue aprobada y no se puede editar.',
@@ -93,16 +87,11 @@ class VacanteService
             $bloqueada->update($this->atributos($datos));
             $bloqueada->habilidades()->sync($this->habilidades($datos));
 
-            // revisiones_vacante es de Gian: se usa su servicio en lugar de escribir aquí
             if ($revision === RevisionVacante::APROBADA) {
                 $this->revisionService->reabrirRevision($bloqueada);
             }
 
-            return $bloqueada->load([
-                'habilidades',
-                'revision',
-                'pagos',
-            ]);
+            return $bloqueada->load(self::RELACIONES);
         });
     }
 
@@ -117,22 +106,23 @@ class VacanteService
         }
     }
 
-    // Campos que la empresa registra o edita (max_contrataciones se guarda en numero_vacantes)
     private function atributos(array $datos): array
     {
         return [
             'titulo' => $datos['titulo'],
             'descripcion' => $datos['descripcion'],
-            'nivel_experiencia' => $datos['nivel_experiencia'],
-            'salario_min' => $datos['salario_min'],
-            'salario_max' => $datos['salario_max'],
+            'nivel_puesto_id' => $datos['nivel_puesto_id'],
+            'area_estudio_id' => $datos['area_estudio_id'],
+            'tipo_empleo' => $datos['tipo_empleo'],
+            'ubicacion' => $datos['ubicacion'] ?? null,
+            'salario_min' => $datos['salario_min'] ?? null,
+            'salario_max' => $datos['salario_max'] ?? null,
             'fecha_inicio_vigencia' => $datos['fecha_inicio_vigencia'],
             'fecha_fin_vigencia' => $datos['fecha_fin_vigencia'],
             'numero_vacantes' => $datos['max_contrataciones'],
         ];
     }
 
-    // Formato del pivote empleo_habilidades: [habilidad_id => ['tipo_requisito' => ...]]
     private function habilidades(array $datos): array
     {
         $habilidades = [];

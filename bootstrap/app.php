@@ -1,8 +1,18 @@
 <?php
 
+use App\Exceptions\BusinessException;
+use App\Http\Middleware\RolMiddleware;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Auth\AuthenticationException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -17,7 +27,7 @@ return Application::configure(basePath: dirname(__DIR__))
         });
         // Registra el middleware globalmente
         $middleware->alias([
-            'rol' => \App\Http\Middleware\RolMiddleware::class,
+            'rol' => RolMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
@@ -27,83 +37,113 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         // 2. Excepciones de Reglas de Negocio (409 Conflict, 422 Unprocessable, etc.)
-        $exceptions->render(function (\App\Exceptions\BusinessException $e, $request) {
+        $exceptions->render(function (BusinessException $e, $request) {
             if ($request->is('api/*')) {
                 return response()->json([
-                    'success'    => false,
-                    'message'    => $e->getMessage(),
+                    'success' => false,
+                    'message' => $e->getMessage(),
                     'error_code' => $e->getErrorCode(),
                 ], $e->getStatusCode());
             }
         });
 
         // 3. Errores de Validación de FormRequests (422) con contrato estandarizado
-        $exceptions->render(function (\Illuminate\Validation\ValidationException $e, $request) {
+        $exceptions->render(function (ValidationException $e, $request) {
             if ($request->is('api/*')) {
                 return response()->json([
-                    'success'    => false,
-                    'message'    => 'Los datos proporcionados no son válidos.',
+                    'success' => false,
+                    'message' => 'Los datos proporcionados no son válidos.',
                     'error_code' => 'VALIDATION_ERROR',
-                    'errors'     => $e->errors(),
+                    'errors' => $e->errors(),
                 ], 422);
             }
         });
 
         // 4. Recursos no encontrados: ModelNotFoundException o rutas no encontradas (404)
-        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException $e, $request) {
+        $exceptions->render(function (NotFoundHttpException $e, $request) {
             if ($request->is('api/*')) {
                 return response()->json([
-                    'success'    => false,
-                    'message'    => 'El recurso solicitado no fue encontrado.',
+                    'success' => false,
+                    'message' => 'El recurso solicitado no fue encontrado.',
                     'error_code' => 'RESOURCE_NOT_FOUND',
                 ], 404);
             }
         });
 
         // 5. Método HTTP no permitido para una ruta existente (405)
-        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException $e, $request) {
+        $exceptions->render(function (MethodNotAllowedHttpException $e, $request) {
             if ($request->is('api/*')) {
                 return response()->json([
-                    'success'    => false,
-                    'message'    => 'Método HTTP no permitido para este recurso.',
+                    'success' => false,
+                    'message' => 'Método HTTP no permitido para este recurso.',
                     'error_code' => 'METHOD_NOT_ALLOWED',
                 ], 405);
             }
         });
 
         // 6. No autenticado (401)
-        $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, $request) {
+        $exceptions->render(function (AuthenticationException $e, $request) {
             if ($request->is('api/*')) {
                 return response()->json([
-                    'success'    => false,
-                    'message'    => 'No autenticado o token inválido.',
+                    'success' => false,
+                    'message' => 'No autenticado o token inválido.',
                     'error_code' => 'UNAUTHENTICATED',
                 ], 401);
             }
         });
 
         // 7. No autorizado / Permisos insuficientes (403)
-        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException|\Illuminate\Auth\Access\AuthorizationException $e, $request) {
+        $exceptions->render(function (AccessDeniedHttpException|AuthorizationException $e, $request) {
             if ($request->is('api/*')) {
                 return response()->json([
-                    'success'    => false,
-                    'message'    => 'No tienes permisos para realizar esta acción.',
+                    'success' => false,
+                    'message' => 'No tienes permisos para realizar esta acción.',
                     'error_code' => 'FORBIDDEN',
                 ], 403);
             }
         });
 
         // 8. Captura específicamente modelos de Eloquent que no existan
-        $exceptions->render(function (\Illuminate\Database\Eloquent\ModelNotFoundException $e, $request) {
+        $exceptions->render(function (ModelNotFoundException $e, $request) {
             if ($request->is('api/*')) {
                 $nombreModelo = class_basename($e->getModel()); // ej: "Candidato", "Usuario", etc.
+
                 return response()->json([
-                    'success'    => false,
-                    'message'    => "El {$nombreModelo} solicitado no fue encontrado.",
-                    'error_code' => 'RESOURCE_NOT_FOUND', 
+                    'success' => false,
+                    'message' => "El {$nombreModelo} solicitado no fue encontrado.",
+                    'error_code' => 'RESOURCE_NOT_FOUND',
                 ], 404);
             }
         });
 
+        // Respuestas de error del servidor sin detalles internos.
+        $exceptions->respond(function (
+            Response $response
+        ) {
+            $estado = $response->getStatusCode();
+
+            if (
+                ! request()->is('api/*')
+                || $estado < 500
+                || $estado >= 600
+            ) {
+                return $response;
+            }
+
+            $response->setContent(json_encode([
+                'success' => false,
+                'message' => 'No se pudo completar la solicitud. Inténtalo nuevamente.',
+                'error_code' => 'SERVER_ERROR',
+            ], JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR));
+
+            $response->headers->set(
+                'Content-Type',
+                'application/json'
+            );
+
+            $response->headers->remove('Content-Length');
+
+            return $response;
+        });
 
     })->create();
