@@ -10,6 +10,7 @@ use App\Models\Empleo;
 use App\Models\Empresa;
 use App\Models\NivelPuesto;
 use App\Models\Usuario;
+use App\Services\Vacantes\GestionVacanteService;
 use App\Services\Vacantes\VacanteService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -17,7 +18,8 @@ use Illuminate\Http\Request;
 class VacanteEmpresaController extends BaseApiController
 {
     public function __construct(
-        private VacanteService $vacanteService
+        private VacanteService $vacanteService,
+        private GestionVacanteService $gestionService
     ) {}
 
     public function nivelesExperiencia(): JsonResponse
@@ -66,8 +68,10 @@ class VacanteEmpresaController extends BaseApiController
         );
     }
 
-    public function update(ActualizarVacanteRequest $request, Empleo $vacante): JsonResponse
-    {
+    public function update(
+        ActualizarVacanteRequest $request,
+        Empleo $vacante
+    ): JsonResponse {
         $empresa = $this->empresaAutenticada($request);
 
         $vacante = $this->vacanteService->actualizar(
@@ -79,6 +83,70 @@ class VacanteEmpresaController extends BaseApiController
         return $this->successResponse(
             new VacanteEmpresaResource($vacante),
             'Vacante actualizada. Quedó pendiente de revisión.'
+        );
+    }
+
+    public function pausar(Request $request, Empleo $vacante): JsonResponse
+    {
+        $vacante = $this->gestionService->pausar(
+            $this->empresaAutenticada($request),
+            $vacante
+        );
+
+        return $this->successResponse(
+            new VacanteEmpresaResource($vacante),
+            'Vacante pausada. Ya no recibe postulaciones.'
+        );
+    }
+
+    public function reanudar(Request $request, Empleo $vacante): JsonResponse
+    {
+        $vacante = $this->gestionService->reanudar(
+            $this->empresaAutenticada($request),
+            $vacante
+        );
+
+        return $this->successResponse(
+            new VacanteEmpresaResource($vacante),
+            'Vacante reanudada.'
+        );
+    }
+
+    public function finalizar(Request $request, Empleo $vacante): JsonResponse
+    {
+        $vacante = $this->gestionService->finalizar(
+            $this->empresaAutenticada($request),
+            $vacante
+        );
+
+        return $this->successResponse(
+            new VacanteEmpresaResource($vacante),
+            'Vacante finalizada. Esta acción es definitiva.'
+        );
+    }
+
+    public function destroy(Request $request, Empleo $vacante): JsonResponse
+    {
+        $vacante = $this->gestionService->eliminar(
+            $this->empresaAutenticada($request),
+            $vacante
+        );
+
+        return $this->successResponse(
+            new VacanteEmpresaResource($vacante),
+            'Vacante eliminada. Puedes consultarla en el historial.'
+        );
+    }
+
+    public function eliminadas(Request $request): JsonResponse
+    {
+        $vacantes = $this->gestionService->eliminadas(
+            $this->empresaAutenticada($request)
+        );
+
+        return $this->successResponse(
+            VacanteEmpresaResource::collection($vacantes),
+            'Historial de vacantes eliminadas'
         );
     }
 
