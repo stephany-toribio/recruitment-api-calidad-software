@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "portal-empleos-demo1-collection",
     "name": "Portal Empleos - Demo 2 (Backend Completo)",
-    "description": "Colección del Portal de Empleos (API v1).\n\nANTES DE CORRER: `php artisan migrate:fresh --seed` y llenar `admin_correo` y `admin_password` en el \"Current value\" del environment (mismos valores que ADMIN_CORREO y ADMIN_PASSWORD del .env; en el repositorio quedan vacíos).\n\nORDEN DE EJECUCIÓN: las carpetas están ordenadas por dependencias (no por número) para que el Runner funcione de corrido:\n0 Login Admin (token_admin) → 3 Empresas (token_empresa) → 2 Candidatos (crea a Juan, María y Luis; token_candidato) → 4 Habilidades → 1 Auth (usa a Juan; 1.16 le cambia la contraseña y revoca sus tokens, 1.19 la restaura) → 5 Seguridad de Tokens → 6 Catálogos → 7 Recuperar Contraseña → 8 Puestos → 9 Organizaciones → 10 Niveles del Puesto → 11 Sin Estudios Formales → 12 Carreras → 13 Idiomas → 14 Celular Único → 15 Edad Mínima → 16 Países e Instituciones → 17 Usuarios (suspender/reactivar) → 18 Moderación y pago (antes: `db:seed --class=VacantesPruebaSeeder`) → 19 Registrar y aprobar → 20 Editar → 21 Postular y retirar → 22 Kanban → 23 Perfil del postulante → 24 Pausar, finalizar y eliminar → 25 Búsqueda y detalle.\nLas carpetas 19 a 25 crean sus propias empresas, vacantes y candidatos en cada corrida: se pueden correr solas y repetir (solo necesitan `admin_correo` y `admin_password`).\nLas carpetas 12 a 15 empiezan con un login de Juan (X.0) que refresca `token_candidato`, revocado por 1.16.\n\nDATOS DE PRUEBA: cada carpeta 8 a 17 registra sus propios candidatos. El celular de cada registro es 9 + DNI (es único). Para volver a correr la colección hay que repetir `migrate:fresh --seed` (los correos y DNI ya existirían).\n\n`POST /candidatos` usa Laravel Precognition (validación por pasos). La prueba 5.7 es manual y el Runner la omite. Los IDs de catálogos (países, tipos de estudio, carreras, niveles, puestos, organizaciones) son los que crean los seeders y migraciones.",
+    "description": "Colección del Portal de Empleos (API v1).\n\nANTES DE CORRER: `php artisan migrate:fresh --seed` y llenar `admin_correo` y `admin_password` en el \"Current value\" del environment (mismos valores que ADMIN_CORREO y ADMIN_PASSWORD del .env; en el repositorio quedan vacíos).\n\nORDEN DE EJECUCIÓN: las carpetas están ordenadas por dependencias (no por número) para que el Runner funcione de corrido:\n0 Login Admin (token_admin) → 3 Empresas (token_empresa) → 2 Candidatos (crea a Juan, María y Luis; token_candidato) → 4 Habilidades → 1 Auth (usa a Juan; 1.16 le cambia la contraseña y revoca sus tokens, 1.19 la restaura) → 5 Seguridad de Tokens → 6 Catálogos → 7 Recuperar Contraseña → 8 Puestos → 9 Organizaciones → 10 Niveles del Puesto → 11 Sin Estudios Formales → 12 Carreras → 13 Idiomas → 14 Celular Único → 15 Edad Mínima → 16 Países e Instituciones → 17 Usuarios (suspender/reactivar) → 18 Moderación y pago (antes: `db:seed --class=VacantesPruebaSeeder`) → 19 Registrar y aprobar → 20 Editar → 21 Postular y retirar → 22 Kanban → 23 Mis postulaciones y perfil del postulante → 24 Pausar, finalizar y eliminar → 25 Búsqueda y detalle → 26 Correos (envía 2 correos reales a rockygpt30@gmail.com; necesita un proveedor real en el `.env`).\nLas carpetas 19 a 25 crean sus propias empresas, vacantes y candidatos en cada corrida: se pueden correr solas y repetir (solo necesitan `admin_correo` y `admin_password`).\nLas carpetas 12 a 15 empiezan con un login de Juan (X.0) que refresca `token_candidato`, revocado por 1.16.\n\nDATOS DE PRUEBA: cada carpeta 8 a 17 registra sus propios candidatos. El celular de cada registro es 9 + DNI (es único). Para volver a correr la colección hay que repetir `migrate:fresh --seed` (los correos y DNI ya existirían).\n\n`POST /candidatos` usa Laravel Precognition (validación por pasos). La prueba 5.7 es manual y el Runner la omite. Los IDs de catálogos (países, tipos de estudio, carreras, niveles, puestos, organizaciones) son los que crean los seeders y migraciones.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -23018,9 +23018,10 @@
                   "pm.test('Devuelve VALIDATION_ERROR', function () {",
                   "    pm.expect(pm.response.json().error_code).to.eql('VALIDATION_ERROR');",
                   "});",
+                  "// El salario es opcional: si no se envía ninguno de los dos, no hay error en salario_min",
                   "pm.test('Exige los mismos campos que el registro', function () {",
                   "    var errors = pm.response.json().errors;",
-                  "    ['titulo', 'descripcion', 'salario_min', 'fecha_inicio_vigencia', 'max_contrataciones', 'habilidades']",
+                  "    ['titulo', 'descripcion', 'nivel_puesto_id', 'area_estudio_id', 'tipo_empleo', 'fecha_inicio_vigencia', 'max_contrataciones', 'habilidades']",
                   "        .forEach(function (campo) { pm.expect(errors).to.have.property(campo); });",
                   "});"
                 ],
@@ -24381,7 +24382,7 @@
                   "var dni = '3' + sufijo.slice(-7);",
                   "pm.environment.set('ep03pr_dni_a', dni);",
                   "pm.environment.set('ep03pr_celular_a', '9' + dni);",
-                  "pm.environment.set('ep03pr_correo_a', 'candidato.a.ep03pr.' + sufijo + '@prueba.com');"
+                  "pm.environment.set('ep03pr_correo_a', 'candidato.a.ep03pr.' + sufijo + '@example.com');"
                 ],
                 "type": "text/javascript"
               }
@@ -24489,7 +24490,7 @@
                   "var dni = '5' + sufijo.slice(-7);",
                   "pm.environment.set('ep03pr_dni_b', dni);",
                   "pm.environment.set('ep03pr_celular_b', '9' + dni);",
-                  "pm.environment.set('ep03pr_correo_b', 'candidato.b.ep03pr.' + sufijo + '@prueba.com');"
+                  "pm.environment.set('ep03pr_correo_b', 'candidato.b.ep03pr.' + sufijo + '@example.com');"
                 ],
                 "type": "text/javascript"
               }
@@ -24921,6 +24922,9 @@
                   "    pm.expect(data.puede_postular).to.be.true;",
                   "    pm.expect(data.postulacion).to.be.null;",
                   "    pm.expect(data.motivo_no_postulable).to.be.null;",
+                  "});",
+                  "pm.test('Etiqueta estado = activa', function () {",
+                  "    pm.expect(pm.response.json().data.estado).to.eql('activa');",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -25805,6 +25809,9 @@
                   "    pm.expect(data.puede_postular).to.be.false;",
                   "    pm.expect(data.motivo_no_postulable).to.eql('VACANCY_UNAVAILABLE');",
                   "    pm.expect(data.postulacion.id).to.eql(Number(pm.environment.get('ep03pr_post_b')));",
+                  "});",
+                  "pm.test('Etiqueta estado = pausada', function () {",
+                  "    pm.expect(pm.response.json().data.estado).to.eql('pausada');",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -25888,17 +25895,22 @@
           "response": []
         },
         {
-          "name": "21.39 Detalle de Vacante - Error Vacante Pausada (404)",
+          "name": "21.39 Detalle de Vacante - Pausada en Modo Histórico (200)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status code es 404 Not Found', function () {",
-                  "    pm.response.to.have.status(404);",
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
                   "});",
-                  "pm.test('Devuelve RESOURCE_NOT_FOUND', function () {",
-                  "    pm.expect(pm.response.json().error_code).to.eql('RESOURCE_NOT_FOUND');",
+                  "pm.test('Se ve en modo histórico con la etiqueta pausada y sin postular', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    pm.expect(data.modo_consulta).to.eql('historico');",
+                  "    pm.expect(data.estado).to.eql('pausada');",
+                  "    pm.expect(data.puede_postular).to.be.false;",
+                  "    pm.expect(data.motivo_no_postulable).to.eql('VACANCY_UNAVAILABLE');",
+                  "    pm.expect(data.postulacion.retirada).to.be.true;",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -26464,7 +26476,7 @@
                   "var dni = '3' + sufijo.slice(-7);",
                   "pm.environment.set('ep03kb_dni_a', dni);",
                   "pm.environment.set('ep03kb_celular_a', '9' + dni);",
-                  "pm.environment.set('ep03kb_correo_a', 'candidato.a.ep03kb.' + sufijo + '@prueba.com');"
+                  "pm.environment.set('ep03kb_correo_a', 'candidato.a.ep03kb.' + sufijo + '@example.com');"
                 ],
                 "type": "text/javascript"
               }
@@ -26572,7 +26584,7 @@
                   "var dni = '5' + sufijo.slice(-7);",
                   "pm.environment.set('ep03kb_dni_b', dni);",
                   "pm.environment.set('ep03kb_celular_b', '9' + dni);",
-                  "pm.environment.set('ep03kb_correo_b', 'candidato.b.ep03kb.' + sufijo + '@prueba.com');"
+                  "pm.environment.set('ep03kb_correo_b', 'candidato.b.ep03kb.' + sufijo + '@example.com');"
                 ],
                 "type": "text/javascript"
               }
@@ -26680,7 +26692,7 @@
                   "var dni = '6' + sufijo.slice(-7);",
                   "pm.environment.set('ep03kb_dni_c', dni);",
                   "pm.environment.set('ep03kb_celular_c', '9' + dni);",
-                  "pm.environment.set('ep03kb_correo_c', 'candidato.c.ep03kb.' + sufijo + '@prueba.com');"
+                  "pm.environment.set('ep03kb_correo_c', 'candidato.c.ep03kb.' + sufijo + '@example.com');"
                 ],
                 "type": "text/javascript"
               }
@@ -28636,7 +28648,7 @@
     },
     {
       "name": "23. Postulaciones - Seguimiento y Perfil (Dev 2)",
-      "description": "HU-17: perfil del postulante para la empresa (`GET /empresas/me/postulaciones/{postulacion}/perfil`). Sin DNI, fecha de nacimiento ni género, y con la comparación de las habilidades del candidato contra los requisitos de la vacante (Must-Have / Nice-to-Have), sin porcentaje. HU-15 (mis postulaciones) se agregará en esta carpeta.\n\nRequisitos: `admin_correo` / `admin_password` en el environment. No necesita seeders de prueba: crea sus propias\nempresas, vacantes y candidatos en cada corrida, así que se puede repetir. Correr en orden: cada request deja el estado\nque necesita el siguiente.",
+      "description": "HU-17: perfil del postulante para la empresa (`GET /empresas/me/postulaciones/{postulacion}/perfil`). Sin DNI, fecha de nacimiento ni género, y con la comparación de las habilidades del candidato contra los requisitos de la vacante (Must-Have / Nice-to-Have), sin porcentaje. También HU-15 (`GET /candidatos/me/postulaciones`): las postulaciones del candidato con su etapa, si se retiró, `puede_retirar`, el estado de la vacante (`vacante.estado`: `activa`, `pausada`, `finalizada` o `eliminada`, más `vacante.vigente`) y `ver_vacante` (`disponible`, `historico` también para las eliminadas, o `null`), comprobado con la vacante activa, eliminada, pausada y finalizada.\n\nRequisitos: `admin_correo` / `admin_password` en el environment. No necesita seeders de prueba: crea sus propias\nempresas, vacantes y candidatos en cada corrida, así que se puede repetir. Correr en orden: cada request deja el estado\nque necesita el siguiente.",
       "item": [
         {
           "name": "23.0 Preparar - Login Admin (200)",
@@ -29315,7 +29327,7 @@
                   "var dni = '3' + sufijo.slice(-7);",
                   "pm.environment.set('ep03pf_dni_a', dni);",
                   "pm.environment.set('ep03pf_celular_a', '9' + dni);",
-                  "pm.environment.set('ep03pf_correo_a', 'candidato.a.ep03pf.' + sufijo + '@prueba.com');"
+                  "pm.environment.set('ep03pf_correo_a', 'candidato.a.ep03pf.' + sufijo + '@example.com');"
                 ],
                 "type": "text/javascript"
               }
@@ -29423,7 +29435,7 @@
                   "var dni = '5' + sufijo.slice(-7);",
                   "pm.environment.set('ep03pf_dni_b', dni);",
                   "pm.environment.set('ep03pf_celular_b', '9' + dni);",
-                  "pm.environment.set('ep03pf_correo_b', 'candidato.b.ep03pf.' + sufijo + '@prueba.com');"
+                  "pm.environment.set('ep03pf_correo_b', 'candidato.b.ep03pf.' + sufijo + '@example.com');"
                 ],
                 "type": "text/javascript"
               }
@@ -29520,7 +29532,115 @@
           "response": []
         },
         {
-          "name": "23.17 Preparar - Postular Elena a la Vacante V (201)",
+          "name": "23.17 Preparar - Registrar Candidato Gael (201)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Celular = 9 + DNI, igual que el resto de la colección",
+                  "var sufijo = pm.environment.get('ep03pf_sufijo');",
+                  "var dni = '6' + sufijo.slice(-7);",
+                  "pm.environment.set('ep03pf_dni_c', dni);",
+                  "pm.environment.set('ep03pf_celular_c', '9' + dni);",
+                  "pm.environment.set('ep03pf_correo_c', 'candidato.c.ep03pf.' + sufijo + '@example.com');"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Gael\",\n    \"apellidos\": \"Carpeta 23\",\n    \"dni\": \"{{ep03pf_dni_c}}\",\n    \"fecha_nacimiento\": \"1998-08-20\",\n    \"genero\": \"femenino\",\n    \"celular\": \"{{ep03pf_celular_c}}\",\n    \"correo\": \"{{ep03pf_correo_c}}\",\n    \"password\": \"Password123@\",\n    \"password_confirmation\": \"Password123@\",\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": 4,\n            \"area_estudio_id\": 4,\n            \"pais_id\": 1,\n            \"institucion_id\": 3,\n            \"carrera_id\": 49,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2021-03-01\",\n            \"fecha_fin\": \"2022-12-01\"\n        }\n    ],\n    \"idiomas\": [\n        {\n            \"idioma_id\": 2,\n            \"nivel_escrito\": \"nativo\",\n            \"nivel_oral\": \"nativo\"\n        }\n    ],\n    \"busca_primer_empleo\": true,\n    \"habilidades\": [\n        13,\n        15\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "23.18 Preparar - Login Candidato Gael (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Es candidato y guarda ep03pf_token_c', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    pm.expect(data.rol).to.eql('candidato');",
+                  "    pm.environment.set('ep03pf_token_c', data.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"{{ep03pf_correo_c}}\",\n    \"password\": \"Password123@\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "23.19 Preparar - Postular Elena a la Vacante V (201)",
           "event": [
             {
               "listen": "test",
@@ -29573,7 +29693,7 @@
           "response": []
         },
         {
-          "name": "23.18 Preparar - Postular Fabio a la Vacante V (201)",
+          "name": "23.20 Preparar - Postular Fabio a la Vacante V (201)",
           "event": [
             {
               "listen": "test",
@@ -29626,7 +29746,7 @@
           "response": []
         },
         {
-          "name": "23.19 Preparar - Postular Elena a la Vacante W (201)",
+          "name": "23.21 Preparar - Postular Elena a la Vacante W (201)",
           "event": [
             {
               "listen": "test",
@@ -29679,7 +29799,7 @@
           "response": []
         },
         {
-          "name": "23.20 Preparar - Fabio se Retira (200)",
+          "name": "23.22 Preparar - Fabio se Retira (200)",
           "event": [
             {
               "listen": "test",
@@ -29723,7 +29843,7 @@
           "response": []
         },
         {
-          "name": "23.21 Preparar - Empresa Elimina la Vacante W (200)",
+          "name": "23.23 Preparar - Empresa Elimina la Vacante W (200)",
           "event": [
             {
               "listen": "test",
@@ -29766,7 +29886,308 @@
           "response": []
         },
         {
-          "name": "23.22 Perfil - Éxito (200)",
+          "name": "23.24 Mis Postulaciones - Éxito Vacante Disponible y Vacante Eliminada (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var pos = function (v) { return pm.response.json().data.find(function (p) { return p.id === Number(pm.environment.get(v)); }); };",
+                  "pm.test('Solo las 2 de Elena, de la más reciente a la más antigua', function () {",
+                  "    var ids = pm.response.json().data.map(function (p) { return p.id; });",
+                  "    pm.expect(ids).to.eql([Number(pm.environment.get('ep03pf_post_eliminada')), Number(pm.environment.get('ep03pf_post_ok'))]);",
+                  "});",
+                  "pm.test('Vacante activa: ver_vacante disponible y puede retirarse', function () {",
+                  "    var p = pos('ep03pf_post_ok');",
+                  "    pm.expect(p.ver_vacante).to.eql('disponible');",
+                  "    pm.expect(p.puede_retirar).to.be.true;",
+                  "    pm.expect(p.retirada).to.be.false;",
+                  "    pm.expect(p.retirada_en).to.be.null;",
+                  "    pm.expect(p.estado).to.eql({ codigo: 'recibido', nombre: 'Recibido' });",
+                  "    pm.expect(p.vacante.id).to.eql(Number(pm.environment.get('ep03pf_vacante_v')));",
+                  "    pm.expect(p.vacante.empresa).to.have.property('razon_social');",
+                  "});",
+                  "pm.test('Vacante eliminada: sigue en la lista y su detalle se abre en modo histórico', function () {",
+                  "    pm.expect(pos('ep03pf_post_eliminada').ver_vacante).to.eql('historico');",
+                  "});",
+                  "pm.test('Sin porcentaje de match', function () {",
+                  "    pm.expect(JSON.stringify(pm.response.json().data)).to.not.include('porcentaje');",
+                  "});",
+                  "pm.test('Dos estados distintos: postulación Recibido y vacante.estado activa', function () {",
+                  "    var p = pos('ep03pf_post_ok');",
+                  "    pm.expect(p.vacante.estado).to.eql('activa');",
+                  "    pm.expect(p.vacante.vigente).to.be.true;",
+                  "});",
+                  "pm.test('Vacante eliminada: el candidato ve vacante.estado eliminada', function () {",
+                  "    var p = pos('ep03pf_post_eliminada');",
+                  "    pm.expect(p.vacante.estado).to.eql('eliminada');",
+                  "    pm.expect(p.estado.codigo).to.eql('recibido');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep03pf_token_a}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos/me/postulaciones",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos",
+                "me",
+                "postulaciones"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "23.25 Mis Postulaciones - Éxito Postulación Retirada (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var pos = function (v) { return pm.response.json().data.find(function (p) { return p.id === Number(pm.environment.get(v)); }); };",
+                  "pm.test('Retirada marcada, con fecha, y no puede retirarse otra vez', function () {",
+                  "    var p = pos('ep03pf_post_retirada');",
+                  "    pm.expect(p.retirada).to.be.true;",
+                  "    pm.expect(p.retirada_en).to.not.be.null;",
+                  "    pm.expect(p.puede_retirar).to.be.false;",
+                  "});",
+                  "pm.test('La retirada conserva el estado de la vacante (activa)', function () {",
+                  "    pm.expect(pos('ep03pf_post_retirada').vacante.estado).to.eql('activa');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep03pf_token_b}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos/me/postulaciones",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos",
+                "me",
+                "postulaciones"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "23.26 Mis Postulaciones - Éxito Sin Postulaciones (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('data vacía, no es error', function () {",
+                  "    pm.expect(pm.response.json().data).to.eql([]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep03pf_token_c}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos/me/postulaciones",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos",
+                "me",
+                "postulaciones"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "23.27 Mis Postulaciones - Error Sin Token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "pm.test('Devuelve UNAUTHENTICATED', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('UNAUTHENTICATED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos/me/postulaciones",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos",
+                "me",
+                "postulaciones"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "23.28 Mis Postulaciones - Error Token de Empresa (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 403 Forbidden', function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});",
+                  "pm.test('Devuelve FORBIDDEN', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('FORBIDDEN');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep03pf_token_principal}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos/me/postulaciones",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos",
+                "me",
+                "postulaciones"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "23.29 Mis Postulaciones - Error Token de Admin (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 403 Forbidden', function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});",
+                  "pm.test('Devuelve FORBIDDEN', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('FORBIDDEN');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos/me/postulaciones",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos",
+                "me",
+                "postulaciones"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "23.30 Perfil - Éxito (200)",
           "event": [
             {
               "listen": "test",
@@ -29803,6 +30224,11 @@
                   "    var data = pm.response.json().data;",
                   "    pm.expect(data.requisitos_vacante.nice_to_have).to.eql([{ id: 15, nombre: 'Comunicación efectiva', posee: true }]);",
                   "    pm.expect(JSON.stringify(data)).to.not.include('porcentaje');",
+                  "});",
+                  "pm.test('Bloque postulacion con id y etapa actual', function () {",
+                  "    var p = pm.response.json().data.postulacion;",
+                  "    pm.expect(p.id).to.eql(Number(pm.environment.get('ep03pf_post_ok')));",
+                  "    pm.expect(p.estado).to.eql({ codigo: 'recibido', nombre: 'Recibido' });",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -29839,7 +30265,7 @@
           "response": []
         },
         {
-          "name": "23.23 Preparar - Avanzar Elena a En Revisión (200)",
+          "name": "23.31 Preparar - Avanzar Elena a En Revisión (200)",
           "event": [
             {
               "listen": "test",
@@ -29885,7 +30311,7 @@
           "response": []
         },
         {
-          "name": "23.24 Preparar - Avanzar Elena a Entrevista (200)",
+          "name": "23.32 Preparar - Avanzar Elena a Entrevista (200)",
           "event": [
             {
               "listen": "test",
@@ -29931,7 +30357,7 @@
           "response": []
         },
         {
-          "name": "23.25 Perfil - Éxito en Etapa Entrevista (200)",
+          "name": "23.33 Perfil - Éxito en Etapa Entrevista (200)",
           "event": [
             {
               "listen": "test",
@@ -29939,6 +30365,9 @@
                 "exec": [
                   "pm.test('Status code es 200 OK', function () {",
                   "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('La etapa del perfil es Entrevista', function () {",
+                  "    pm.expect(pm.response.json().data.postulacion.estado.codigo).to.eql('entrevista');",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -29975,7 +30404,7 @@
           "response": []
         },
         {
-          "name": "23.26 Preparar - Pausar la Vacante V (200)",
+          "name": "23.34 Preparar - Pausar la Vacante V (200)",
           "event": [
             {
               "listen": "test",
@@ -30019,7 +30448,61 @@
           "response": []
         },
         {
-          "name": "23.27 Perfil - Éxito con la Vacante Pausada (200)",
+          "name": "23.35 Mis Postulaciones - Vacante Pausada Pasa a Histórico (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var pos = function (v) { return pm.response.json().data.find(function (p) { return p.id === Number(pm.environment.get(v)); }); };",
+                  "pm.test('ver_vacante historico y refleja la etapa Entrevista del Kanban', function () {",
+                  "    var p = pos('ep03pf_post_ok');",
+                  "    pm.expect(p.ver_vacante).to.eql('historico');",
+                  "    pm.expect(p.estado.codigo).to.eql('entrevista');",
+                  "    pm.expect(p.puede_retirar).to.be.true;",
+                  "});",
+                  "pm.test('vacante.estado pausada, distinto de la etapa Entrevista', function () {",
+                  "    var p = pos('ep03pf_post_ok');",
+                  "    pm.expect(p.vacante.estado).to.eql('pausada');",
+                  "    pm.expect(p.estado.codigo).to.eql('entrevista');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep03pf_token_a}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos/me/postulaciones",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos",
+                "me",
+                "postulaciones"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "23.36 Perfil - Éxito con la Vacante Pausada (200)",
           "event": [
             {
               "listen": "test",
@@ -30063,7 +30546,7 @@
           "response": []
         },
         {
-          "name": "23.28 Preparar - Finalizar la Vacante V (200)",
+          "name": "23.37 Preparar - Finalizar la Vacante V (200)",
           "event": [
             {
               "listen": "test",
@@ -30107,7 +30590,56 @@
           "response": []
         },
         {
-          "name": "23.29 Perfil - Éxito con la Vacante Finalizada (200)",
+          "name": "23.38 Mis Postulaciones - Vacante Finalizada Sigue en Histórico (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var pos = function (v) { return pm.response.json().data.find(function (p) { return p.id === Number(pm.environment.get(v)); }); };",
+                  "pm.test('ver_vacante historico', function () {",
+                  "    pm.expect(pos('ep03pf_post_ok').ver_vacante).to.eql('historico');",
+                  "});",
+                  "pm.test('vacante.estado finalizada', function () {",
+                  "    pm.expect(pos('ep03pf_post_ok').vacante.estado).to.eql('finalizada');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep03pf_token_a}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos/me/postulaciones",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos",
+                "me",
+                "postulaciones"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "23.39 Perfil - Éxito con la Vacante Finalizada (200)",
           "event": [
             {
               "listen": "test",
@@ -30151,7 +30683,7 @@
           "response": []
         },
         {
-          "name": "23.30 Perfil - Error Postulación Retirada (409)",
+          "name": "23.40 Perfil - Error Postulación Retirada (409)",
           "event": [
             {
               "listen": "test",
@@ -30198,7 +30730,7 @@
           "response": []
         },
         {
-          "name": "23.31 Perfil - Error Vacante Eliminada (409)",
+          "name": "23.41 Perfil - Error Vacante Eliminada (409)",
           "event": [
             {
               "listen": "test",
@@ -30245,7 +30777,7 @@
           "response": []
         },
         {
-          "name": "23.32 Perfil - Error Postulación Inexistente (404)",
+          "name": "23.42 Perfil - Error Postulación Inexistente (404)",
           "event": [
             {
               "listen": "test",
@@ -30292,7 +30824,7 @@
           "response": []
         },
         {
-          "name": "23.33 Perfil - Error Sin Token (401)",
+          "name": "23.43 Perfil - Error Sin Token (401)",
           "event": [
             {
               "listen": "test",
@@ -30335,7 +30867,7 @@
           "response": []
         },
         {
-          "name": "23.34 Perfil - Error Token de Candidato (403)",
+          "name": "23.44 Perfil - Error Token de Candidato (403)",
           "event": [
             {
               "listen": "test",
@@ -30382,7 +30914,7 @@
           "response": []
         },
         {
-          "name": "23.35 Perfil - Error Token de Admin (403)",
+          "name": "23.45 Perfil - Error Token de Admin (403)",
           "event": [
             {
               "listen": "test",
@@ -30429,7 +30961,7 @@
           "response": []
         },
         {
-          "name": "23.36 Perfil - Error Postulación de Otra Empresa (403)",
+          "name": "23.46 Perfil - Error Postulación de Otra Empresa (403)",
           "event": [
             {
               "listen": "test",
@@ -30476,7 +31008,7 @@
           "response": []
         },
         {
-          "name": "23.37 Perfil - Error Otra Empresa No Ve que Está Retirada (403)",
+          "name": "23.47 Perfil - Error Otra Empresa No Ve que Está Retirada (403)",
           "event": [
             {
               "listen": "test",
@@ -32177,7 +32709,7 @@
     },
     {
       "name": "25. Vacantes - Búsqueda y Detalle para Candidatos (Dev 3)",
-      "description": "HU-04 (búsqueda paginada con filtros) y HU-13 (detalle). Solo aparecen las vacantes disponibles: aprobadas, pagadas, activas, vigentes y de empresa activa. Los resultados se acotan con el sufijo de la corrida en `titulo`, para no depender de otras vacantes de la BD.\n\nRequisitos: `admin_correo` / `admin_password` en el environment. No necesita seeders de prueba: crea sus propias\nempresas, vacantes y candidatos en cada corrida, así que se puede repetir. Correr en orden: cada request deja el estado\nque necesita el siguiente.",
+      "description": "HU-04 (búsqueda paginada con filtros) y HU-13 (detalle). Solo aparecen las vacantes disponibles: aprobadas, pagadas, activas, vigentes y de empresa activa. Los resultados se acotan con el sufijo de la corrida en `titulo`, para no depender de otras vacantes de la BD.\n\nRequisitos: `admin_correo` / `admin_password` en el environment. No necesita seeders de prueba: crea sus propias\nempresas, vacantes y candidatos en cada corrida, así que se puede repetir. Correr en orden: cada request deja el estado\nque necesita el siguiente.\n\nAl final, una candidata que **no postuló** abre por URL la vacante pausada, finalizada y eliminada: la ve en modo histórico, con la etiqueta `estado` y sin poder postular. Una vacante que nunca se publicó sigue respondiendo 404.",
       "item": [
         {
           "name": "25.0 Preparar - Login Admin (200)",
@@ -32656,7 +33188,7 @@
                   "var dni = '3' + sufijo.slice(-7);",
                   "pm.environment.set('ep02bq_dni_a', dni);",
                   "pm.environment.set('ep02bq_celular_a', '9' + dni);",
-                  "pm.environment.set('ep02bq_correo_a', 'candidato.a.ep02bq.' + sufijo + '@prueba.com');"
+                  "pm.environment.set('ep02bq_correo_a', 'candidato.a.ep02bq.' + sufijo + '@example.com');"
                 ],
                 "type": "text/javascript"
               }
@@ -33267,6 +33799,9 @@
                   "        pm.expect(Object.keys(h)).to.have.members(['id', 'nombre']);",
                   "    });",
                   "    pm.expect(data).to.not.have.property('max_contrataciones');",
+                  "});",
+                  "pm.test('Etiqueta estado = activa', function () {",
+                  "    pm.expect(pm.response.json().data.estado).to.eql('activa');",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -33425,6 +33960,2148 @@
               "path": [
                 "vacantes",
                 "{{ep02bq_vacante_a}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "25.24 Preparar - Empresa Pausa la Vacante A (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep02bq_token_principal}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes/{{ep02bq_vacante_a}}/pausar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes",
+                "{{ep02bq_vacante_a}}",
+                "pausar"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "25.25 Detalle por URL - Vacante Pausada con Etiqueta (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Modo histórico con estado pausada, sin postular', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    pm.expect(data.id).to.eql(Number(pm.environment.get('ep02bq_vacante_a')));",
+                  "    pm.expect(data.modo_consulta).to.eql('historico');",
+                  "    pm.expect(data.estado).to.eql('pausada');",
+                  "    pm.expect(data.puede_postular).to.be.false;",
+                  "    pm.expect(data.motivo_no_postulable).to.eql('VACANCY_UNAVAILABLE');",
+                  "    pm.expect(data.postulacion).to.be.null;",
+                  "});",
+                  "pm.test('Conserva la descripción de la vacante', function () {",
+                  "    pm.expect(pm.response.json().data.descripcion).to.include('Sobre el puesto');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep02bq_token_a}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/vacantes/{{ep02bq_vacante_a}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vacantes",
+                "{{ep02bq_vacante_a}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "25.26 Buscar - La Pausada Ya No Aparece (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('data vacía: solo se buscan vacantes disponibles', function () {",
+                  "    pm.expect(pm.response.json().data).to.eql([]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep02bq_token_a}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/vacantes?titulo={{ep02bq_sufijo}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vacantes"
+              ],
+              "query": [
+                {
+                  "key": "titulo",
+                  "value": "{{ep02bq_sufijo}}"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "25.27 Preparar - Empresa Finaliza la Vacante A (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep02bq_token_principal}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes/{{ep02bq_vacante_a}}/finalizar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes",
+                "{{ep02bq_vacante_a}}",
+                "finalizar"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "25.28 Detalle por URL - Vacante Finalizada con Etiqueta (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Modo histórico con estado finalizada, sin postular', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    pm.expect(data.id).to.eql(Number(pm.environment.get('ep02bq_vacante_a')));",
+                  "    pm.expect(data.modo_consulta).to.eql('historico');",
+                  "    pm.expect(data.estado).to.eql('finalizada');",
+                  "    pm.expect(data.puede_postular).to.be.false;",
+                  "    pm.expect(data.motivo_no_postulable).to.eql('VACANCY_UNAVAILABLE');",
+                  "    pm.expect(data.postulacion).to.be.null;",
+                  "});",
+                  "pm.test('Conserva la descripción de la vacante', function () {",
+                  "    pm.expect(pm.response.json().data.descripcion).to.include('Sobre el puesto');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep02bq_token_a}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/vacantes/{{ep02bq_vacante_a}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vacantes",
+                "{{ep02bq_vacante_a}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "25.29 Preparar - Empresa Elimina la Vacante A (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep02bq_token_principal}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes/{{ep02bq_vacante_a}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes",
+                "{{ep02bq_vacante_a}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "25.30 Detalle por URL - Vacante Eliminada con Etiqueta (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Modo histórico con estado eliminada, sin postular', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    pm.expect(data.id).to.eql(Number(pm.environment.get('ep02bq_vacante_a')));",
+                  "    pm.expect(data.modo_consulta).to.eql('historico');",
+                  "    pm.expect(data.estado).to.eql('eliminada');",
+                  "    pm.expect(data.puede_postular).to.be.false;",
+                  "    pm.expect(data.motivo_no_postulable).to.eql('VACANCY_UNAVAILABLE');",
+                  "    pm.expect(data.postulacion).to.be.null;",
+                  "});",
+                  "pm.test('Conserva la descripción de la vacante', function () {",
+                  "    pm.expect(pm.response.json().data.descripcion).to.include('Sobre el puesto');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep02bq_token_a}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/vacantes/{{ep02bq_vacante_a}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vacantes",
+                "{{ep02bq_vacante_a}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "25.31 Preparar - Empresa Elimina la Vacante B (Nunca Publicada) (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep02bq_token_principal}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes/{{ep02bq_vacante_b}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes",
+                "{{ep02bq_vacante_b}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "25.32 Detalle por URL - Error Vacante Nunca Publicada Sigue Oculta (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 404 Not Found', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test('Devuelve RESOURCE_NOT_FOUND', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('RESOURCE_NOT_FOUND');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep02bq_token_a}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/vacantes/{{ep02bq_vacante_b}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vacantes",
+                "{{ep02bq_vacante_b}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "26. Correos - Contratación y Rechazo (Dev 2)",
+      "description": "HU-06: correo al candidato cuando la empresa lo contrata o lo rechaza desde el Kanban. Envía correos **reales** a `rockygpt30@gmail.com` (alias `rockygpt30+contratado.…`, `+rechazado.…` y `+limite.…`, que Gmail entrega en el mismo buzón).\n\nANTES DE CORRER: en el `.env` local, un proveedor de correo real (no `MAIL_MAILER=log`). Las credenciales van solo en el `.env`.\n\nQUÉ DEBE LLEGAR A LA BANDEJA (revisar también Spam), por cada corrida:\n1. Uno de **contratación** a `+contratado` (\"¡Fuiste seleccionado para …!\").\n2. Uno de **rechazo** a `+rechazado` (\"Actualización de tu postulación a …\"), **sin el motivo**.\nNada más: los movimientos que el backend rechaza (409) no envían un segundo correo, y el candidato `+limite` no recibe nada.\n\nPostman solo ve la respuesta HTTP. El resultado de cada envío queda en la tabla `notificaciones_postulacion` (`enviado`, o `fallido` con el error):\n`docker compose exec app php artisan tinker --execute=\"echo App\\Models\\NotificacionPostulacion::latest('id')->take(3)->get(['tipo','destinatario','resultado','error'])\"`\n\nSi el proveedor falla, la contratación o el rechazo igual responden 200 y quedan guardados: solo se registra la fila `fallido`.\n\nRequisitos: `admin_correo` / `admin_password` en el environment. No necesita seeders de prueba: crea sus propias\nempresas, vacantes y candidatos en cada corrida, así que se puede repetir. Correr en orden: cada request deja el estado\nque necesita el siguiente.",
+      "item": [
+        {
+          "name": "26.0 Preparar - Login Admin (200)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Datos únicos en cada corrida: la carpeta se puede repetir sin chocar con correos, DNI o RUC ya usados",
+                  "var sufijo = String(Date.now()).slice(-8);",
+                  "pm.environment.set('ep03ml_sufijo', sufijo);",
+                  "var limaHoy = new Date(Date.now() - 5 * 60 * 60 * 1000);",
+                  "function dia(offset) {",
+                  "    var d = new Date(limaHoy.getTime() + offset * 24 * 60 * 60 * 1000);",
+                  "    return d.toISOString().slice(0, 10);",
+                  "}",
+                  "pm.environment.set('ep03ml_fecha_inicio', dia(0));",
+                  "pm.environment.set('ep03ml_fecha_fin', dia(30));"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Es admin y guarda token_admin', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    pm.expect(data.rol).to.eql('admin');",
+                  "    pm.environment.set('token_admin', data.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"{{admin_correo}}\",\n    \"password\": \"{{admin_password}}\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "26.1 Preparar - Registrar Empresa del Flujo (201)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "var sufijo = pm.environment.get('ep03ml_sufijo');",
+                  "pm.environment.set('ep03ml_correo_principal', 'empresa.principal.ep03ml.' + sufijo + '@prueba.com');",
+                  "pm.environment.set('ep03ml_ruc_principal', '209' + sufijo);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"{{ep03ml_correo_principal}}\",\n    \"password\": \"EmpresaFlujo2026#\",\n    \"encargado_empresa\": \"Encargado Carpeta 26\",\n    \"razon_social\": \"Empresa principal 26 {{ep03ml_sufijo}} S.A.C.\",\n    \"sector\": \"Tecnología e Informática\",\n    \"ruc\": \"{{ep03ml_ruc_principal}}\",\n    \"descripcion\": \"Empresa creada por la carpeta 26 de Postman.\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "26.2 Preparar - Login Empresa del Flujo (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Es empresa y guarda ep03ml_token_principal', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    pm.expect(data.rol).to.eql('empresa');",
+                  "    pm.environment.set('ep03ml_token_principal', data.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"{{ep03ml_correo_principal}}\",\n    \"password\": \"EmpresaFlujo2026#\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "26.3 Preparar - Habilidades Activas (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Guarda Excel (13) y Comunicación efectiva (15), las del candidato, y otra técnica que no tiene', function () {",
+                  "    var lista = pm.response.json().data;",
+                  "    var ids = lista.map(function (h) { return h.id; });",
+                  "    pm.expect(ids).to.include.members([13, 15]);",
+                  "    var faltante = lista.find(function (h) { return h.tipo_habilidad === 'tecnica' && h.id !== 13; });",
+                  "    pm.environment.set('ep03ml_hab_tecnica_id', 13);",
+                  "    pm.environment.set('ep03ml_hab_blanda_id', 15);",
+                  "    pm.environment.set('ep03ml_hab_faltante_id', faltante.id);",
+                  "    pm.environment.set('ep03ml_area_id', faltante.area_estudio.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/habilidades",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "habilidades"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "26.4 Preparar - Niveles del Puesto (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Guarda el nivel Semi Senior', function () {",
+                  "    var nivel = pm.response.json().data.find(function (n) { return n.nombre === 'Semi Senior'; });",
+                  "    pm.expect(nivel).to.be.an('object');",
+                  "    pm.environment.set('ep03ml_nivel_id', nivel.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/niveles-experiencia",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "niveles-experiencia"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "26.5 Preparar - Crear Vacante V (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Guarda ep03ml_vacante_v', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    pm.expect(data.estado.general).to.eql('pendiente_revision');",
+                  "    pm.environment.set('ep03ml_vacante_v', data.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep03ml_token_principal}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titulo\": \"Analista de Correos {{ep03ml_sufijo}}\",\n    \"descripcion\": \"## Sobre el puesto\\nBuscamos una persona para el equipo de producto que trabaje con Laravel, MySQL y APIs REST.\",\n    \"nivel_puesto_id\": {{ep03ml_nivel_id}},\n    \"area_estudio_id\": {{ep03ml_area_id}},\n    \"tipo_empleo\": \"remoto\",\n    \"salario_min\": 3500,\n    \"salario_max\": 5000,\n    \"fecha_inicio_vigencia\": \"{{ep03ml_fecha_inicio}}\",\n    \"fecha_fin_vigencia\": \"{{ep03ml_fecha_fin}}\",\n    \"max_contrataciones\": 1,\n    \"habilidades\": [\n        {\n            \"habilidad_id\": {{ep03ml_hab_tecnica_id}},\n            \"requisito\": \"must_have\"\n        },\n        {\n            \"habilidad_id\": {{ep03ml_hab_blanda_id}},\n            \"requisito\": \"nice_to_have\"\n        }\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "26.6 Preparar - Aprobar Vacante V (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/vacantes/{{ep03ml_vacante_v}}/aprobar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "vacantes",
+                "{{ep03ml_vacante_v}}",
+                "aprobar"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "26.7 Preparar - Pagar Vacante V (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep03ml_token_principal}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes/{{ep03ml_vacante_v}}/pago",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes",
+                "{{ep03ml_vacante_v}}",
+                "pago"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titular\": \"Carlos Medina\",\n    \"numero_tarjeta\": \"4111111111111111\",\n    \"vencimiento\": \"12/28\",\n    \"cvv\": \"123\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "26.8 Preparar - Registrar Candidato Rocky Contratado (201)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Alias de Gmail: llega a rockygpt30@gmail.com y el sufijo evita chocar con corridas anteriores",
+                  "var sufijo = pm.environment.get('ep03ml_sufijo');",
+                  "var dni = '3' + sufijo.slice(-7);",
+                  "pm.environment.set('ep03ml_dni_contratado', dni);",
+                  "pm.environment.set('ep03ml_celular_contratado', '9' + dni);",
+                  "pm.environment.set('ep03ml_correo_contratado', 'rockygpt30+contratado.' + sufijo + '@gmail.com');"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Rocky Contratado\",\n    \"apellidos\": \"Prueba Correos\",\n    \"dni\": \"{{ep03ml_dni_contratado}}\",\n    \"fecha_nacimiento\": \"1998-08-20\",\n    \"genero\": \"femenino\",\n    \"celular\": \"{{ep03ml_celular_contratado}}\",\n    \"correo\": \"{{ep03ml_correo_contratado}}\",\n    \"password\": \"Password123@\",\n    \"password_confirmation\": \"Password123@\",\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": 4,\n            \"area_estudio_id\": 4,\n            \"pais_id\": 1,\n            \"institucion_id\": 3,\n            \"carrera_id\": 49,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2021-03-01\",\n            \"fecha_fin\": \"2022-12-01\"\n        }\n    ],\n    \"idiomas\": [\n        {\n            \"idioma_id\": 2,\n            \"nivel_escrito\": \"nativo\",\n            \"nivel_oral\": \"nativo\"\n        }\n    ],\n    \"busca_primer_empleo\": true,\n    \"habilidades\": [\n        13,\n        15\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "26.9 Preparar - Login Candidato Rocky Contratado (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Es candidato y guarda ep03ml_token_contratado', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    pm.expect(data.rol).to.eql('candidato');",
+                  "    pm.environment.set('ep03ml_token_contratado', data.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"{{ep03ml_correo_contratado}}\",\n    \"password\": \"Password123@\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "26.10 Preparar - Registrar Candidato Rocky Rechazado (201)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Alias de Gmail: llega a rockygpt30@gmail.com y el sufijo evita chocar con corridas anteriores",
+                  "var sufijo = pm.environment.get('ep03ml_sufijo');",
+                  "var dni = '5' + sufijo.slice(-7);",
+                  "pm.environment.set('ep03ml_dni_rechazado', dni);",
+                  "pm.environment.set('ep03ml_celular_rechazado', '9' + dni);",
+                  "pm.environment.set('ep03ml_correo_rechazado', 'rockygpt30+rechazado.' + sufijo + '@gmail.com');"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Rocky Rechazado\",\n    \"apellidos\": \"Prueba Correos\",\n    \"dni\": \"{{ep03ml_dni_rechazado}}\",\n    \"fecha_nacimiento\": \"1998-08-20\",\n    \"genero\": \"femenino\",\n    \"celular\": \"{{ep03ml_celular_rechazado}}\",\n    \"correo\": \"{{ep03ml_correo_rechazado}}\",\n    \"password\": \"Password123@\",\n    \"password_confirmation\": \"Password123@\",\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": 4,\n            \"area_estudio_id\": 4,\n            \"pais_id\": 1,\n            \"institucion_id\": 3,\n            \"carrera_id\": 49,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2021-03-01\",\n            \"fecha_fin\": \"2022-12-01\"\n        }\n    ],\n    \"idiomas\": [\n        {\n            \"idioma_id\": 2,\n            \"nivel_escrito\": \"nativo\",\n            \"nivel_oral\": \"nativo\"\n        }\n    ],\n    \"busca_primer_empleo\": true,\n    \"habilidades\": [\n        13,\n        15\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "26.11 Preparar - Login Candidato Rocky Rechazado (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Es candidato y guarda ep03ml_token_rechazado', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    pm.expect(data.rol).to.eql('candidato');",
+                  "    pm.environment.set('ep03ml_token_rechazado', data.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"{{ep03ml_correo_rechazado}}\",\n    \"password\": \"Password123@\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "26.12 Preparar - Registrar Candidato Rocky Sin Cupo (201)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Alias de Gmail: llega a rockygpt30@gmail.com y el sufijo evita chocar con corridas anteriores",
+                  "var sufijo = pm.environment.get('ep03ml_sufijo');",
+                  "var dni = '6' + sufijo.slice(-7);",
+                  "pm.environment.set('ep03ml_dni_limite', dni);",
+                  "pm.environment.set('ep03ml_celular_limite', '9' + dni);",
+                  "pm.environment.set('ep03ml_correo_limite', 'rockygpt30+limite.' + sufijo + '@gmail.com');"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Rocky Sin Cupo\",\n    \"apellidos\": \"Prueba Correos\",\n    \"dni\": \"{{ep03ml_dni_limite}}\",\n    \"fecha_nacimiento\": \"1998-08-20\",\n    \"genero\": \"femenino\",\n    \"celular\": \"{{ep03ml_celular_limite}}\",\n    \"correo\": \"{{ep03ml_correo_limite}}\",\n    \"password\": \"Password123@\",\n    \"password_confirmation\": \"Password123@\",\n    \"estudios\": [\n        {\n            \"tipo_estudio_id\": 4,\n            \"area_estudio_id\": 4,\n            \"pais_id\": 1,\n            \"institucion_id\": 3,\n            \"carrera_id\": 49,\n            \"estado\": \"finalizado\",\n            \"fecha_inicio\": \"2021-03-01\",\n            \"fecha_fin\": \"2022-12-01\"\n        }\n    ],\n    \"idiomas\": [\n        {\n            \"idioma_id\": 2,\n            \"nivel_escrito\": \"nativo\",\n            \"nivel_oral\": \"nativo\"\n        }\n    ],\n    \"busca_primer_empleo\": true,\n    \"habilidades\": [\n        13,\n        15\n    ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "26.13 Preparar - Login Candidato Rocky Sin Cupo (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Es candidato y guarda ep03ml_token_limite', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    pm.expect(data.rol).to.eql('candidato');",
+                  "    pm.environment.set('ep03ml_token_limite', data.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"correo\": \"{{ep03ml_correo_limite}}\",\n    \"password\": \"Password123@\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "26.14 Preparar - Postular Rocky Contratado a la Vacante V (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Guarda ep03ml_post_contratado', function () {",
+                  "    pm.environment.set('ep03ml_post_contratado', pm.response.json().data.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep03ml_token_contratado}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos/me/postulaciones",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos",
+                "me",
+                "postulaciones"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"vacante_id\": {{ep03ml_vacante_v}}\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "26.15 Preparar - Postular Rocky Rechazado a la Vacante V (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Guarda ep03ml_post_rechazado', function () {",
+                  "    pm.environment.set('ep03ml_post_rechazado', pm.response.json().data.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep03ml_token_rechazado}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos/me/postulaciones",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos",
+                "me",
+                "postulaciones"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"vacante_id\": {{ep03ml_vacante_v}}\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "26.16 Preparar - Postular Rocky Sin Cupo a la Vacante V (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Guarda ep03ml_post_limite', function () {",
+                  "    pm.environment.set('ep03ml_post_limite', pm.response.json().data.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep03ml_token_limite}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/candidatos/me/postulaciones",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidatos",
+                "me",
+                "postulaciones"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"vacante_id\": {{ep03ml_vacante_v}}\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "26.17 Preparar - Motivos de Rechazo (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Guarda el id de Perfil no se ajusta', function () {",
+                  "    var m = pm.response.json().data.find(function (x) { return x.motivo === 'Perfil no se ajusta'; });",
+                  "    pm.environment.set('ep03ml_motivo_id', m.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep03ml_token_principal}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/motivos-rechazo",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "motivos-rechazo"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "26.18 Preparar - Avanzar Rocky Contratado a En Revisión (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep03ml_token_principal}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes/{{ep03ml_vacante_v}}/postulaciones/{{ep03ml_post_contratado}}/avanzar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes",
+                "{{ep03ml_vacante_v}}",
+                "postulaciones",
+                "{{ep03ml_post_contratado}}",
+                "avanzar"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "26.19 Preparar - Avanzar Rocky Contratado a Entrevista (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Queda en Entrevista', function () {",
+                  "    pm.expect(pm.response.json().data.estado.codigo).to.eql('entrevista');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep03ml_token_principal}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes/{{ep03ml_vacante_v}}/postulaciones/{{ep03ml_post_contratado}}/avanzar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes",
+                "{{ep03ml_vacante_v}}",
+                "postulaciones",
+                "{{ep03ml_post_contratado}}",
+                "avanzar"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "26.20 Preparar - Avanzar Rocky Rechazado a En Revisión (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep03ml_token_principal}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes/{{ep03ml_vacante_v}}/postulaciones/{{ep03ml_post_rechazado}}/avanzar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes",
+                "{{ep03ml_vacante_v}}",
+                "postulaciones",
+                "{{ep03ml_post_rechazado}}",
+                "avanzar"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "26.21 Preparar - Avanzar Rocky Rechazado a Entrevista (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Queda en Entrevista', function () {",
+                  "    pm.expect(pm.response.json().data.estado.codigo).to.eql('entrevista');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep03ml_token_principal}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes/{{ep03ml_vacante_v}}/postulaciones/{{ep03ml_post_rechazado}}/avanzar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes",
+                "{{ep03ml_vacante_v}}",
+                "postulaciones",
+                "{{ep03ml_post_rechazado}}",
+                "avanzar"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "26.22 Preparar - Avanzar Rocky Sin Cupo a En Revisión (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep03ml_token_principal}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes/{{ep03ml_vacante_v}}/postulaciones/{{ep03ml_post_limite}}/avanzar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes",
+                "{{ep03ml_vacante_v}}",
+                "postulaciones",
+                "{{ep03ml_post_limite}}",
+                "avanzar"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "26.23 Preparar - Avanzar Rocky Sin Cupo a Entrevista (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Queda en Entrevista', function () {",
+                  "    pm.expect(pm.response.json().data.estado.codigo).to.eql('entrevista');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep03ml_token_principal}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes/{{ep03ml_vacante_v}}/postulaciones/{{ep03ml_post_limite}}/avanzar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes",
+                "{{ep03ml_vacante_v}}",
+                "postulaciones",
+                "{{ep03ml_post_limite}}",
+                "avanzar"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "26.24 Contratar - Éxito, Envía el Correo de Contratación (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Queda en Contratado', function () {",
+                  "    pm.expect(pm.response.json().data.estado.codigo).to.eql('contratado');",
+                  "});",
+                  "pm.test('Revisar rockygpt30@gmail.com: llega \"¡Fuiste seleccionado para…!\" a +contratado', function () {",
+                  "    pm.expect(true).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep03ml_token_principal}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes/{{ep03ml_vacante_v}}/postulaciones/{{ep03ml_post_contratado}}/contratar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes",
+                "{{ep03ml_vacante_v}}",
+                "postulaciones",
+                "{{ep03ml_post_contratado}}",
+                "contratar"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "26.25 Contratar Otra Vez - No Reenvía el Correo (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 409 Conflict', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "pm.test('Devuelve INVALID_TRANSITION', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('INVALID_TRANSITION');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep03ml_token_principal}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes/{{ep03ml_vacante_v}}/postulaciones/{{ep03ml_post_contratado}}/contratar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes",
+                "{{ep03ml_vacante_v}}",
+                "postulaciones",
+                "{{ep03ml_post_contratado}}",
+                "contratar"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "26.26 Rechazar al Ya Contratado - No Envía Correo de Rechazo (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 409 Conflict', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "pm.test('Devuelve INVALID_TRANSITION', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('INVALID_TRANSITION');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep03ml_token_principal}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes/{{ep03ml_vacante_v}}/postulaciones/{{ep03ml_post_contratado}}/rechazar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes",
+                "{{ep03ml_vacante_v}}",
+                "postulaciones",
+                "{{ep03ml_post_contratado}}",
+                "rechazar"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"motivo_rechazo_id\": {{ep03ml_motivo_id}}\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "26.27 Contratar Sin Cupo - No Envía Correo (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 409 Conflict', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "pm.test('Devuelve HIRING_LIMIT_REACHED', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('HIRING_LIMIT_REACHED');",
+                  "});",
+                  "pm.test('El candidato +limite sigue en Entrevista y no recibe correo', function () {",
+                  "    pm.expect(pm.response.json().success).to.be.false;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep03ml_token_principal}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes/{{ep03ml_vacante_v}}/postulaciones/{{ep03ml_post_limite}}/contratar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes",
+                "{{ep03ml_vacante_v}}",
+                "postulaciones",
+                "{{ep03ml_post_limite}}",
+                "contratar"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "26.28 Rechazar - Error Sin Motivo, No Envía Correo (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Devuelve VALIDATION_ERROR', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('VALIDATION_ERROR');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep03ml_token_principal}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes/{{ep03ml_vacante_v}}/postulaciones/{{ep03ml_post_rechazado}}/rechazar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes",
+                "{{ep03ml_vacante_v}}",
+                "postulaciones",
+                "{{ep03ml_post_rechazado}}",
+                "rechazar"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "26.29 Rechazar - Éxito, Envía el Correo de Rechazo Sin Motivo (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Queda en Rechazado', function () {",
+                  "    pm.expect(pm.response.json().data.estado.codigo).to.eql('rechazado');",
+                  "});",
+                  "pm.test('La empresa ve el motivo; el correo al candidato no lo incluye', function () {",
+                  "    pm.expect(pm.response.json().data.motivo_rechazo).to.eql('Perfil no se ajusta');",
+                  "});",
+                  "pm.test('Revisar rockygpt30@gmail.com: llega \"Actualización de tu postulación a…\" a +rechazado, sin \"Perfil no se ajusta\"', function () {",
+                  "    pm.expect(true).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep03ml_token_principal}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes/{{ep03ml_vacante_v}}/postulaciones/{{ep03ml_post_rechazado}}/rechazar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes",
+                "{{ep03ml_vacante_v}}",
+                "postulaciones",
+                "{{ep03ml_post_rechazado}}",
+                "rechazar"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"motivo_rechazo_id\": {{ep03ml_motivo_id}}\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "26.30 Rechazar Otra Vez - No Reenvía el Correo (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 409 Conflict', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "pm.test('Devuelve INVALID_TRANSITION', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('INVALID_TRANSITION');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep03ml_token_principal}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes/{{ep03ml_vacante_v}}/postulaciones/{{ep03ml_post_rechazado}}/rechazar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes",
+                "{{ep03ml_vacante_v}}",
+                "postulaciones",
+                "{{ep03ml_post_rechazado}}",
+                "rechazar"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"motivo_rechazo_id\": {{ep03ml_motivo_id}}\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "26.31 Contratar al Ya Rechazado - No Envía Correo (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 409 Conflict', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "pm.test('Devuelve INVALID_TRANSITION', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('INVALID_TRANSITION');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep03ml_token_principal}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes/{{ep03ml_vacante_v}}/postulaciones/{{ep03ml_post_rechazado}}/contratar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes",
+                "{{ep03ml_vacante_v}}",
+                "postulaciones",
+                "{{ep03ml_post_rechazado}}",
+                "contratar"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "26.32 Historial - Las Dos Decisiones Quedaron Guardadas (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Contratado, Rechazado y el sin cupo sigue en Entrevista', function () {",
+                  "    var lista = pm.response.json().data.postulaciones;",
+                  "    var etapa = function (v) { return lista.find(function (x) { return x.id === Number(pm.environment.get(v)); }).estado.codigo; };",
+                  "    pm.expect(etapa('ep03ml_post_contratado')).to.eql('contratado');",
+                  "    pm.expect(etapa('ep03ml_post_rechazado')).to.eql('rechazado');",
+                  "    pm.expect(etapa('ep03ml_post_limite')).to.eql('entrevista');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep03ml_token_principal}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes/{{ep03ml_vacante_v}}/postulaciones/historial",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes",
+                "{{ep03ml_vacante_v}}",
+                "postulaciones",
+                "historial"
               ]
             },
             "description": ""

@@ -10,3 +10,11 @@ Route::middleware(['auth:sanctum', 'rol:empresa'])
             'perfil',
             ])->whereNumber('postulacion');
         });
+
+Route::middleware(['auth:sanctum', 'rol:candidato'])
+    ->group(function () {
+        Route::get('/candidatos/me/postulaciones', [
+            SeguimientoPostulacionController::class,
+            'misPostulaciones',
+        ]);
+    });

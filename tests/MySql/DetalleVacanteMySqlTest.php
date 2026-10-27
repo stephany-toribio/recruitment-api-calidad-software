@@ -172,6 +172,7 @@ class DetalleVacanteMySqlTest extends TestCase
             'habilidades',
             'postulantes_aprox',
             'modo_consulta',
+            'estado',
             'postulacion',
             'puede_postular',
             'motivo_no_postulable',
@@ -248,10 +249,52 @@ class DetalleVacanteMySqlTest extends TestCase
         $this->assertNull($respuesta['empresa']['descripcion']);
     }
 
-    public function test_vacante_pausada_no_se_consulta_como_disponible(): void
+    public function test_vacante_pausada_se_consulta_en_modo_historico_sin_postular(): void
     {
         $this->vacante->update([
             'estado_empleo' => Empleo::PAUSADA,
+        ]);
+
+        $respuesta = $this->resolverRecurso($this->consultar());
+
+        $this->assertSame('historico', $respuesta['modo_consulta']);
+        $this->assertSame(Empleo::PAUSADA, $respuesta['estado']);
+        $this->assertFalse($respuesta['puede_postular']);
+        $this->assertSame(
+            'VACANCY_UNAVAILABLE',
+            $respuesta['motivo_no_postulable']
+        );
+        $this->assertNull($respuesta['postulacion']);
+    }
+
+    public function test_vacante_finalizada_o_eliminada_se_ve_por_url_con_su_estado(): void
+    {
+        $this->vacante->update([
+            'estado_empleo' => Empleo::FINALIZADA,
+        ]);
+
+        $respuesta = $this->resolverRecurso($this->consultar());
+
+        $this->assertSame(Empleo::FINALIZADA, $respuesta['estado']);
+        $this->assertSame('historico', $respuesta['modo_consulta']);
+
+        $this->vacante->delete();
+
+        $respuesta = $this->resolverRecurso($this->consultar());
+
+        $this->assertSame(Empleo::ELIMINADA, $respuesta['estado']);
+        $this->assertSame('historico', $respuesta['modo_consulta']);
+        $this->assertSame($this->vacante->descripcion, $respuesta['descripcion']);
+    }
+
+    public function test_vacante_nunca_publicada_sigue_oculta_aunque_este_finalizada(): void
+    {
+        DB::table('pagos_vacante')
+            ->where('empleo_id', $this->vacante->getKey())
+            ->delete();
+
+        $this->vacante->update([
+            'estado_empleo' => Empleo::FINALIZADA,
         ]);
 
         $this->expectException(ModelNotFoundException::class);
@@ -425,7 +468,7 @@ class DetalleVacanteMySqlTest extends TestCase
         );
     }
 
-    public function test_historico_rechaza_vacante_eliminada(): void
+    public function test_historico_permite_consultar_vacante_eliminada(): void
     {
         $postulacion = $this->crearPostulacion($this->candidato);
 
@@ -445,11 +488,18 @@ class DetalleVacanteMySqlTest extends TestCase
                 ->value('deleted_at')
         );
 
-        $this->expectException(ModelNotFoundException::class);
+        $respuesta = $this->resolverRecurso(
+            app(DetalleVacanteService::class)->historico(
+                (int) $postulacion->getKey(),
+                $this->candidato
+            )
+        );
 
-        app(DetalleVacanteService::class)->historico(
+        $this->assertSame('historico', $respuesta['modo_consulta']);
+        $this->assertSame(Empleo::ELIMINADA, $respuesta['estado']);
+        $this->assertSame(
             (int) $postulacion->getKey(),
-            $this->candidato
+            $respuesta['postulacion']['id']
         );
     }
 
@@ -734,7 +784,7 @@ class DetalleVacanteMySqlTest extends TestCase
         $this->assertArrayNotHasKey('trace', $ajena->json());
     }
 
-    public function test_http_vacante_pausada_requiere_consulta_historica(): void
+    public function test_http_vacante_pausada_se_ve_por_url_y_por_postulacion(): void
     {
         $postulacion = $this->crearPostulacion($this->candidato);
 
@@ -749,7 +799,11 @@ class DetalleVacanteMySqlTest extends TestCase
         $this->consultarHttp(
             '/api/v1/vacantes/'.$this->vacante->getKey(),
             $token
-        )->assertNotFound();
+        )
+            ->assertOk()
+            ->assertJsonPath('data.modo_consulta', 'historico')
+            ->assertJsonPath('data.estado', Empleo::PAUSADA)
+            ->assertJsonPath('data.puede_postular', false);
 
         $this->consultarHttp(
             '/api/v1/candidatos/me/postulaciones/'

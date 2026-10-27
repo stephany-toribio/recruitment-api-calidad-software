@@ -13,11 +13,37 @@ class DisponibilidadVacanteService
     {
         $hoy = now(Empleo::ZONA_VIGENCIA)->toDateString();
 
+        return $this->publicadaDeEmpresaActiva(
+            $consulta
+                ->whereNull('empleos.deleted_at')
+                ->where('empleos.estado_empleo', Empleo::ACTIVA)
+                ->where('empleos.fecha_inicio_vigencia', '<=', $hoy)
+                ->where('empleos.fecha_fin_vigencia', '>=', $hoy)
+        );
+    }
+
+    // Vacantes que se publicaron y ya no reciben postulaciones: pausadas, finalizadas o eliminadas, de empresa activa.
+    // Cualquier candidato puede ver su detalle en modo histórico. Las que nunca se publicaron siguen ocultas
+    public function aplicarHistorico(Builder $consulta): Builder
+    {
+        return $this->publicadaDeEmpresaActiva(
+            $consulta
+                ->withTrashed()
+                ->where(
+                    fn (Builder $estado) => $estado
+                        ->whereNotNull('empleos.deleted_at')
+                        ->orWhereIn('empleos.estado_empleo', [
+                            Empleo::PAUSADA,
+                            Empleo::FINALIZADA,
+                        ])
+                )
+        );
+    }
+
+    // Aprobada (revisión vigente), con pago exitoso y de una empresa con la cuenta activa
+    private function publicadaDeEmpresaActiva(Builder $consulta): Builder
+    {
         return $consulta
-            ->whereNull('empleos.deleted_at')
-            ->where('empleos.estado_empleo', Empleo::ACTIVA)
-            ->where('empleos.fecha_inicio_vigencia', '<=', $hoy)
-            ->where('empleos.fecha_fin_vigencia', '>=', $hoy)
             ->whereHas(
                 'revision',
                 fn (Builder $revision) => $revision->where(
