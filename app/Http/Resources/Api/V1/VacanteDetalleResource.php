@@ -119,6 +119,9 @@ class VacanteDetalleResource extends JsonResource
 
             'modo_consulta' => $contexto['modo_consulta'],
 
+            // Etiqueta para el front: activa, pausada, finalizada o eliminada
+            'estado' => $vacante->estadoDisponibilidad(),
+
             'postulacion' => $postulacion === null
                 ? null
                 : [

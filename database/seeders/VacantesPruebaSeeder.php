@@ -2,9 +2,11 @@
 
 namespace Database\Seeders;
 
+use App\Models\AreaEstudio;
 use App\Models\Empleo;
 use App\Models\Empresa;
 use App\Models\Habilidad;
+use App\Models\NivelPuesto;
 use App\Models\PagoVacante;
 use App\Models\RevisionVacante;
 use App\Models\Rol;
@@ -113,7 +115,10 @@ class VacantesPruebaSeeder extends Seeder
             'empresa_id' => $empresa->id,
             'titulo' => $titulo,
             'descripcion' => "## Sobre el puesto\nVacante de prueba para validar la moderación y el pago simulado de EP-02.",
-            'nivel_experiencia' => 'semi_senior',
+            // nivel_experiencia se reemplazó por el catálogo de niveles (solo globales y activos)
+            'nivel_puesto_id' => NivelPuesto::whereNull('candidato_id')->where('estado', 'activo')->orderBy('orden')->value('id'),
+            'area_estudio_id' => AreaEstudio::where('activo', true)->orderBy('id')->value('id'),
+            'tipo_empleo' => 'remoto',
             'salario_min' => 3500,
             'salario_max' => 5000,
             'fecha_inicio_vigencia' => $hoy->toDateString(),

@@ -32,7 +32,12 @@ class DetalleVacanteService
             ->whereKey($vacanteId);
 
         $vacante = $this->cargarDetalle($consulta)
-            ->firstOrFail();
+            ->first();
+
+        // Pausada, finalizada o eliminada: cualquier candidato con la URL la ve en modo histórico, con su estado
+        if ($vacante === null) {
+            return $this->historicoPorVacante($vacanteId, $candidato);
+        }
 
         $postulacion = Postulacion::query()
             ->where('candidato_id', $candidato->getKey())
@@ -82,21 +87,43 @@ class DetalleVacanteService
                 'retirada_en',
             ]);
 
-        $consulta = Empleo::query()
-            ->whereKey($postulacion->empleo_id)
-            ->whereNull('empleos.deleted_at')
-            ->whereIn('empleos.estado_empleo', [
-                Empleo::PAUSADA,
-                Empleo::FINALIZADA,
-            ])
-            ->whereHas(
-                'empresa.usuario',
-                fn (Builder $consulta) => $consulta
-                    ->where('usuarios.estado_cuenta', 'activo')
-            );
+        $consulta = $this->disponibilidad->aplicarHistorico(
+            Empleo::query()->whereKey($postulacion->empleo_id)
+        );
 
         $vacante = $this->cargarDetalle($consulta)
             ->firstOrFail();
+
+        return [
+            'vacante' => $vacante,
+            'modo_consulta' => 'historico',
+            'postulacion' => $postulacion,
+            'puede_postular' => false,
+            'motivo_no_postulable' => 'VACANCY_UNAVAILABLE',
+        ];
+    }
+
+    private function historicoPorVacante(
+        int $vacanteId,
+        Candidato $candidato
+    ): array {
+        $consulta = $this->disponibilidad->aplicarHistorico(
+            Empleo::query()->whereKey($vacanteId)
+        );
+
+        // Nunca publicada, vencida o de empresa suspendida: 404, igual que una inexistente
+        $vacante = $this->cargarDetalle($consulta)
+            ->firstOrFail();
+
+        $postulacion = Postulacion::query()
+            ->where('candidato_id', $candidato->getKey())
+            ->where('empleo_id', $vacante->getKey())
+            ->first([
+                'id',
+                'candidato_id',
+                'empleo_id',
+                'retirada_en',
+            ]);
 
         return [
             'vacante' => $vacante,
