@@ -34,6 +34,19 @@ class RegistrarVacanteRequest extends FormRequest
             $datos['ubicacion'] = null;
         }
 
+        // Requisitos y beneficios: se recortan los espacios y se descartan las filas vacías
+        foreach (['requisitos', 'beneficios'] as $lista) {
+            if (array_key_exists($lista, $datos) && is_array($datos[$lista])) {
+                $datos[$lista] = array_values(array_filter(
+                    array_map(
+                        fn ($item) => is_string($item) ? trim($item) : $item,
+                        $datos[$lista]
+                    ),
+                    fn ($item) => $item !== ''
+                ));
+            }
+        }
+
         $this->replace($datos);
     }
 
@@ -171,6 +184,38 @@ class RegistrarVacanteRequest extends FormRequest
                 'string',
                 Rule::in(['must_have', 'nice_to_have']),
             ],
+
+            'requisitos' => [
+                'bail',
+                'nullable',
+                'array',
+                'list',
+                'max:10',
+            ],
+
+            'requisitos.*' => [
+                'bail',
+                'required',
+                'string',
+                'max:200',
+                'distinct:ignore_case',
+            ],
+
+            'beneficios' => [
+                'bail',
+                'nullable',
+                'array',
+                'list',
+                'max:10',
+            ],
+
+            'beneficios.*' => [
+                'bail',
+                'required',
+                'string',
+                'max:200',
+                'distinct:ignore_case',
+            ],
         ];
     }
 
@@ -249,6 +294,22 @@ class RegistrarVacanteRequest extends FormRequest
             'habilidades.*.requisito.required' => 'Indique si la habilidad es obligatoria o deseable.',
             'habilidades.*.requisito.string' => 'El requisito debe ser un texto.',
             'habilidades.*.requisito.in' => 'El requisito debe ser must_have o nice_to_have.',
+
+            'requisitos.array' => 'Los requisitos deben enviarse como una lista.',
+            'requisitos.list' => 'Los requisitos deben tener índices consecutivos.',
+            'requisitos.max' => 'No puede registrar más de 10 requisitos.',
+            'requisitos.*.required' => 'Cada requisito debe tener un texto.',
+            'requisitos.*.string' => 'Cada requisito debe ser un texto.',
+            'requisitos.*.max' => 'Cada requisito no debe superar los 200 caracteres.',
+            'requisitos.*.distinct' => 'No puede repetir requisitos.',
+
+            'beneficios.array' => 'Los beneficios deben enviarse como una lista.',
+            'beneficios.list' => 'Los beneficios deben tener índices consecutivos.',
+            'beneficios.max' => 'No puede registrar más de 10 beneficios.',
+            'beneficios.*.required' => 'Cada beneficio debe tener un texto.',
+            'beneficios.*.string' => 'Cada beneficio debe ser un texto.',
+            'beneficios.*.max' => 'Cada beneficio no debe superar los 200 caracteres.',
+            'beneficios.*.distinct' => 'No puede repetir beneficios.',
         ];
     }
 }

@@ -111,6 +111,9 @@ class VacanteService
         return [
             'titulo' => $datos['titulo'],
             'descripcion' => $datos['descripcion'],
+            // Lista vacía u omitida se guarda como NULL (sin requisitos / beneficios)
+            'requisitos' => ($datos['requisitos'] ?? null) ?: null,
+            'beneficios' => ($datos['beneficios'] ?? null) ?: null,
             'nivel_puesto_id' => $datos['nivel_puesto_id'],
             'area_estudio_id' => $datos['area_estudio_id'],
             'tipo_empleo' => $datos['tipo_empleo'],

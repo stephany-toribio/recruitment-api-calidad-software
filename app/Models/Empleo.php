@@ -31,6 +31,8 @@ class Empleo extends Model
         'empresa_id',
         'titulo',
         'descripcion',
+        'requisitos',
+        'beneficios',
         'nivel_puesto_id',
         'area_estudio_id',
         'tipo_empleo',
@@ -50,6 +52,8 @@ class Empleo extends Model
     protected function casts(): array
     {
         return [
+            'requisitos' => 'array',
+            'beneficios' => 'array',
             'nivel_puesto_id' => 'integer',
             'area_estudio_id' => 'integer',
             'salario_min' => 'decimal:2',

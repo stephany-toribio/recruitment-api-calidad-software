@@ -21075,6 +21075,81 @@
           "response": []
         },
         {
+          "name": "19.8.1 Crear Vacante - Error Requisitos y Beneficios Inválidos (422)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "var limaHoy = new Date(Date.now() - 5 * 60 * 60 * 1000);",
+                  "function dia(offset) {",
+                  "    var d = new Date(limaHoy.getTime() + offset * 24 * 60 * 60 * 1000);",
+                  "    return d.toISOString().slice(0, 10);",
+                  "}",
+                  "pm.environment.set('ep02_fecha_ayer', dia(-1));",
+                  "pm.environment.set('ep02_fecha_inicio', dia(0));",
+                  "pm.environment.set('ep02_fecha_fin', dia(30));"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test('Devuelve VALIDATION_ERROR', function () {",
+                  "    pm.expect(pm.response.json().error_code).to.eql('VALIDATION_ERROR');",
+                  "});",
+                  "pm.test('Rechaza más de 10 requisitos y beneficios repetidos', function () {",
+                  "    var errors = pm.response.json().errors;",
+                  "    pm.expect(errors.requisitos).to.include('No puede registrar más de 10 requisitos.');",
+                  "    var repetidos = Object.keys(errors).filter(function (k) { return k.indexOf('beneficios.') === 0; });",
+                  "    pm.expect(repetidos.length).to.be.above(0);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ep02_token_empresa}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresas/me/vacantes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "empresas",
+                "me",
+                "vacantes"
+              ]
+            },
+            "description": "Salario máximo menor que el mínimo, inicio de vigencia ayer y sin habilidades. No se crea nada.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titulo\": \"Vacante con requisitos inválidos\",\n    \"descripcion\": \"## Sobre el puesto\\nBuscamos una persona para el equipo de producto que trabaje con Laravel, MySQL y APIs REST.\",\n    \"nivel_puesto_id\": {{ep02_nivel_id}},\n    \"area_estudio_id\": {{ep02_area_id}},\n    \"tipo_empleo\": \"remoto\",\n    \"salario_min\": 3500,\n    \"salario_max\": 5000,\n    \"fecha_inicio_vigencia\": \"{{ep02_fecha_inicio}}\",\n    \"fecha_fin_vigencia\": \"{{ep02_fecha_fin}}\",\n    \"max_contrataciones\": 2,\n    \"habilidades\": [\n        { \"habilidad_id\": {{ep02_hab_tecnica_id}}, \"requisito\": \"must_have\" },\n        { \"habilidad_id\": {{ep02_hab_blanda_id}}, \"requisito\": \"nice_to_have\" }\n    ],\n    \"requisitos\": [\"Requisito 1\", \"Requisito 2\", \"Requisito 3\", \"Requisito 4\", \"Requisito 5\", \"Requisito 6\", \"Requisito 7\", \"Requisito 8\", \"Requisito 9\", \"Requisito 10\", \"Requisito 11\"],\n    \"beneficios\": [\"Seguro EPS\", \"seguro eps\"]\n}"
+            }
+          },
+          "response": []
+        },
+        {
           "name": "19.9 Crear Vacante A - Éxito (201)",
           "event": [
             {
@@ -21111,6 +21186,11 @@
                   "pm.test('Guarda las 2 habilidades con su requisito', function () {",
                   "    var requisitos = pm.response.json().data.habilidades.map(function (h) { return h.requisito; });",
                   "    pm.expect(requisitos).to.have.members(['must_have', 'nice_to_have']);",
+                  "});",
+                  "pm.test('Guarda requisitos y beneficios', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    pm.expect(data.requisitos).to.eql(['Inglés intermedio', 'Disponibilidad inmediata']);",
+                  "    pm.expect(data.beneficios).to.eql(['Seguro EPS', 'Trabajo remoto']);",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -21147,7 +21227,7 @@
             "description": "VAC-02 (HU-03). Toda vacante nueva queda pendiente de revisión: no se publica ni se puede pagar.",
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"titulo\": \"Desarrollador Backend Laravel {{ep02_sufijo}}\",\n    \"descripcion\": \"## Sobre el puesto\\nBuscamos una persona para el equipo de producto que trabaje con Laravel, MySQL y APIs REST.\",\n    \"nivel_puesto_id\": {{ep02_nivel_id}},\n    \"area_estudio_id\": {{ep02_area_id}},\n    \"tipo_empleo\": \"remoto\",\n    \"salario_min\": 3500,\n    \"salario_max\": 5000,\n    \"fecha_inicio_vigencia\": \"{{ep02_fecha_inicio}}\",\n    \"fecha_fin_vigencia\": \"{{ep02_fecha_fin}}\",\n    \"max_contrataciones\": 2,\n    \"habilidades\": [\n        { \"habilidad_id\": {{ep02_hab_tecnica_id}}, \"requisito\": \"must_have\" },\n        { \"habilidad_id\": {{ep02_hab_blanda_id}}, \"requisito\": \"nice_to_have\" }\n    ]\n}"
+              "raw": "{\n    \"titulo\": \"Desarrollador Backend Laravel {{ep02_sufijo}}\",\n    \"descripcion\": \"## Sobre el puesto\\nBuscamos una persona para el equipo de producto que trabaje con Laravel, MySQL y APIs REST.\",\n    \"nivel_puesto_id\": {{ep02_nivel_id}},\n    \"area_estudio_id\": {{ep02_area_id}},\n    \"tipo_empleo\": \"remoto\",\n    \"salario_min\": 3500,\n    \"salario_max\": 5000,\n    \"fecha_inicio_vigencia\": \"{{ep02_fecha_inicio}}\",\n    \"fecha_fin_vigencia\": \"{{ep02_fecha_fin}}\",\n    \"max_contrataciones\": 2,\n    \"habilidades\": [\n        { \"habilidad_id\": {{ep02_hab_tecnica_id}}, \"requisito\": \"must_have\" },\n        { \"habilidad_id\": {{ep02_hab_blanda_id}}, \"requisito\": \"nice_to_have\" }\n    ],\n    \"requisitos\": [\"Inglés intermedio\", \"Disponibilidad inmediata\"],\n    \"beneficios\": [\"Seguro EPS\", \"Trabajo remoto\"]\n}"
             }
           },
           "response": []
@@ -22757,6 +22837,11 @@
                   "    var data = pm.response.json().data;",
                   "    pm.expect(data.titulo).to.eql('Desarrollador Backend Laravel ' + pm.environment.get('ep02ed_sufijo'));",
                   "    pm.expect(data.max_contrataciones).to.eql(3);",
+                  "});",
+                  "pm.test('Reemplaza requisitos y beneficios', function () {",
+                  "    var data = pm.response.json().data;",
+                  "    pm.expect(data.requisitos).to.eql(['Inglés avanzado']);",
+                  "    pm.expect(data.beneficios).to.eql([]);",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -22794,7 +22879,7 @@
             "description": "Editar una vacante que todavía no se revisó la deja pendiente.",
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"titulo\": \"Desarrollador Backend Laravel {{ep02ed_sufijo}}\",\n    \"descripcion\": \"## Sobre el puesto\\nBuscamos una persona para el equipo de producto que trabaje con Laravel, MySQL y APIs REST.\",\n    \"nivel_puesto_id\": {{ep02ed_nivel_id}},\n    \"area_estudio_id\": {{ep02ed_area_id}},\n    \"tipo_empleo\": \"remoto\",\n    \"salario_min\": 3500,\n    \"salario_max\": 5000,\n    \"fecha_inicio_vigencia\": \"{{ep02ed_fecha_inicio}}\",\n    \"fecha_fin_vigencia\": \"{{ep02ed_fecha_fin}}\",\n    \"max_contrataciones\": 3,\n    \"habilidades\": [\n        { \"habilidad_id\": {{ep02ed_hab_tecnica_id}}, \"requisito\": \"must_have\" },\n        { \"habilidad_id\": {{ep02ed_hab_blanda_id}}, \"requisito\": \"nice_to_have\" }\n    ]\n}"
+              "raw": "{\n    \"titulo\": \"Desarrollador Backend Laravel {{ep02ed_sufijo}}\",\n    \"descripcion\": \"## Sobre el puesto\\nBuscamos una persona para el equipo de producto que trabaje con Laravel, MySQL y APIs REST.\",\n    \"nivel_puesto_id\": {{ep02ed_nivel_id}},\n    \"area_estudio_id\": {{ep02ed_area_id}},\n    \"tipo_empleo\": \"remoto\",\n    \"salario_min\": 3500,\n    \"salario_max\": 5000,\n    \"fecha_inicio_vigencia\": \"{{ep02ed_fecha_inicio}}\",\n    \"fecha_fin_vigencia\": \"{{ep02ed_fecha_fin}}\",\n    \"max_contrataciones\": 3,\n    \"habilidades\": [\n        { \"habilidad_id\": {{ep02ed_hab_tecnica_id}}, \"requisito\": \"must_have\" },\n        { \"habilidad_id\": {{ep02ed_hab_blanda_id}}, \"requisito\": \"nice_to_have\" }\n    ],\n    \"requisitos\": [\"Inglés avanzado\"],\n    \"beneficios\": []\n}"
             }
           },
           "response": []

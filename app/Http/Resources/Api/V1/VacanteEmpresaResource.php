@@ -23,6 +23,8 @@ class VacanteEmpresaResource extends JsonResource
             'id' => $this->id,
             'titulo' => $this->titulo,
             'descripcion' => $this->descripcion,
+            'requisitos' => $this->requisitos ?? [],
+            'beneficios' => $this->beneficios ?? [],
 
             'nivel_puesto' => $this->whenLoaded(
                 'nivelPuesto',

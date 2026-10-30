@@ -60,6 +60,8 @@ class VacanteDetalleResource extends JsonResource
             'id' => (int) $vacante->getKey(),
             'titulo' => $vacante->titulo,
             'descripcion' => $vacante->descripcion,
+            'requisitos' => $vacante->requisitos ?? [],
+            'beneficios' => $vacante->beneficios ?? [],
 
             'empresa' => [
                 'razon_social' => $empresa->razon_social,
