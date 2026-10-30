@@ -94,6 +94,11 @@ class RevisionVacanteService
         $empresa = Empresa::where('usuario_id', $usuarioId)->firstOrFail();
 
         return Empleo::with(self::RELACIONES_EMPRESA)
+            ->withCount([
+                'postulaciones',
+                'postulaciones as postulaciones_semana_count' => fn ($q) => $q
+                    ->where('fecha_postulacion', '>=', now()->subDays(7)),
+            ])
             ->where('empresa_id', $empresa->id)
             ->latest()
             ->orderByDesc('id')

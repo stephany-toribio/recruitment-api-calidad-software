@@ -86,6 +86,16 @@ class VacanteEmpresaResource extends JsonResource
                 'publicada_en' => $this->publicadaEn(),
             ],
 
+            'postulaciones_count' => $this->whenCounted(
+                'postulaciones',
+                fn ($total) => (int) $total
+            ),
+
+            'postulaciones_semana_count' => $this->whenCounted(
+                'postulaciones_semana',
+                fn ($total) => (int) $total
+            ),
+
             'creado_en' => $this->created_at,
             'eliminado_en' => $this->deleted_at,
         ];
