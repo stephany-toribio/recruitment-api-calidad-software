@@ -48,6 +48,18 @@ class RequisitosBeneficiosVacanteRequestTest extends TestCase
         DB::table('habilidades')->insert([
             'id' => 1, 'nombre' => 'PHP', 'tipo_habilidad' => 'tecnica', 'area_estudio_id' => 1, 'activo' => true,
         ]);
+        DB::table('habilidades')->insert(array_map(fn ($id) => [
+            'id' => $id, 'nombre' => "Blanda {$id}", 'tipo_habilidad' => 'blanda', 'area_estudio_id' => null, 'activo' => true,
+        ], range(2, 11)));
+    }
+
+    /** La vacante exige entre 5 y 10 habilidades, sumando técnicas y blandas */
+    private function habilidades(int $cantidad): array
+    {
+        return array_map(fn ($id) => [
+            'habilidad_id' => $id,
+            'requisito' => $id === 1 ? 'must_have' : 'nice_to_have',
+        ], range(1, $cantidad));
     }
 
     private function vacanteValida(array $extra = []): array
@@ -63,7 +75,7 @@ class RequisitosBeneficiosVacanteRequestTest extends TestCase
             'fecha_inicio_vigencia' => $hoy->toDateString(),
             'fecha_fin_vigencia' => $hoy->copy()->addDays(30)->toDateString(),
             'max_contrataciones' => 1,
-            'habilidades' => [['habilidad_id' => 1, 'requisito' => 'must_have']],
+            'habilidades' => $this->habilidades(5),
             ...$extra,
         ];
     }
@@ -87,6 +99,26 @@ class RequisitosBeneficiosVacanteRequestTest extends TestCase
         }
 
         $this->fail('Se esperaba un error de validación.');
+    }
+
+    public function test_acepta_entre_cinco_y_diez_habilidades(): void
+    {
+        $this->assertCount(5, $this->validar($this->vacanteValida())['habilidades']);
+        $this->assertCount(10, $this->validar($this->vacanteValida(['habilidades' => $this->habilidades(10)]))['habilidades']);
+    }
+
+    public function test_rechaza_menos_de_cinco_habilidades(): void
+    {
+        $errores = $this->erroresDe($this->vacanteValida(['habilidades' => $this->habilidades(4)]));
+
+        $this->assertSame(['Seleccione al menos 5 habilidades, sumando técnicas y blandas.'], $errores['habilidades']);
+    }
+
+    public function test_rechaza_mas_de_diez_habilidades(): void
+    {
+        $errores = $this->erroresDe($this->vacanteValida(['habilidades' => $this->habilidades(11)]));
+
+        $this->assertSame(['No puede asociar más de 10 habilidades a la vacante, sumando técnicas y blandas.'], $errores['habilidades']);
     }
 
     public function test_son_opcionales(): void

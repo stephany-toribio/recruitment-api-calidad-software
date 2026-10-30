@@ -159,7 +159,7 @@ class RegistrarVacanteRequest extends FormRequest
                 'required',
                 'array',
                 'list',
-                'min:1',
+                'min:5',
                 'max:10',
             ],
 
@@ -277,11 +277,11 @@ class RegistrarVacanteRequest extends FormRequest
             'max_contrataciones.min' => 'Debe permitir al menos una contratación.',
             'max_contrataciones.max' => 'El máximo de contrataciones no debe superar 65535.',
 
-            'habilidades.required' => 'Seleccione al menos una habilidad.',
+            'habilidades.required' => 'Seleccione entre 5 y 10 habilidades, sumando técnicas y blandas.',
             'habilidades.array' => 'Las habilidades deben enviarse como una lista.',
             'habilidades.list' => 'Las habilidades deben tener índices consecutivos.',
-            'habilidades.min' => 'Seleccione al menos una habilidad.',
-            'habilidades.max' => 'No puede asociar más de 10 habilidades a la vacante.',
+            'habilidades.min' => 'Seleccione al menos 5 habilidades, sumando técnicas y blandas.',
+            'habilidades.max' => 'No puede asociar más de 10 habilidades a la vacante, sumando técnicas y blandas.',
 
             'habilidades.*.required' => 'Proporcione los datos de cada habilidad.',
             'habilidades.*.array' => 'Cada habilidad debe contener únicamente habilidad_id y requisito.',

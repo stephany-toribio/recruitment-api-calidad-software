@@ -23,6 +23,9 @@ class RegistrarVacanteHttpMySqlTest extends TestCase
 
     private int $habilidadId;
 
+    /** @var int[] Completan el mínimo de 5 habilidades que exige la vacante */
+    private array $habilidadesExtra = [];
+
     private bool $transaccionIniciada = false;
 
     protected function setUp(): void
@@ -81,6 +84,17 @@ class RegistrarVacanteHttpMySqlTest extends TestCase
                 'created_at' => $ahora,
                 'updated_at' => $ahora,
             ]);
+
+            foreach (range(1, 4) as $numero) {
+                $this->habilidadesExtra[] = DB::table('habilidades')->insertGetId([
+                    'nombre' => "Habilidad HTTP {$etiqueta} {$numero}",
+                    'tipo_habilidad' => 'blanda',
+                    'area_estudio_id' => null,
+                    'activo' => true,
+                    'created_at' => $ahora,
+                    'updated_at' => $ahora,
+                ]);
+            }
 
             $this->token = $this->empresaUsuario
                 ->createToken('prueba-hu04')
@@ -146,6 +160,10 @@ class RegistrarVacanteHttpMySqlTest extends TestCase
                     'habilidad_id' => $this->habilidadId,
                     'requisito' => 'must_have',
                 ],
+                ...array_map(fn (int $id) => [
+                    'habilidad_id' => $id,
+                    'requisito' => 'nice_to_have',
+                ], $this->habilidadesExtra),
             ],
         ];
     }
