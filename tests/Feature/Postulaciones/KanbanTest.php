@@ -282,7 +282,7 @@ class KanbanTest extends TestCase
 
     public function test_rechazo_valida_motivo_y_lo_guarda_en_historial(): void
     {
-        $postulacion = $this->postular();
+        $postulacion = $this->postular(EstadoPostulacion::EN_REVISION);
 
         DB::table('motivos_rechazo')->insert([
             'id' => 99,
@@ -495,7 +495,7 @@ class KanbanTest extends TestCase
 
     public function test_fallo_del_correo_no_revierte_el_rechazo(): void
     {
-        $postulacion = $this->postular();
+        $postulacion = $this->postular(EstadoPostulacion::EN_REVISION);
 
         $mock = Mockery::mock(NotificacionPostulacionService::class);
 
@@ -523,5 +523,60 @@ class KanbanTest extends TestCase
         ]);
 
         $this->assertDatabaseCount('historial_postulaciones', 1);
+    }
+
+        public function test_no_permite_rechazar_desde_recibido(): void
+    {
+        $postulacion = $this->postular(EstadoPostulacion::RECIBIDO);
+
+        $mock = Mockery::mock(NotificacionPostulacionService::class);
+        $mock->shouldNotReceive('notificarDecision');
+
+        $this->instance(NotificacionPostulacionService::class, $mock);
+
+        $this->patchJson($this->url($postulacion, 'rechazar'), [
+            'motivo_rechazo_id' => 1,
+        ])
+            ->assertStatus(409)
+            ->assertJsonPath('error_code', 'INVALID_TRANSITION');
+
+        $this->assertSame(
+            EstadoPostulacion::idDe(EstadoPostulacion::RECIBIDO),
+            $postulacion->fresh()->estado_postulacion_id
+        );
+
+        $this->assertNull($postulacion->fresh()->retirada_en);
+        $this->assertDatabaseCount('postulaciones', 1);
+        $this->assertDatabaseCount('historial_postulaciones', 0);
+    }
+
+    public function test_permite_rechazar_desde_entrevista(): void
+    {
+        $postulacion = $this->postular(EstadoPostulacion::ENTREVISTA);
+
+        $this->patchJson($this->url($postulacion, 'rechazar'), [
+            'motivo_rechazo_id' => 1,
+        ])
+            ->assertOk()
+            ->assertJsonPath('data.estado.codigo', 'rechazado')
+            ->assertJsonPath('data.motivo_rechazo', 'Perfil no se ajusta');
+
+        $rechazadoId = EstadoPostulacion::idDe(
+            EstadoPostulacion::RECHAZADO
+        );
+
+        $this->assertSame(
+            $rechazadoId,
+            $postulacion->fresh()->estado_postulacion_id
+        );
+
+        $this->assertDatabaseHas('historial_postulaciones', [
+            'postulacion_id' => $postulacion->id,
+            'estado_postulacion_id' => $rechazadoId,
+            'motivo_rechazo_id' => 1,
+        ]);
+
+        $this->assertDatabaseCount('historial_postulaciones', 1);
+        $this->assertNull($postulacion->fresh()->retirada_en);
     }
 }

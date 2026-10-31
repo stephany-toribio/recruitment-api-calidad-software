@@ -16,7 +16,6 @@ class KanbanService
     private const TRANSICIONES = [
         EstadoPostulacion::RECIBIDO => [
             'avanzar' => EstadoPostulacion::EN_REVISION,
-            'rechazar' => EstadoPostulacion::RECHAZADO,
         ],
         EstadoPostulacion::EN_REVISION => [
             'avanzar' => EstadoPostulacion::ENTREVISTA,
