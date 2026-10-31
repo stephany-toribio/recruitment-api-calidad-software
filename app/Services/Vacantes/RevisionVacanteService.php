@@ -18,24 +18,38 @@ class RevisionVacanteService
 
     private const RELACIONES_EMPRESA = ['nivelPuesto', 'areaEstudio', 'habilidades', 'revision', 'pagos'];
 
+    public const TODAS = 'todas';
+
         public function listar(
         string $revision = RevisionVacante::PENDIENTE,
         int $page = 1
     ): LengthAwarePaginator {
         $consulta = Empleo::with(self::RELACIONES_ADMIN);
 
+        // Pendientes es una cola: primero la que más espera. Las decididas, la decisión más reciente primero
         if ($revision === RevisionVacante::PENDIENTE) {
-            $consulta->whereDoesntHave('revision');
+            $consulta->whereDoesntHave('revision')
+                ->orderBy('empleos.created_at')
+                ->orderBy('empleos.id');
+        } elseif ($revision === self::TODAS) {
+            $consulta->orderByDesc('empleos.created_at')
+                ->orderByDesc('empleos.id');
         } else {
             $consulta->whereHas(
                 'revision',
                 fn (Builder $query) => $query->where('decision', $revision)
-            );
+            )
+                ->orderByDesc(
+                    RevisionVacante::query()
+                        ->select('revisiones_vacante.created_at')
+                        ->whereColumn('revisiones_vacante.empleo_id', 'empleos.id')
+                        ->whereNull('revisiones_vacante.invalidada_en')
+                        ->limit(1)
+                )
+                ->orderByDesc('empleos.id');
         }
 
         return $consulta
-            ->orderBy('created_at')
-            ->orderBy('id')
             ->paginate(
                 perPage: 10,
                 columns: ['*'],

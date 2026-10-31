@@ -26,7 +26,7 @@ class RevisionVacanteController extends BaseApiController
                 'sometimes',
                 'required',
                 'string',
-                'in:pendiente,aprobada,no_aprobada',
+                'in:pendiente,aprobada,no_aprobada,todas',
             ],
             'page' => [
                 'sometimes',

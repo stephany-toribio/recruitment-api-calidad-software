@@ -189,6 +189,76 @@ class ListadoModeracionTest extends TestCase
         }
     }
 
+    public function test_todas_lista_cada_estado_sin_eliminadas(): void
+    {
+        $pendiente = $this->crearVacante();
+        $aprobada = $this->crearVacante(RevisionVacante::APROBADA);
+        $noAprobada = $this->crearVacante(RevisionVacante::NO_APROBADA);
+        $this->crearVacante(RevisionVacante::APROBADA)->delete();
+
+        $respuesta = $this->getJson(self::RUTA.'?revision=todas')
+            ->assertOk()
+            ->assertJsonCount(3, 'data')
+            ->assertJsonPath('meta.total', 3);
+
+        $this->assertSame(
+            [
+                $noAprobada->id => 'no_aprobada',
+                $aprobada->id => 'aprobada',
+                $pendiente->id => 'pendiente',
+            ],
+            array_column(
+                array_map(fn (array $v) => ['id' => $v['id'], 'estado' => $v['revision']['estado']], $respuesta->json('data')),
+                'estado',
+                'id'
+            )
+        );
+    }
+
+    public function test_ordena_la_cola_por_antiguedad_y_las_decididas_por_decision(): void
+    {
+        $antigua = $this->crearVacante();
+        $this->travel(1)->days();
+        $reciente = $this->crearVacante();
+        $this->travel(1)->days();
+        $aprobadaAyer = $this->crearVacante(RevisionVacante::APROBADA);
+
+        $this->getJson(self::RUTA.'?revision=pendiente')
+            ->assertJsonPath('data.0.id', $antigua->id)
+            ->assertJsonPath('data.1.id', $reciente->id);
+
+        $this->travel(1)->days();
+        RevisionVacante::create([
+            'empleo_id' => $antigua->id,
+            'admin_id' => $this->admin->id,
+            'decision' => RevisionVacante::APROBADA,
+        ]);
+
+        $this->getJson(self::RUTA.'?revision=aprobada')
+            ->assertJsonPath('data.0.id', $antigua->id)
+            ->assertJsonPath('data.1.id', $aprobadaAyer->id);
+
+        $this->getJson(self::RUTA.'?revision=todas')
+            ->assertJsonPath('data.0.id', $aprobadaAyer->id)
+            ->assertJsonPath('data.1.id', $reciente->id)
+            ->assertJsonPath('data.2.id', $antigua->id);
+    }
+
+    public function test_todas_pagina_igual_que_los_demas_filtros(): void
+    {
+        foreach (range(1, 6) as $numero) {
+            $this->crearVacante();
+            $this->crearVacante(RevisionVacante::APROBADA);
+        }
+
+        $this->getJson(self::RUTA.'?revision=todas&page=2')
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonPath('meta.current_page', 2)
+            ->assertJsonPath('meta.total', 12)
+            ->assertJsonPath('meta.last_page', 2);
+    }
+
     public function test_sin_filtro_lista_pendientes_y_conserva_ruta_anterior(): void
     {
         $pendiente = $this->crearVacante();
@@ -288,7 +358,7 @@ class ListadoModeracionTest extends TestCase
         $obtenidos = array_merge($idsPrimera, $idsSegunda);
 
         $this->assertSame([], array_intersect($idsPrimera, $idsSegunda));
-        $this->assertSame($esperados, $obtenidos);
+        $this->assertSame(array_reverse($esperados), $obtenidos);
     }
 
     public function test_excluye_eliminadas_de_cada_categoria(): void
