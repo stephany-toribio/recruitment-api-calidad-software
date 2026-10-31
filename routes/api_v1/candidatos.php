@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\CandidatoController;
+use App\Http\Controllers\Api\V1\VacanteGuardadaController;
 
 Route::post('/candidatos', [CandidatoController::class, 'store'])
     ->middleware(['precognitive']);
@@ -22,7 +23,13 @@ Route::middleware(['auth:sanctum', 'rol:candidato'])->group(function() {
     // catálogo global + sus organizaciones personalizadas
     Route::get('/candidatos/me/organizaciones', [CandidatoController::class, 'organizaciones']);
 
-}); 
+    Route::get('/candidatos/me/vacantes-guardadas', [VacanteGuardadaController::class, 'index']);
+    Route::put('/candidatos/me/vacantes-guardadas/{vacante}', [VacanteGuardadaController::class, 'guardar'])
+        ->whereNumber('vacante');
+    Route::delete('/candidatos/me/vacantes-guardadas/{vacante}', [VacanteGuardadaController::class, 'quitar'])
+        ->whereNumber('vacante');
+
+});
 
 Route::middleware(['auth:sanctum', 'rol:empresa,admin'])->group(function () {
     Route::get('/candidatos/{candidato}', [CandidatoController::class, 'show']);

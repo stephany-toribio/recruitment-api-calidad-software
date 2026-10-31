@@ -88,7 +88,6 @@ class VacanteBusquedaResource extends JsonResource
                     'id' => (int) $habilidad->id,
                     'nombre' => $habilidad->nombre,
                     'tipo_habilidad' => $habilidad->tipo_habilidad,
-                    'requisito' => $habilidad->pivot->tipo_requisito,
                 ])
                 ->values()
                 ->all(),

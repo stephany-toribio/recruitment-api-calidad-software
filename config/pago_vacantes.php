@@ -17,7 +17,7 @@ return [
 
     // 'puesto'  → monto = tarifa × max_contrataciones de la vacante
     // 'vacante' → monto = tarifa (un solo cobro por anuncio)
-    'unidad_cobro' => 'puesto',
+    'unidad_cobro' => 'vacante',
 
     'moneda' => 'PEN',
 

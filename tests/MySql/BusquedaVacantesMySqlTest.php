@@ -1017,17 +1017,11 @@ class BusquedaVacantesMySqlTest extends TestCase
             'id',
             'nombre',
             'tipo_habilidad',
-            'requisito',
         ], array_keys($datos['habilidades'][0]));
 
         $this->assertSame(
             $this->pythonId,
             $datos['habilidades'][0]['id']
-        );
-
-        $this->assertSame(
-            'must_have',
-            $datos['habilidades'][0]['requisito']
         );
     }
 
@@ -1056,9 +1050,9 @@ class BusquedaVacantesMySqlTest extends TestCase
         $this->assertNull($datos['salario_max']);
         $this->assertSame('Arequipa', $datos['ubicacion']);
 
-        $this->assertSame(
-            'nice_to_have',
-            $datos['habilidades'][0]['requisito']
+        $this->assertArrayNotHasKey(
+            'requisito',
+            $datos['habilidades'][0]
         );
     }
 
