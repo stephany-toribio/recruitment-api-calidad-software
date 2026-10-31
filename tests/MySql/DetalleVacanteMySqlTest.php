@@ -683,7 +683,8 @@ class DetalleVacanteMySqlTest extends TestCase
                 'data.postulacion.id',
                 (int) $postulacion->getKey()
             )
-            ->assertJsonPath('data.postulacion.retirada', true);
+            ->assertJsonPath('data.postulacion.retirada', true)
+            ->assertJsonMissingPath('data.habilidades.0.requisito');
     }
 
     public function test_http_ambos_endpoints_rechazan_solicitudes_sin_token(): void

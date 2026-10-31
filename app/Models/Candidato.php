@@ -68,7 +68,12 @@ class Candidato extends Model
     //Relacion con postulacion
     public function postulaciones():HasMany
     {
-        return $this->hasMany(Postulacion::class, 'candidato_id'); 
+        return $this->hasMany(Postulacion::class, 'candidato_id');
+    }
+
+    public function vacantesGuardadas(): HasMany
+    {
+        return $this->hasMany(VacanteGuardada::class, 'candidato_id');
     }
 
 };
