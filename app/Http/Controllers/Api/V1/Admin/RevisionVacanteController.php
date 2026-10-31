@@ -19,6 +19,43 @@ class RevisionVacanteController extends BaseApiController
     ) {
     }
 
+        public function index(Request $request): JsonResponse
+    {
+        $filtros = $request->validate([
+            'revision' => [
+                'sometimes',
+                'required',
+                'string',
+                'in:pendiente,aprobada,no_aprobada',
+            ],
+            'page' => [
+                'sometimes',
+                'required',
+                'integer',
+                'min:1',
+            ],
+        ]);
+
+        $pagina = $this->revisionService->listar(
+            $filtros['revision'] ?? 'pendiente',
+            (int) ($filtros['page'] ?? 1)
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Listado administrativo de vacantes',
+            'data' => VacanteRevisionResource::collection(
+                $pagina->getCollection()
+            )->resolve($request),
+            'meta' => [
+                'current_page' => $pagina->currentPage(),
+                'per_page' => $pagina->perPage(),
+                'total' => $pagina->total(),
+                'last_page' => $pagina->lastPage(),
+            ],
+        ]);
+    }
+
     public function pendientes(): JsonResponse
     {
         return $this->successResponse(

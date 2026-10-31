@@ -3,6 +3,8 @@
 namespace App\Services\Vacantes;
 
 use App\Exceptions\AprobacionMasivaRechazadaException;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use App\Exceptions\BusinessException;
 use App\Models\Empleo;
 use App\Models\Empresa;
@@ -16,6 +18,32 @@ class RevisionVacanteService
 
     private const RELACIONES_EMPRESA = ['nivelPuesto', 'areaEstudio', 'habilidades', 'revision', 'pagos'];
 
+        public function listar(
+        string $revision = RevisionVacante::PENDIENTE,
+        int $page = 1
+    ): LengthAwarePaginator {
+        $consulta = Empleo::with(self::RELACIONES_ADMIN);
+
+        if ($revision === RevisionVacante::PENDIENTE) {
+            $consulta->whereDoesntHave('revision');
+        } else {
+            $consulta->whereHas(
+                'revision',
+                fn (Builder $query) => $query->where('decision', $revision)
+            );
+        }
+
+        return $consulta
+            ->orderBy('created_at')
+            ->orderBy('id')
+            ->paginate(
+                perPage: 10,
+                columns: ['*'],
+                pageName: 'page',
+                page: $page
+            );
+    }
+
     public function pendientes(): Collection
     {
         return Empleo::with(self::RELACIONES_ADMIN)
@@ -24,6 +52,7 @@ class RevisionVacanteService
             ->orderBy('id')
             ->get();
     }
+
 
     public function detalle(Empleo $vacante): Empleo
     {
