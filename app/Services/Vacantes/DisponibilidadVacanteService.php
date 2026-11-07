@@ -3,9 +3,12 @@
 namespace App\Services\Vacantes;
 
 use App\Models\Empleo;
+use App\Models\EstadoPostulacion;
 use App\Models\PagoVacante;
+use App\Models\Postulacion;
 use App\Models\RevisionVacante;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 
 class DisponibilidadVacanteService
 {
@@ -19,11 +22,13 @@ class DisponibilidadVacanteService
                 ->where('empleos.estado_empleo', Empleo::ACTIVA)
                 ->where('empleos.fecha_inicio_vigencia', '<=', $hoy)
                 ->where('empleos.fecha_fin_vigencia', '>=', $hoy)
+                ->where($this->contratados(), '<', DB::raw('empleos.numero_vacantes'))
         );
     }
 
-    // Vacantes que se publicaron y ya no reciben postulaciones: pausadas, finalizadas o eliminadas, de empresa activa.
-    // Cualquier candidato puede ver su detalle en modo histórico. Las que nunca se publicaron siguen ocultas
+    // Vacantes que se publicaron y ya no reciben postulaciones: pausadas, finalizadas, eliminadas o con todos
+    // los puestos cubiertos, de empresa activa. Cualquier candidato puede ver su detalle en modo histórico.
+    // Las que nunca se publicaron siguen ocultas
     public function aplicarHistorico(Builder $consulta): Builder
     {
         return $this->publicadaDeEmpresaActiva(
@@ -36,8 +41,23 @@ class DisponibilidadVacanteService
                             Empleo::PAUSADA,
                             Empleo::FINALIZADA,
                         ])
+                        ->orWhere($this->contratados(), '>=', DB::raw('empleos.numero_vacantes'))
                 )
         );
+    }
+
+    private function contratados(): Builder
+    {
+        return Postulacion::query()
+            ->selectRaw('count(*)')
+            ->whereColumn('postulaciones.empleo_id', 'empleos.id')
+            ->whereHas(
+                'estado',
+                fn (Builder $estado) => $estado->where(
+                    'estados_postulacion.nombre',
+                    EstadoPostulacion::CONTRATADO
+                )
+            );
     }
 
     // Aprobada (revisión vigente), con pago exitoso y de una empresa con la cuenta activa
