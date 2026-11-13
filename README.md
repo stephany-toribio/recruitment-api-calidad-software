@@ -1,39 +1,77 @@
-# Portal de Empleos - API Backend
+# Portal de Empleos — API para Calidad de Software
 
-API REST transaccional desarrollada para la plataforma de intermediación laboral entre candidatos y empresas. Implementada en Laravel 11 y PHP 8.2 sobre contenedores Docker con MySQL 8.0.
+API REST del portal CREO+, implementada con Laravel 12 y Sanctum 4. El proyecto requiere PHP 8.2 o superior; el Dockerfile utiliza PHP 8.3 y Docker Compose proporciona MySQL 8.0.
 
----
+Frontend del mismo proyecto: [web-app-calidad-software](https://github.com/stephany-toribio/web-app-calidad-software).
 
-## 1. Requisitos Previos
+## Alcance para Calidad de Software
 
-Para la ejecución del entorno contenerizado se requiere:
-- Docker Desktop (con Docker Engine y Docker Compose v2+)
-- Git
+El objetivo de esta copia del Portal de Empleos es evaluar un proceso completo con datos persistentes, permisos y decisiones de aprobación. La base de trabajo es `develop`; `main` conserva una versión anterior y las ramas `deploy/*` tienen ajustes de despliegue que deben revisarse antes de publicar una entrega.
 
-Opcional (para ejecución nativa sin Docker):
-- PHP >= 8.2 (con extensiones `pdo_mysql`, `mbstring`, `openssl`, `tokenizer`, `xml`, `curl`)
-- Composer >= 2.6
-- MySQL Server >= 8.0
+### Flujo que se evaluará
 
----
+1. Registrar candidatos y empresas e iniciar y cerrar sesión.
+2. Registrar una vacante desde la cuenta de empresa.
+3. Aprobar o no aprobar la vacante desde administración y completar el pago simulado cuando corresponda.
+4. Buscar una vacante disponible, consultar su detalle y postular como candidato.
+5. Revisar postulaciones desde la empresa propietaria y avanzar por Recibido, En revisión y Entrevista, hasta Contratado o Rechazado, según las transiciones permitidas.
+6. Consultar el resultado y el historial; comprobar el retiro de una postulación cuando el estado lo permita.
 
-## 2. Puesta en Marcha con Docker (Entorno Oficial)
+### Reglas que deben tener evidencia
 
-El proyecto incluye configuración completa mediante Docker Compose (`portal_empleos_app` y `portal_empleos_mysql`).
+- Validación de campos, datos duplicados y persistencia después de volver a consultar.
+- Autenticación, sesión y permisos por rol y por propietario del recurso.
+- Publicación y disponibilidad de la vacante: aprobación, pago simulado exitoso, empresa activa, vigencia, estado y puestos aún disponibles.
+- Una sola postulación por candidato y vacante, incluso ante solicitudes concurrentes.
+- Transiciones válidas, motivo de rechazo cuando corresponda e historial de cambios.
+- Integridad de los datos ante errores, retiros y solicitudes simultáneas.
 
-### Paso 1: Configurar variables de entorno
-Dentro de la carpeta `portal-empleos-api`, verificar o generar el archivo `.env`. Si no existe, crear una copia a partir del ejemplo:
+### Herramientas y entregables previstos
+
+| Herramienta | Qué se comprobará | Evidencia esperada |
+| --- | --- | --- |
+| Karate | Contratos API, validaciones, permisos, postulaciones y decisiones | Escenarios `.feature`, datos de prueba y reporte de ejecución |
+| JMeter | Consultas, autenticación y postulaciones bajo concurrencia controlada | Plan `.jmx`, datos CSV cuando correspondan, resultados y reporte HTML |
+| Selenium | Flujo web del candidato y de la empresa | Código, resultados y capturas de los casos ejecutados |
+| Appium | Inicio de sesión, búsqueda, detalle y postulación en Android | Código, capabilities, versiones del dispositivo o emulador y resultados |
+| Jira | Relación entre requisitos, casos, ejecuciones y defectos | Tickets y enlaces a las evidencias |
+
+Estas evidencias están previstas para el curso. Los archivos o pantallas presentes en el repositorio no equivalen a una ejecución aprobada de las pruebas.
+
+### Móvil y PWA
+
+La prueba móvil debe ejecutarse con Appium en un dispositivo o emulador Android. La vista adaptable de un navegador de escritorio no sustituye esa ejecución.
+
+La PWA es la opción propuesta para una entrega instalable. Su aceptación como producto móvil debe contrastarse con el requisito del profesor. Appium también permite automatizar Chrome en Android; técnicamente no requiere convertir primero la web en PWA. Si se elige PWA, habrá que implementar y verificar manifiesto, iconos, instalación, navegación, sesión y servicio de actualización o caché. No se presenta como funcionalidad terminada.
+
+### Límites de esta entrega
+
+El matching y la integración con servicios Python son complementarios: no bloquean el flujo principal ni las cuatro automatizaciones. Los pagos se simulan; no se integra una pasarela bancaria real. Los paneles y catálogos se incluirán en las pruebas cuando sean necesarios para preparar o completar el flujo elegido.
+
+Las pruebas deben usar datos ficticios y una base de QA aislada. Antes de cada ejecución se registrarán las versiones del frontend y la API, la configuración utilizada, los datos y el resultado esperado. Un despliegue que abre correctamente no acredita por sí solo el cumplimiento del alcance.
+
+## Estado de la base revisada
+
+En `develop` existen autenticación, controles de rol, perfiles, vacantes, moderación, pago simulado, postulaciones, retiro, Kanban e historial. También hay pruebas PHPUnit de permisos, validación, disponibilidad, postulaciones y concurrencia. Su presencia no acredita que hayan sido ejecutadas correctamente en el entorno de esta copia.
+
+El README anterior describía Laravel 11 y endpoints que ya cambiaron. Las rutas actuales están en `routes/api_v1/` y se cargan desde `routes/api.php`, con prefijo `/api/v1`.
+
+## Requisitos y preparación
+
+- Git con acceso al repositorio privado.
+- Docker Engine y Docker Compose v2, o Docker Desktop.
+- Para ejecutar sin Docker: PHP 8.2 o superior, Composer 2 y MySQL 8.0 con las extensiones requeridas por Composer.
 
 ```bash
+git clone --branch develop https://github.com/stephany-toribio/recruitment-api-calidad-software.git
+cd recruitment-api-calidad-software
 cp .env.example .env
 ```
 
-Asegurarse de que los parámetros de base de datos coincidan con los servicios de Docker:
+Para el entorno Docker local, configurar en `.env`:
 
 ```ini
-APP_NAME=PortalEmpleos
 APP_ENV=local
-APP_KEY=
 APP_DEBUG=true
 APP_URL=http://localhost:8000
 DB_CONNECTION=mysql
@@ -42,208 +80,101 @@ DB_PORT=3306
 DB_DATABASE=portal_empleos
 DB_USERNAME=laravel
 DB_PASSWORD=secret
+CACHE_STORE=file
+SESSION_DRIVER=file
+QUEUE_CONNECTION=sync
 ```
 
-### Paso 2: Construir y levantar contenedores
-Ejecutar el siguiente comando en la raíz del proyecto para descargar imágenes, compilar el contenedor de PHP y levantar los servicios en segundo plano:
+Estos valores de conexión corresponden exclusivamente al Compose local de desarrollo. `APP_KEY` se genera en el siguiente paso. Para una instalación sin Docker, usar la dirección del servidor MySQL local en `DB_HOST` y sus propias credenciales.
+
+## Primer arranque con Docker
+
+Instalar las dependencias antes de iniciar el servicio persistente de la API:
 
 ```bash
-docker compose up -d --build
-```
-
-Verificar que los dos contenedores se encuentren en estado activo:
-
-```bash
+docker compose build app
+docker compose run --rm --no-deps app composer install
+docker compose up -d
+docker compose exec app php artisan key:generate
+docker compose exec app php artisan migrate --seed
 docker compose ps
 ```
 
-Deberá mostrarse:
-- `portal_empleos_mysql` (Healthy, puerto 3306)
-- `portal_empleos_app` (Up, puerto 8000)
+`docker compose run` crea un contenedor temporal para instalar Composer aunque `app` todavía no pueda iniciar. El comando del servicio ejecuta `php artisan serve`, que necesita `vendor/` desde el primer arranque.
 
-### Paso 3: Instalación de dependencias y generación de llave
-Si es la primera vez que se clona el proyecto, ejecutar Composer dentro del contenedor:
+Los servicios son `app` y `mysql`; los contenedores se llaman `portal_empleos_app` y `portal_empleos_mysql`. La API local queda en `http://localhost:8000/api/v1`.
+
+Las migraciones y seeders inicializan roles, administrador y catálogos. Consultar los seeders para preparar las cuentas de la demostración; no utilizar datos personales reales. El borrado y recreación de una base no forma parte del arranque habitual.
+
+## Endpoints principales del flujo
+
+Todos los paths siguientes parten de `/api/v1`. Las rutas protegidas utilizan `Authorization: Bearer <token>`.
+
+| Operación | Método | Path | Acceso |
+| --- | --- | --- | --- |
+| Registrar candidato | POST | `/candidatos` | Público; valida los datos |
+| Registrar empresa | POST | `/empresas` | Público; valida los datos |
+| Iniciar sesión | POST | `/auth/login` | Público |
+| Consultar sesión | GET | `/auth/me` | Autenticado |
+| Cerrar sesión | POST | `/auth/logout` | Autenticado |
+| Consultar o actualizar perfil propio | GET / PUT | `/candidatos/me` | Candidato |
+| Consultar o actualizar empresa propia | GET / PUT | `/empresas/me` | Empresa |
+| Registrar o listar vacantes propias | POST / GET | `/empresas/me/vacantes` | Empresa |
+| Aprobar vacante | PATCH | `/admin/vacantes/{vacante}/aprobar` | Administrador |
+| No aprobar vacante | PATCH | `/admin/vacantes/{vacante}/no-aprobar` | Administrador |
+| Registrar pago simulado | POST | `/empresas/me/vacantes/{vacante}/pago` | Empresa propietaria |
+| Buscar vacantes disponibles | GET | `/vacantes` | Candidato |
+| Consultar detalle disponible | GET | `/vacantes/{vacante}` | Candidato |
+| Postular o listar postulaciones propias | POST / GET | `/candidatos/me/postulaciones` | Candidato |
+| Retirar postulación | PATCH | `/candidatos/me/postulaciones/{postulacion}/retirar` | Candidato propietario |
+| Consultar Kanban | GET | `/empresas/me/vacantes/{vacante}/postulaciones` | Empresa propietaria |
+| Avanzar postulación | PATCH | `/empresas/me/vacantes/{vacante}/postulaciones/{postulacion}/avanzar` | Empresa propietaria |
+| Rechazar postulación | PATCH | `/empresas/me/vacantes/{vacante}/postulaciones/{postulacion}/rechazar` | Empresa propietaria |
+| Contratar candidato | PATCH | `/empresas/me/vacantes/{vacante}/postulaciones/{postulacion}/contratar` | Empresa propietaria |
+| Consultar historial | GET | `/empresas/me/vacantes/{vacante}/postulaciones/historial` | Empresa propietaria |
+
+El formulario de postulación envía `vacante_id`; la identidad del candidato se obtiene del usuario autenticado. La disponibilidad exige una vacante aprobada, con pago simulado exitoso, activa, vigente, sin eliminar, con puestos disponibles y de una empresa activa. Estas condiciones también deben prepararse en los datos de prueba.
+
+## Pruebas existentes y automatización del curso
+
+El comando general ejecuta las suites Unit y Feature definidas en `phpunit.xml`:
 
 ```bash
-docker compose exec app composer install
-docker compose exec app php artisan key:generate
+docker compose exec app php artisan test
 ```
 
-### Paso 4: Ejecutar migraciones y datos semilla (Seeders)
-Para crear las tablas del sistema y cargar los catálogos base (roles, habilidades técnicas y blandas, catálogo de carreras):
+La configuración predeterminada usa SQLite en memoria. Verificar que el contenedor tenga la extensión correspondiente antes de ejecutar esas suites.
 
-```bash
-docker compose exec app php artisan migrate:fresh --seed
-```
+Las pruebas en `tests/MySql/` no están incluidas en las suites del comando anterior. Requieren ejecución expresa, entorno `testing`, configuración sin caché y una base MySQL aislada llamada exactamente `portalempleoshu04testing`, según sus protecciones actuales. Las pruebas de concurrencia también necesitan lanzar procesos independientes.
 
-La API quedará accesible en: `http://localhost:8000/api/v1`
+Preparar esa base, sus permisos y migraciones en el entorno de pruebas y configurar sus variables de conexión antes de invocar `php artisan test tests/MySql`. Hay que sustituir de forma explícita la conexión SQLite definida en `phpunit.xml`; copiar el nombre de una base en `.env` no basta. No interpretar la ejecución de Unit y Feature como validación de las pruebas MySQL.
 
----
+Las suites del curso con Karate y JMeter quedan por incorporar y ejecutar. PHPUnit complementa esas herramientas y no sustituye los entregables solicitados. Registrar el commit probado, el ambiente, los datos, los resultados y las incidencias.
 
-## 3. Puesta en Marcha Local (Sin Docker)
+## Colección Postman de referencia
 
-Si se prefiere ejecutar la aplicación directamente en la máquina anfitriona:
+Se conservan estos archivos:
 
-1. Instalar dependencias del proyecto:
-   ```bash
-   composer install
-   ```
+- `postman/postman_collection_demo1.json`.
+- `postman/environment.local.json`.
 
-2. Configurar el archivo `.env` apuntando a la base de datos local:
-   ```ini
-   DB_CONNECTION=mysql
-   DB_HOST=127.0.0.1
-   DB_PORT=3306
-   DB_DATABASE=portal_empleos
-   DB_USERNAME=root
-   DB_PASSWORD=tu_password
-   ```
+Son una referencia heredada para exploración de la API. Contrastar las rutas, el esquema del registro y las credenciales con la versión actual antes de usarlos; no asumir que todos los ejemplos anteriores siguen vigentes. Postman no reemplaza la suite Karate prevista para el curso.
 
-3. Generar la llave de la aplicación:
-   ```bash
-   php artisan key:generate
-   ```
+## Orden de revisión de errores
 
-4. Ejecutar las migraciones y seeders:
-   ```bash
-   php artisan migrate:fresh --seed
-   ```
+1. Preparar un ambiente local reproducible y ejecutar las pruebas existentes.
+2. Registrar los fallos con datos y pasos; corregirlos y repetir el caso que los detectó.
+3. Verificar el flujo completo con el frontend de este proyecto y datos de QA.
+4. Automatizar los casos API, web y Android y definir las cargas y umbrales de rendimiento.
+5. Desplegar en QA y repetir la comprobación de integración, configuración y conectividad.
 
-5. Iniciar el servidor local de desarrollo:
-   ```bash
-   php artisan serve --port=8000
-   ```
+Se pueden detectar errores antes del despliegue. Las comprobaciones locales y las del entorno desplegado cubren aspectos distintos y ambas necesitan evidencia.
 
----
+## Ramas y contribución
 
-## 4. Guía de Pruebas de Endpoints con Postman
+Crear las ramas de trabajo desde `develop` y presentar los cambios mediante Pull Request hacia esa rama. Seguir [CONTRIBUTING.md](CONTRIBUTING.md). Revisar los ajustes de `deploy/backend` antes de preparar un entorno publicado y coordinar su URL con el frontend de QA.
 
-En el directorio `postman/` se proporcionan la colección completa de endpoints y el archivo de variables de entorno para su validación inmediata.
+## Referencias técnicas
 
-### Archivos disponibles:
-- Colección: `postman/postman_collection_demo1.json`
-- Entorno: `postman/environment.local.json`
-
-### Procedimiento de Importación:
-1. Abrir Postman.
-2. Hacer clic en **Import** y seleccionar ambos archivos (`postman_collection_demo1.json` y `environment.local.json`).
-3. En la esquina superior derecha de Postman, seleccionar el entorno **Portal Empleos - Local (Docker)**.
-4. La variable `base_url` estará preconfigurada en `http://localhost:8000/api/v1`.
-
----
-
-## 5. Módulos y Flujo de Prueba Recomendado
-
-La colección está dividida en 4 carpetas organizadas por módulo. Cada petición incluye scripts de prueba automatizados (`Tests`) que validan los códigos de estado HTTP y guardan automáticamente los tokens y llaves primarias en las variables de entorno.
-
-### 5.1. Módulo Auth & Usuarios
-Rutas de autenticación, control de sesiones y reseteo de claves.
-
-| Orden | Petición | Método | Endpoint | Descripción |
-| :--- | :--- | :--- | :--- | :--- |
-| 1 | 1.1 Login - Éxito | POST | `/auth/login` | Inicia sesión y almacena `token` y `usuario_id` en el entorno. |
-| 2 | 1.2 Login - Error Credenciales | POST | `/auth/login` | Retorna 401 con mensaje neutro según estándar OWASP. |
-| 3 | 1.3 Login - Error Validación | POST | `/auth/login` | Retorna 422 si los campos requeridos están ausentes. |
-| 4 | 1.4 Ver Perfil /me | GET | `/auth/me` | Retorna el usuario autenticado usando Bearer Token. |
-| 5 | 1.5 Ver Perfil /me - Error Sin Token | GET | `/auth/me` | Retorna 401 si no se envía encabezado de autorización. |
-| 6 | 1.6 Ver Perfil por ID | GET | `/auth/usuarios/{id}` | Retorna el perfil mediante el identificador numérico. |
-| 7 | 1.7 Ver Perfil por ID - No Existe | GET | `/auth/usuarios/99999` | Retorna 404 con código `RESOURCE_NOT_FOUND`. |
-| 8 | 1.8 Cambiar Contraseña - Éxito | PUT | `/auth/usuarios/{id}/password` | Actualiza la clave validando la contraseña actual. |
-| 9 | 1.9 Cambiar Contraseña - Error Actual | PUT | `/auth/usuarios/{id}/password` | Retorna 422 si la contraseña actual no coincide. |
-| 10 | 1.11 Forgot Password - Éxito | POST | `/auth/forgot-password` | Envío de enlace de recuperación (Mock). |
-| 11 | 1.13 Logout - Éxito | POST | `/auth/logout` | Revoca el token activo en Sanctum. |
-
-### 5.2. Módulo Candidatos
-Registro transaccional, consulta y actualización de perfiles de postulantes.
-
-| Orden | Petición | Método | Endpoint | Descripción |
-| :--- | :--- | :--- | :--- | :--- |
-| 1 | 2.1 Registrar Candidato - Éxito | POST | `/candidatos` | Crea usuario, candidato, habilidades y carreras (201 Created). Almacena `candidato_id`. |
-| 2 | 2.2 Registrar Candidato - Error Duplicado | POST | `/candidatos` | Retorna 422 si el DNI o correo ya existen. |
-| 3 | 2.3 Registrar Candidato - Error Formato | POST | `/candidatos` | Valida 8 dígitos exactos en DNI y formato de celular peruano. |
-| 4 | 2.4 Ver Perfil Candidato | GET | `/candidatos/{candidato}` | Retorna perfil con relaciones cargadas vía Route Model Binding. |
-| 5 | 2.5 Ver Perfil - No Encontrado | GET | `/candidatos/99999` | Retorna 404 directo sin procesar lógica adicional. |
-| 6 | 2.6 Actualizar Perfil - Mismo DNI | PUT | `/candidatos/{candidato}` | Actualiza datos permitiendo enviar el mismo DNI sin conflicto de unicidad. |
-| 7 | 2.7 Actualizar Perfil - No Existe | PUT | `/candidatos/99999` | Retorna 404 antes de ejecutar la validación del body. |
-| 8 | 2.8 Actualizar Perfil - DNI Colisiona | PUT | `/candidatos/{candidato}` | Retorna 422 si se intenta usar el DNI de otro candidato. |
-
-### 5.3. Módulo Empresas
-Registro con validación de RUC corporativo y gestión del perfil empresarial autenticado.
-
-| Orden | Petición | Método | Endpoint | Descripción |
-| :--- | :--- | :--- | :--- | :--- |
-| 1 | 3.1 Registrar Empresa - Éxito | POST | `/empresas` | Valida RUC de 11 dígitos y contraseña robusta (201 Created). |
-| 2 | 3.2 Registrar Empresa - Error Duplicado | POST | `/empresas` | Retorna 422 si el RUC o correo ya están registrados. |
-| 3 | 3.3 Registrar Empresa - Password Débil | POST | `/empresas` | Retorna 422 por incumplimiento de complejidad de contraseña. |
-| 4 | 3.4 Login Empresa - Éxito | POST | `/auth/login` | Inicia sesión con la empresa y almacena `token_empresa`. |
-| 5 | 3.5 Ver Perfil Empresa /me | GET | `/empresas/me` | Retorna datos de la empresa autenticada con Bearer Token. |
-| 6 | 3.7 Actualizar Empresa /me | PUT | `/empresas/me` | Actualiza razón social, sitio web y descripción. |
-
-### 5.4. Módulo Habilidades (Catálogo)
-Mantenimiento centralizado del catálogo de habilidades técnicas y blandas.
-
-| Orden | Petición | Método | Endpoint | Descripción |
-| :--- | :--- | :--- | :--- | :--- |
-| 1 | 4.1 Listar Habilidades Activas | GET | `/habilidades` | Retorna lista ordenada alfabéticamente de habilidades activas. |
-| 2 | 4.2 Crear Habilidad - Éxito | POST | `/habilidades` | Inserta nueva habilidad validando tipo (`tecnica` o `blanda`). |
-| 3 | 4.3 Crear Habilidad - Duplicada | POST | `/habilidades` | Retorna 422 si el nombre ya existe en el catálogo. |
-| 4 | 4.5 Actualizar Habilidad | PATCH | `/habilidades/{id}` | Modifica nombre, tipo o cambia estado (`activo` o `inactivo`). |
-| 5 | 4.6 Actualizar Habilidad - No Existe | PATCH | `/habilidades/99999` | Retorna 404 con código `RESOURCE_NOT_FOUND`. |
-
----
-
-## 6. Estructura del Código Fuente
-
-```text
-app/
-├── Http/
-│   ├── Controllers/Api/V1/   # Controladores REST (orquestación)
-│   ├── Requests/             # Form Requests (validación de entrada y mensajes en español)
-│   └── Resources/Api/V1/     # API Resources (transformación y serialización JSON)
-├── Models/                   # Modelos Eloquent y definiciones de relaciones
-└── Services/                 # Capa de lógica de negocio y transacciones de base de datos
-database/
-├── migrations/               # Definición de tablas relacionales
-└── seeders/                  # Carga de datos iniciales (roles, carreras, habilidades)
-routes/
-└── api_v1/                   # Definición de rutas modularizadas por funcionalidad
-postman/                      # Colección y entorno de pruebas para la API
-```
-
----
-
-## 7. Estándar de Respuestas HTTP
-
-Todas las respuestas de la API cumplen con el siguiente formato JSON estandarizado:
-
-### Respuesta Exitosa (200, 201)
-```json
-{
-    "success": true,
-    "message": "Mensaje descriptivo de la operación",
-    "data": { ... }
-}
-```
-
-### Respuesta de Error de Validación (422)
-```json
-{
-    "success": false,
-    "message": "Los datos proporcionados no son válidos.",
-    "error_code": "VALIDATION_ERROR",
-    "errors": {
-        "campo": [
-            "Mensaje de validación detallado"
-        ]
-    }
-}
-```
-
-### Respuesta de Recurso No Encontrado (404)
-```json
-{
-    "success": false,
-    "message": "El recurso solicitado no fue encontrado.",
-    "error_code": "RESOURCE_NOT_FOUND"
-}
-```
+- [Appium UiAutomator2: automatización Android y contexto web](https://github.com/appium/appium-uiautomator2-driver).
+- [Angular: incorporación del service worker y recursos de PWA](https://angular.dev/ecosystem/service-workers/getting-started).
