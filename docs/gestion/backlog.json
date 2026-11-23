@@ -1579,6 +1579,10 @@
     "R2": 33,
     "R3": 34
   },
-  "nominalAssignees": null,
+  "nominalAssignees": {
+    "R1": "stephany-toribio",
+    "R2": "aquinoestoyxd",
+    "R3": "luisvalenzuela25"
+  },
   "calendarDates": null
 }
