@@ -161,6 +161,12 @@ Registrar defecto con pasos mínimos, caso, versión, entorno, datos ficticios, 
 
 Cadena mínima: requisito RF/PWA/RNF → caso CP → ejecución → defecto si existe → PR/commit → retest → evidencia → hito. El Project es el seguimiento operativo; Jira conserva las relaciones/evidencias requeridas para la evaluación y referencia los IDs de GitHub, evitando estados contradictorios.
 
+Documentos entregables definidos en QA-04:
+- [Matriz de trazabilidad](qa/MATRIZ_TRAZABILIDAD.md): relación bidireccional entre los 18 requisitos, las 34 familias CP, prioridad, herramientas y riesgos.
+- [Catálogo de casos de prueba](qa/CATALOGO_CASOS_PRUEBA.md): especificación detallada de los 101 escenarios canónicos (49 positivos y 52 negativos) con precondiciones, pasos, resultado esperado y comprobación de persistencia.
+- [Catálogo de datos de prueba](qa/CATALOGO_DATOS_PRUEBA.md): definición de identificadores lógicos de cuentas, vacantes en cada condición, estados de postulaciones, aislamiento y restauración.
+- [Registro de riesgos](qa/REGISTRO_RIESGOS.md): catálogo priorizado con escala de probabilidad e impacto, mitigaciones técnicas y condiciones de cierre.
+
 | Caso | Issues de implementación y verificación |
 | --- | --- |
 | CP-01 — RF-01 | [QA-06](https://github.com/stephany-toribio/web-app-calidad-software/issues/4), [QA-15](https://github.com/stephany-toribio/recruitment-api-calidad-software/issues/19), [QA-19](https://github.com/stephany-toribio/web-app-calidad-software/issues/10) |
