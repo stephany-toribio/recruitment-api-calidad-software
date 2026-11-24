@@ -4,7 +4,7 @@
 - **Responsable del documento**: R3 (@luisvalenzuela25 — Integración, Appium, JMeter y trazabilidad).
 - **Revisor asignado**: R1 (@stephany-toribio — Backend, API y Karate).
 - **Hito**: M0 (Alcance y línea base).
-- **Versión**: 1.0.0.
+- **Versión**: 1.1.0 (Corregida tras revisión cruzada).
 - **Fecha de versión**: 24/11/2026.
 - **Rama**: `feature/QA-04-matriz-pruebas`.
 - **Estado de ejecución global**: **Pendiente de ejecución** (salvo la línea base de pruebas unitarias/MySQL documentada en QA-02).
@@ -13,7 +13,7 @@
 
 ## 1. Alcance y convención de trazabilidad
 
-Esta matriz relaciona bidireccionalmente los **18 requisitos** del sistema (10 RF, 4 PWA, 4 RNF) con las **34 familias de casos de prueba (CP-01 a CP-34)**, sus escenarios detallados (positivos y negativos), su nivel de prioridad, las herramientas de automatización asignadas, las tareas e integrantes responsables, y los riesgos operacionales o técnicos asociados.
+Esta matriz relaciona bidireccionalmente los **18 requisitos** del sistema (10 RF, 4 PWA, 4 RNF) con las **34 familias de casos de prueba (CP-01 a CP-34)**, sus **94 escenarios detallados** (50 positivos y 44 negativos), su nivel de prioridad, las herramientas de automatización asignadas, las tareas e integrantes responsables, y los riesgos operacionales o técnicos asociados.
 
 ### 1.1 Cadena de trazabilidad obligatoria
 ```
@@ -67,9 +67,7 @@ Requisito (RF / PWA / RNF)
 | **PWA-01..04, RF-02,06,07** (Flujo móvil) | **CP-29** | CP-29-01 (+), CP-29-02 (+) | P0 | Appium | API REST | QA-21, QA-22 | R3 | RSK-03, RSK-04, RSK-05 |
 | **PWA-02..03, RF-02** (Sesión móvil) | **CP-30** | CP-30-01 (+), CP-30-02 (-), CP-30-03 (-) | P0 | Appium | API REST | QA-23 | R2, R3 | RSK-01, RSK-04 |
 | **RNF-01** (Autorización de servidor) | **CP-15** | CP-15-01 (-), CP-15-02 (-), CP-15-03 (-), CP-15-04 (-) | P0 | Karate | Selenium | QA-05, QA-17, QA-20 | R1, R3 | RSK-01, RSK-02 |
-| **RNF-02** (Integridad y concurrencia) | **CP-13** | CP-13-02 (-) | P0 | JMeter | PHPUnit/MySQL | QA-08, QA-17, QA-25 | R1, R3 | RSK-05, RSK-07 |
-| **RNF-02** (Integridad y concurrencia) | **CP-14** | CP-14-01 (+) | P0 | JMeter | PHPUnit/MySQL | QA-08, QA-25 | R1, R3 | RSK-07, RSK-09 |
-| **RNF-02** (Integridad y concurrencia) | **CP-19** | CP-19-01 (-) | P0 | JMeter | PHPUnit/MySQL | QA-09, QA-25 | R2, R3 | RSK-07, RSK-09 |
+| **RNF-02** (Integridad y concurrencia) | *CP-13, CP-14, CP-19* | *Ver CP-13-02 (-), CP-14-01 (+), CP-19-01 (-)* | P0 | JMeter | PHPUnit/MySQL | QA-08, QA-09, QA-25 | R1, R2, R3 | RSK-05, RSK-07, RSK-09 |
 | **RNF-03** (Carga y rendimiento) | **CP-31** | CP-31-01 (+), CP-31-02 (+) | P1 | JMeter | Monitor Docker | QA-24, QA-25, QA-26 | R3, R1 | RSK-09, RSK-12 |
 | **RNF-03** (Carga y rendimiento) | **CP-32** | CP-32-01 (+), CP-32-02 (-) | P1 | JMeter | API REST | QA-24, QA-25, QA-26 | R3, R1 | RSK-01, RSK-09 |
 | **RNF-03** (Carga y rendimiento) | **CP-33** | CP-33-01 (+), CP-33-02 (+) | P0 | JMeter | PHPUnit/MySQL | QA-24, QA-25, QA-26 | R3, R1 | RSK-07, RSK-09 |
@@ -77,20 +75,23 @@ Requisito (RF / PWA / RNF)
 
 ---
 
-## 3. Resumen de cobertura de diseño vs. ejecución
+## 3. Resumen exacto de cobertura de diseño vs. ejecución
 
 ### 3.1 Cobertura de diseño
 - **Requisitos en el alcance**: 18 de 18 cubiertos (**100.0%**).
-- **Familias de casos de prueba (CP)**: 34 de 34 planificadas y mapeadas (**100.0%**).
-- **Escenarios de prueba detallados**: 82 escenarios (45 positivos, 37 negativos).
-- **Distribución por herramienta primaria**:
-  - Karate: 15 familias CP (44.1%).
-  - Selenium: 2 familias CP (5.9% primario; actúa como soporte E2E en 15 familias).
-  - Appium: 7 familias CP (20.6%).
-  - JMeter: 6 familias CP (17.6%).
-  - CI / Automatización transversal: 4 familias CP (11.8%).
+- **Familias de casos de prueba (CP)**: 34 de 34 planificadas (**100.0%**).
+- **Escenarios de prueba canónicos detallados**: **94 escenarios únicos desarrollados al 100% en el catálogo**.
+  - **Positivos (+)**: 50 escenarios.
+  - **Negativos (-)**: 44 escenarios.
+- **Distribución de familias por herramienta primaria (34 familias)**:
+  - **Karate**: 19 familias (CP-01, CP-02, CP-03, CP-04, CP-05, CP-06, CP-07, CP-08, CP-09, CP-10, CP-11, CP-12, CP-15, CP-16, CP-17, CP-18, CP-20, CP-21, CP-22) — *55.9%*.
+  - **Appium**: 7 familias (CP-24, CP-25, CP-26, CP-27, CP-28, CP-29, CP-30) — *20.6%*.
+  - **JMeter**: 6 familias (CP-13, CP-14, CP-19, CP-31, CP-32, CP-33) — *17.6%*.
+  - **Selenium**: 1 familia primaria (CP-23 E2E integrado; actúa además como soporte complementario en 15 familias) — *2.9%*.
+  - **GitHub Actions (CI transversal)**: 1 familia (CP-34) — *2.9%*.
+  - **Total**: 19 + 7 + 6 + 1 + 1 = **34 familias (100.0%)**.
 
 ### 3.2 Cobertura de ejecución (Estado actual M0)
 - **Ejecutado con evidencia formal previa**: Pruebas Unitarias y MySQL base (QA-02: 564 pruebas, 546 aprobadas, 18 fallidas en búsqueda/contrato).
-- **Suites obligatorias del curso (Karate, Selenium, Appium, JMeter)**: **0 ejecutados (Pendiente de implementación en sus respectivos issues)**.
-- **Defectos abiertos conocidos**: 2 hallazgos en QA-02 (`QA02-H01` en `BusquedaVacantesMySqlTest` y `QA02-H02` en `DetalleVacanteMySqlTest`, asignados a QA-07).
+- **Suites obligatorias del curso (Karate, Selenium, Appium, JMeter)**: **0 ejecutados (Todos los 94 escenarios se encuentran formalmente en estado `PENDIENTE`)**.
+- **Defectos abiertos conocidos**: 2 hallazgos en QA-02 (`QA02-H01` en `BusquedaVacantesMySqlTest` y `QA02-H02` en `DetalleVacanteMySqlTest`, asignados para resolución en QA-07).
