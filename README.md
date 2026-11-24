@@ -180,47 +180,145 @@ Seguir [CONTRIBUTING.md](CONTRIBUTING.md) y la plantilla de PR para relacionar i
 
 ## Instalación y configuración de la API
 
-Laravel 12 y Sanctum 4. PHP 8.2 o superior; el Dockerfile usa PHP 8.3 y Compose proporciona MySQL 8.0. Se necesitan Git, Docker Engine y Compose v2, o Docker Desktop.
+El backend dispone de un entorno Docker independiente para
+el proyecto de Calidad de Software, diseñado para evitar
+conflictos con el Portal de Empleos original y facilitar
+la ejecución reproducible de pruebas.
+
+### Requisitos previos
+
+- Git.
+- Docker y Docker Compose.
+- WSL2 recomendado para Windows.
+- Acceso al repositorio.
+
+PHP, Composer y MySQL se encuentran disponibles mediante
+los contenedores Docker.
+
+### Configuración del entorno local
+
+| Componente | Configuración |
+|---|---|
+| Proyecto Docker | calidad_software |
+| Backend | Laravel 12 |
+| PHP | 8.3 |
+| Motor de base de datos | MySQL 8.0 |
+| URL local | http://localhost:8002 |
+| Puerto externo MySQL | 3307 |
+| Puerto interno MySQL | 3306 |
+
+### Instalación rápida
 
 ```bash
-git clone --branch develop https://github.com/stephany-toribio/recruitment-api-calidad-software.git
+git clone https://github.com/stephany-toribio/recruitment-api-calidad-software.git
+
 cd recruitment-api-calidad-software
-cp .env.example .env
+
+git switch develop
+
+test -f .env || cp .env.example .env
 ```
 
-Configurar el entorno local Docker en `.env`:
-
-```ini
-APP_ENV=local
-APP_DEBUG=true
-APP_URL=http://localhost:8000
-DB_CONNECTION=mysql
-DB_HOST=mysql
-DB_PORT=3306
-DB_DATABASE=portal_empleos
-DB_USERNAME=laravel
-DB_PASSWORD=secret
-CACHE_STORE=file
-SESSION_DRIVER=file
-QUEUE_CONNECTION=sync
-```
-
-Estos valores corresponden exclusivamente al Compose local. Para ejecución sin Docker, usar PHP/Composer y el servidor MySQL y las credenciales de ese entorno.
-
-Instalar dependencias antes de iniciar el servicio persistente de la API:
+Configurar la variable `QA_FIXTURE_PASSWORD` en el archivo
+`.env` con una contraseña exclusiva de pruebas de al menos
+12 caracteres.
 
 ```bash
+docker compose config --quiet
+
 docker compose build app
-docker compose run --rm --no-deps app composer install
+
+docker compose run --rm --no-deps app composer install --no-interaction --prefer-dist
+```
+
+Si `APP_KEY` todavía está vacía, generar la clave:
+
+```bash
+docker compose run --rm --no-deps app php artisan key:generate
+```
+
+Iniciar los servicios:
+
+```bash
 docker compose up -d
-docker compose exec app php artisan key:generate
-docker compose exec app php artisan migrate --seed
 docker compose ps
 ```
 
-`docker compose run` instala dependencias en un contenedor temporal aunque `app` todavía no pueda arrancar; su comando necesita `vendor/`. La API local queda en `http://localhost:8000/api/v1`. Antes de ejecutar simultáneamente esta copia y el portal original, QA-02 debe resolver los nombres de contenedores/puertos y bases para evitar colisiones.
+Verificar la disponibilidad del backend:
 
-Los seeders preparan roles, administrador y catálogos. Crear las cuentas ficticias adicionales y sus datos de forma reproducible. No borrar y recrear bases como paso de arranque habitual.
+```bash
+curl -i http://localhost:8002/up
+```
+
+El resultado esperado es HTTP 200.
+
+### Bases de datos aisladas
+
+| Base de datos | Finalidad |
+|---|---|
+| `portal_empleos_calidad_qa` | Aplicación y pruebas funcionales |
+| `portalempleoshu04testing` | Pruebas de integración MySQL |
+| SQLite `:memory:` | Pruebas Unit y Feature |
+
+Antes de ejecutar migraciones o seeders, verificar que la
+conexión corresponde a la base local autorizada.
+
+```bash
+docker compose exec app php artisan config:clear
+
+docker compose exec app php artisan tinker --execute='dump(DB::selectOne("SELECT DATABASE() AS nombre"));'
+```
+
+El resultado debe ser `portal_empleos_calidad_qa`.
+
+```bash
+docker compose exec app php artisan migrate
+
+docker compose exec app php artisan db:seed
+
+docker compose exec app php artisan db:seed --class=QaSeeder
+```
+
+### Usuarios ficticios de QA
+
+| Correo | Rol | Estado |
+|---|---|---|
+| admin@qa.example.test | Administrador | Activo |
+| empresa1@qa.example.test | Empresa | Activo |
+| empresa2@qa.example.test | Empresa | Activo |
+| candidato1@qa.example.test | Candidato | Activo |
+| candidato2@qa.example.test | Candidato | Activo |
+| suspendido@qa.example.test | Candidato | Suspendido |
+
+Las contraseñas se obtienen de `QA_FIXTURE_PASSWORD`.
+
+Los identificadores numéricos deben obtenerse dinámicamente.
+
+El seeder permite repetir la preparación de cuentas sin
+generar duplicados y restablece sus tokens de autenticación.
+
+### Limpieza controlada
+
+```bash
+docker compose exec app php artisan db:seed --class=QaCleanupSeeder
+```
+
+La limpieza se limita a las cuentas ficticias autorizadas
+y se cancela si existen dependencias funcionales.
+
+No ejecutar durante pruebas concurrentes.
+
+Para restaurar las cuentas:
+
+```bash
+docker compose exec app php artisan db:seed --class=QaSeeder
+```
+
+### Documentación del entorno
+
+Consultar la [guía completa del entorno QA](docs/qa/ENTORNO_QA.md)
+para conocer los procedimientos de instalación, migraciones,
+configuración MySQL, datos ficticios y restricciones de seguridad.
 
 ### Endpoints principales
 
@@ -243,17 +341,87 @@ Los paths parten de `/api/v1`. Las rutas protegidas usan `Authorization: Bearer 
 
 El body de una postulación envía `vacante_id`; no se acepta la identidad del candidato elegida por el cliente. Las rutas vigentes están en `routes/api_v1/` y se cargan desde `routes/api.php`.
 
-### Pruebas existentes y primera verificación
+
+### Pruebas automatizadas existentes
+
+El backend cuenta con suites de pruebas unitarias,
+funcionales y de integración que complementan el plan de
+automatización del curso.
+
+#### Pruebas Unit y Feature
+
+Las pruebas utilizan SQLite en memoria, según la
+configuración de `phpunit.xml`.
 
 ```bash
-docker compose exec app php artisan test
+docker compose exec app php artisan config:clear
+
+docker compose exec app php artisan test --testsuite=Unit
+
+docker compose exec app php artisan test --testsuite=Feature
 ```
 
-`phpunit.xml` incluye Unit y Feature y usa SQLite en memoria. Comprobar la extensión correspondiente. Las pruebas de `tests/MySql/` requieren ejecución explícita, entorno `testing`, configuración sin caché y la base aislada `portalempleoshu04testing`, con sus permisos y migraciones. Las pruebas concurrentes necesitan procesos independientes.
+#### Pruebas de integración MySQL
 
-Preparar esa conexión y sustituir explícitamente la conexión SQLite del XML antes de invocar `php artisan test tests/MySql`. Cambiar únicamente `.env` no acredita que se ejecuten contra la base correcta. QA-02 y QA-27 deben dejar el procedimiento reproducible.
+Las pruebas MySQL utilizan una configuración independiente
+mediante `phpunit.mysql.xml`.
 
-Se conservan `postman/postman_collection_demo1.json` y `postman/environment.local.json` como referencia heredada. Contrastar rutas y payloads con la API vigente. Postman y PHPUnit complementan, pero no sustituyen, Karate/JMeter ni sus reportes del curso.
+La base autorizada es `portalempleoshu04testing`.
+
+Antes de ejecutar las pruebas, preparar y verificar la
+base siguiendo la [guía del entorno QA](docs/qa/ENTORNO_QA.md).
+
+```bash
+docker compose exec app vendor/bin/phpunit \
+  --configuration phpunit.mysql.xml \
+  --testsuite=MySql
+```
+
+Se conservan las protecciones existentes contra conexiones
+a bases incorrectas y configuraciones no autorizadas.
+
+Las pruebas concurrentes utilizan procesos independientes.
+
+#### Línea base de calidad — QA-02
+
+Resultados obtenidos el 24 de noviembre de 2026:
+
+| Suite | Ejecutadas | Aprobadas | Fallidas |
+|---|---:|---:|---:|
+| Unit | 14 | 14 | 0 |
+| Feature | 205 | 205 | 0 |
+| MySQL | 345 | 327 | 18 |
+| Total | 564 | 546 | 18 |
+
+- Tasa de aprobación: 96.81%.
+- Aserciones ejecutadas: 3717.
+- Fallos pendientes de investigación: 18.
+
+Los hallazgos corresponden a la búsqueda de vacantes
+y al contrato de respuesta del detalle de vacantes.
+
+Su investigación y corrección se relacionan con QA-07 (#15).
+
+Consultar las [evidencias de QA-02](docs/evidencias/QA-02/RESULTADOS.md).
+
+#### Herramientas de automatización del curso
+
+PHPUnit y Postman complementan las pruebas del proyecto,
+pero no sustituyen las herramientas requeridas por el curso:
+
+| Herramienta | Finalidad |
+|---|---|
+| Karate | Automatización de pruebas de API REST |
+| JMeter | Pruebas de carga, rendimiento y concurrencia |
+| Selenium | Automatización de flujos web |
+| Appium | Automatización de flujos móviles Android y PWA |
+
+Los casos, scripts, reportes y evidencias de estas
+herramientas se desarrollarán en sus issues correspondientes.
+
+Se conservan las colecciones Postman existentes como
+referencia, sujetas a la validación del contrato vigente
+de la API.
 
 ## Referencias técnicas
 
