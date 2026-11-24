@@ -4,7 +4,7 @@
 - **Responsable**: R3 (@luisvalenzuela25).
 - **Revisor asignado**: R1 (@stephany-toribio).
 - **Hito**: M0 (Alcance y línea base).
-- **Versión**: 1.2.0 (Revisión técnica de consistencia).
+- **Versión**: 1.3.0 (Corrección documental; revisión de R1 pendiente).
 - **Fecha**: 24/11/2026.
 - **Rama**: `feature/QA-04-matriz-pruebas`.
 
@@ -18,8 +18,26 @@ Cada caso de prueba se desglosa desde las 34 familias base (`CP-01` a `CP-34`) u
   - `EJECUTADO`: Prueba corrida en el ambiente local/QA pero con resultado aún no consolidado.
   - `APROBADO`: Ejecutada exitosamente con aserciones cumplidas y evidencia registrada.
   - `DEFECTUOSO`: Ejecutada con fallos o aserciones no cumplidas (se vincula a un defecto formal Sev1-Sev4).
-- **Estado inicial**: **Todos los 102 escenarios inician en estado `PENDIENTE`** dentro de esta entrega de diseño de QA-04.
+- **Estado inicial**: **Todos los 101 escenarios inician en estado `PENDIENTE`** dentro de esta entrega de diseño de QA-04.
 - **Manejo de identificadores**: Los scripts no deben quemar IDs numéricos de usuarios ni de entidades de negocio (se resuelven dinámicamente mediante login o consultas previas). Para catálogos inmutables del sistema, los IDs corresponden a las constantes oficiales sembradas por los seeders base (`EstadoPostulacionSeeder`: 1=Recibido, 2=En Revisión, 3=Entrevista, 4=Contratado, 5=Rechazado; `MotivoRechazoSeeder`: 1=Perfil no se ajusta, 2=Expectativa salarial alta, 3=Proceso cerrado).
+
+---
+
+### 1.1 Decisiones contractuales pendientes de confirmación
+
+La revisión de estos documentos no ha incluido el código fuente actual de rutas, Requests, controladores y servicios. Los códigos, payloads y nombres de campos detallados son expectativas de diseño que R1 debe contrastar con el commit de API que se automatice. No se consideran resultados observados.
+
+Los siguientes escenarios tienen una decisión explícita pendiente. No deben automatizarse aceptando cualquiera de varias respuestas: R1 debe fijar una respuesta única por combinación de datos y registrar el archivo/commit de referencia antes de aprobar su ejecución.
+
+| Escenario | Decisión pendiente | Responsable | Tarea de confirmación |
+|---|---|---|---|
+| CP-04-01 | Código y cuerpo para credenciales incorrectas; efecto en contador de intentos. | R1 | QA-05 / QA-15 |
+| CP-04-02 | Código y cuerpo para bloqueo temporal; efectos persistentes permitidos. | R1 | QA-05 / QA-15 |
+| CP-06-03 | Diferenciar recurso inexistente de recurso de otra empresa y fijar respuesta para cada variante. | R1 | QA-05 / QA-17 |
+| CP-06-04 | Tratamiento del identificador ajeno en edición de perfil y código/cuerpo correspondiente. | R1 | QA-05 / QA-17 |
+| CP-15-04 | Rechazo del campo candidato_id o creación usando exclusivamente la identidad del token; fijar una política antes de ejecutar. | R1 | QA-05 / QA-08 / QA-17 |
+
+Todos conservan estado de ejecución `PENDIENTE` y preparación contractual pendiente. Esta lista no certifica como verificados los contratos de los demás escenarios.
 
 ---
 
@@ -140,7 +158,7 @@ Cada caso de prueba se desglosa desde las 34 familias base (`CP-01` a `CP-34`) u
   - **Precondiciones**: `USR-CND-01` activo con `intentos_fallidos = 0`.
   - **Datos**: `candidato1@qa.example.test`, contraseña `PasswordIncorrecta123!`.
   - **Pasos**: `POST /api/v1/auth/login`.
-  - **Resultado esperado**: HTTP 401 Unauthorized o 422 según contrato.
+  - **Resultado esperado**: Acceso denegado y ningún token emitido. Código HTTP y cuerpo pendientes de confirmación por R1 en QA-05/QA-15 (sección 1.1).
   - **Comprobación de persistencia**: Campo `intentos_fallidos` se incrementa en tabla `usuarios`.
   - **Dependencias**: QA-05, QA-15. | **Estado inicial**: `PENDIENTE`.
 
@@ -151,7 +169,7 @@ Cada caso de prueba se desglosa desde las 34 familias base (`CP-01` a `CP-34`) u
   - **Precondiciones**: Usuario con `bloqueado_hasta > NOW()`.
   - **Datos**: Credenciales correctas de usuario bloqueado.
   - **Pasos**: `POST /api/v1/auth/login`.
-  - **Resultado esperado**: HTTP 403 Forbidden o 423 Locked; mensaje contractual indicando bloqueo temporal.
+  - **Resultado esperado**: Acceso denegado por bloqueo temporal y ningún token emitido. Código HTTP y cuerpo pendientes de confirmación por R1 en QA-05/QA-15 (sección 1.1).
   - **Comprobación de persistencia**: Sin cambios en BD; no se emite token.
   - **Dependencias**: QA-05, QA-15. | **Estado inicial**: `PENDIENTE`.
 
@@ -228,7 +246,7 @@ Cada caso de prueba se desglosa desde las 34 familias base (`CP-01` a `CP-34`) u
   - **Actor**: `USR-EMP-01`.
   - **Precondiciones**: Postulación inexistente o perteneciente a otra empresa.
   - **Pasos**: `GET /api/v1/empresas/me/postulaciones/{postulacion}/perfil`.
-  - **Resultado esperado**: HTTP 403 Forbidden o 404 Not Found.
+  - **Resultado esperado**: No se expone el perfil. R1 debe separar y confirmar las respuestas de recurso inexistente y propiedad ajena en QA-05/QA-17 (sección 1.1).
   - **Comprobación de persistencia**: Ninguna mutación.
   - **Dependencias**: QA-05, QA-17. | **Estado inicial**: `PENDIENTE`.
 
@@ -237,7 +255,7 @@ Cada caso de prueba se desglosa desde las 34 familias base (`CP-01` a `CP-34`) u
   - **Tipo**: Seguridad / Negativa (Karate).
   - **Actor**: `USR-CND-01`.
   - **Pasos**: Intentar modificar datos enviando identificadores ajenos en el cuerpo.
-  - **Resultado esperado**: HTTP 403 Forbidden o payload ignorado; la API deriva identidad únicamente del token Sanctum.
+  - **Resultado esperado**: Ningún perfil ajeno se modifica; la identidad procede del token. Política de rechazo del campo o ignorado y respuesta HTTP pendientes de confirmación por R1 en QA-05/QA-17 (sección 1.1).
   - **Comprobación de persistencia**: Perfil de otros candidatos intacto.
   - **Dependencias**: QA-05, QA-17. | **Estado inicial**: `PENDIENTE`.
 
@@ -635,10 +653,11 @@ Cada caso de prueba se desglosa desde las 34 familias base (`CP-01` a `CP-34`) u
   - **Objetivo**: Garantizar que el servidor derive la identidad estrictamente del token y rechace o ignore `candidato_id` en el body.
   - **Tipo**: Seguridad / Negativa (Karate).
   - **Actor**: `USR-CND-01`.
-  - **Datos**: Body `{ "vacante_id": 1, "candidato_id": 999 }`.
+  - **Precondiciones**: Token activo de `USR-CND-01`; vacante disponible; ambos candidatos identificados dinámicamente; ninguno tiene postulación previa a esa vacante.
+  - **Datos**: Body `{ "vacante_id": <id_vacante_disponible>, "candidato_id": <id_USR-CND-02> }`; resolver ambos IDs dinámicamente.
   - **Pasos**: `POST /api/v1/candidatos/me/postulaciones`.
-  - **Resultado esperado**: HTTP 201 Created (asociando la postulación al ID real del token de `USR-CND-01`) o 422 si la regla de validación prohíbe el campo; nunca asocia al candidato inyectado.
-  - **Comprobación de persistencia**: `postulaciones.candidato_id` coincide estrictamente con `USR-CND-01`.
+  - **Resultado esperado**: Nunca se crea una postulación para el candidato inyectado. **Contrato pendiente de confirmación por R1 en QA-05/QA-08/QA-17**: fijar si se rechaza el campo (p. ej. 422 si así lo define la validación vigente) o se crea usando exclusivamente el token (p. ej. 201 si así lo define el contrato). Estas alternativas son decisiones pendientes, no respuestas intercambiables aceptables durante una ejecución.
+  - **Comprobación de persistencia**: Según la política que confirme R1: **si se rechaza**, el recuento de postulaciones permanece igual; **si se crea**, existe exactamente una nueva fila para `USR-CND-01` y la vacante preparada, y ninguna para `USR-CND-02`.
   - **Dependencias**: QA-05, QA-17. | **Estado inicial**: `PENDIENTE`.
 
 ---

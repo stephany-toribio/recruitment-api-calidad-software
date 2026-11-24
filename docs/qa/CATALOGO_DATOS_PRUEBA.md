@@ -4,7 +4,7 @@
 - **Responsable**: R3 (@luisvalenzuela25).
 - **Revisor asignado**: R1 (@stephany-toribio).
 - **Hito**: M0 (Alcance y línea base).
-- **Versión**: 1.2.0 (Revisión técnica de consistencia).
+- **Versión**: 1.3.0 (Corrección documental; revisión de R1 pendiente).
 - **Fecha**: 24/11/2026.
 - **Rama**: `feature/QA-04-matriz-pruebas`.
 
@@ -98,19 +98,21 @@ Para validar exhaustivamente las 7 reglas de disponibilidad del sistema (`RF-04`
 
 ### 6.1 Alcance exacto y restricciones de `QaCleanupSeeder`
 El seeder `database/seeders/QaCleanupSeeder.php` incorpora una protección estricta contra vaciados indiscriminados de la base de datos:
-- Elimina **únicamente** las cuentas de prueba autorizadas (`admin@qa.example.test`, `empresa1/2@qa.example.test`, `candidato1/2/3@qa.example.test`) y sus tokens y perfiles directos.
+- Elimina **únicamente** las cuentas de prueba autorizadas (`admin@qa.example.test`, `empresa1/2@qa.example.test`, `candidato1@qa.example.test`, `candidato2@qa.example.test`, `suspendido@qa.example.test`) y sus tokens y perfiles directos.
 - **Aborta intencionalmente si existen dependencias funcionales**: Si una ejecución de prueba creó vacantes vinculadas a `empresa1` o postulaciones vinculadas a `candidato1`, `QaCleanupSeeder` **no las elimina y detiene su ejecución** para evitar registros huérfanos o corrupción de datos.
 
 ### 6.2 Estrategia de limpieza por suite sin comandos destructivos no controlados
 
 Para no comprometer evidencias de otros integrantes ni vaciar tablas sin comprobación, se establecen los siguientes mecanismos por tipo de prueba:
 
+> **Estado de preparación:** las seis cuentas son fixtures documentados por QA-02, cuya existencia local debe verificarse. Las doce condiciones de vacantes, las postulaciones por etapa y las cuentas de carga son datos diseñados: su disponibilidad no se acredita por esta documentación. Cada suite debe preparar, verificar y registrar sus propios datos antes de ejecutar.
+
 #### A. Pruebas Unitarias y Feature (Laravel)
 - **Aislamiento**: Utilizan SQLite en memoria (`:memory:`).
 - **Limpieza**: Automática por proceso mediante el trait `RefreshDatabase`. Ninguna mutación persiste en disco.
 
 #### B. Pruebas MySQL de Integración
-- **Aislamiento**: Conexión exclusiva a `portalempleoshu04testing` (puerto 3307).
+- **Aislamiento**: Conexión exclusiva a `portalempleoshu04testing`; desde el host se usa el puerto publicado 3307 y entre contenedores `mysql:3306`.
 - **Verificación de conexión previa obligatoria**:
 ```bash
 docker compose exec \
@@ -119,14 +121,15 @@ docker compose exec \
   -e DB_HOST=mysql \
   -e DB_PORT=3306 \
   -e DB_DATABASE=portalempleoshu04testing \
+  -e DB_URL= \
   app php artisan tinker --execute='dump(DB::selectOne("SELECT DATABASE() AS nombre"));'
 ```
-- **Limpieza controlada**:
-  - En pruebas secuenciales: el trait `DatabaseTransactions` revierte los cambios al finalizar cada método.
-  - En pruebas de concurrencia (procesos independientes que no comparten transacciones): truncado o depuración controlada por script de las tablas transaccionales en orden estricto de dependencias foráneas (`postulaciones` $\rightarrow$ `pagos_vacante` $\rightarrow$ `revisiones_vacante` $\rightarrow$ `empleos`), conservando los catálogos base. El comando `php artisan migrate --env=testing` se reserva exclusivamente para la preparación inicial del esquema estructural, no para la limpieza de datos.
+- **Limpieza por preparar/verificar** (no acreditada como implementada en esta revisión):
+  - En pruebas secuenciales: verificar por clase si se aplica `DatabaseTransactions` y si sus operaciones usan la misma conexión. Solo entonces puede esperarse rollback al finalizar cada método (R1, QA-02/QA-27).
+  - En pruebas de concurrencia: **procedimiento propuesto, pendiente de implementación y verificación** por R1/R3 en QA-24/QA-25/QA-27. Los procesos independientes no quedan cubiertos por el rollback de la conexión principal. Registrar entidades e IDs por ejecución, detener sus procesos y eliminar únicamente sus datos en el orden real de claves foráneas, incluido el historial y demás dependencias. No se presupone que exista un script ni que un truncado global sea apropiado. El comando `php artisan migrate --env=testing` se reserva exclusivamente para la preparación inicial del esquema estructural, no para la limpieza de datos.
 
 #### C. Suites Funcionales y E2E (Karate, Selenium, Appium, JMeter)
-- **Principio de no colisión**: Las pruebas deben crear sus entidades con prefijos dinámicos o identificadores de ejecución únicos (p. ej., títulos de vacante con timestamp o UUID), permitiendo que múltiples suites corran sin interferir entre sí.
+- **Principio de no colisión**: Las pruebas deben crear sus entidades con identificadores de ejecución únicos y registrar los IDs creados. **Diseño propuesto, no mecanismo acreditado como disponible**: R1 prepara fixtures Karate en QA-14; R2/R3 coordinan los datos E2E en QA-18/QA-21; R3 prepara datos de carga y restauración en QA-24/QA-25. Un prefijo por sí solo no evita interferencias en cuentas compartidas ni la revocación de sus tokens: reservar cuentas por ejecución o serializar las suites que comparten fixtures.
 - **Restablecimiento rápido de usuarios sin dependencias**:
 Si solo se utilizaron las cuentas base y no se generaron vacantes ni postulaciones persistentes:
 ```bash
@@ -135,9 +138,10 @@ docker compose exec app php artisan db:seed --class=QaSeeder
 ```
 - **Reconstrucción estructural en entorno desechable exclusivo**:
 El comando `migrate:fresh` es potencialmente destructivo y **nunca debe ejecutarse en caliente ni asumirse como paso automático entre pruebas**. Solo se permite como reset inicial de un entorno local desechable bajo las siguientes tres comprobaciones previas obligatorias:
-1. Comprobar que no hay otras suites ni usuarios ejecutando pruebas en ese momento.
+1. Confirmar que la base y su volumen son desechables, exclusivos de esta ejecución y no contienen evidencias que deban conservarse; comprobar que no hay otras suites ni usuarios activos.
 2. Verificar que la base de datos conectada sea estrictamente la base aislada de QA:
 ```bash
+docker compose exec app php artisan config:clear
 docker compose exec app php artisan tinker --execute='dump(DB::selectOne("SELECT DATABASE() AS nombre"));'
 ```
 *(El resultado debe ser estrictamente `portal_empleos_calidad_qa`)*.

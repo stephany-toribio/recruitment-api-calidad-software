@@ -163,7 +163,7 @@ Cadena mínima: requisito RF/PWA/RNF → caso CP → ejecución → defecto si e
 
 Documentos entregables definidos en QA-04:
 - [Matriz de trazabilidad](qa/MATRIZ_TRAZABILIDAD.md): relación bidireccional entre los 18 requisitos, las 34 familias CP, prioridad, herramientas y riesgos.
-- [Catálogo de casos de prueba](qa/CATALOGO_CASOS_PRUEBA.md): especificación detallada de los 102 escenarios canónicos (50 positivos y 52 negativos) con precondiciones, pasos, resultado esperado y comprobación de persistencia.
+- [Catálogo de casos de prueba](qa/CATALOGO_CASOS_PRUEBA.md): especificación detallada de los 101 escenarios canónicos (49 positivos y 52 negativos) con precondiciones, pasos, resultado esperado y comprobación de persistencia.
 - [Catálogo de datos de prueba](qa/CATALOGO_DATOS_PRUEBA.md): definición de identificadores lógicos de cuentas, vacantes en cada condición, estados de postulaciones, aislamiento y restauración.
 - [Registro de riesgos](qa/REGISTRO_RIESGOS.md): catálogo priorizado con escala de probabilidad e impacto, mitigaciones técnicas y condiciones de cierre.
 

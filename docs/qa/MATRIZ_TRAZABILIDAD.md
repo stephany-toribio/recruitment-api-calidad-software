@@ -4,7 +4,7 @@
 - **Responsable del documento**: R3 (@luisvalenzuela25 — Integración, Appium, JMeter y trazabilidad).
 - **Revisor asignado**: R1 (@stephany-toribio — Backend, API y Karate).
 - **Hito**: M0 (Alcance y línea base).
-- **Versión**: 1.2.0 (Revisión técnica de consistencia).
+- **Versión**: 1.3.0 (Corrección documental; revisión de R1 pendiente).
 - **Fecha de versión**: 24/11/2026.
 - **Rama**: `feature/QA-04-matriz-pruebas`.
 - **Estado de ejecución global**: **Pendiente de ejecución** (salvo la línea base de pruebas unitarias/MySQL documentada en QA-02).
@@ -13,7 +13,7 @@
 
 ## 1. Alcance y convención de trazabilidad
 
-Esta matriz relaciona bidireccionalmente los **18 requisitos** del sistema (10 RF, 4 PWA, 4 RNF) con las **34 familias de casos de prueba (CP-01 a CP-34)**, sus **102 escenarios canónicos detallados** (50 positivos y 52 negativos), su nivel de prioridad, las herramientas de automatización asignadas, las tareas e integrantes responsables, y los riesgos operacionales o técnicos asociados.
+Esta matriz relaciona bidireccionalmente los **18 requisitos** del sistema (10 RF, 4 PWA, 4 RNF) con las **34 familias de casos de prueba (CP-01 a CP-34)**, sus **101 escenarios canónicos detallados** (49 positivos y 52 negativos), su nivel de prioridad, las herramientas de automatización asignadas, las tareas e integrantes responsables, y los riesgos operacionales o técnicos asociados.
 
 ### 1.1 Cadena de trazabilidad obligatoria
 ```
@@ -78,28 +78,27 @@ Requisito (RF / PWA / RNF)
 ## 3. Resumen exacto de cobertura de diseño vs. ejecución
 
 ### 3.1 Cobertura de diseño
-- **Requisitos en el alcance**: 18 de 18 cubiertos (**100.0%**).
+- **Requisitos en el alcance**: 18 de 18 con familias asociadas (**100.0% de trazabilidad de diseño**; no acredita ejecución ni contratos confirmados).
 - **Familias de casos de prueba (CP)**: 34 de 34 planificadas (**100.0%**).
-- **Escenarios de prueba canónicos desarrollados**: **102 escenarios únicos desarrollados al 100% en el catálogo**.
+- **Escenarios de prueba canónicos desarrollados**: **101 escenarios únicos descritos y referenciados en el catálogo; las decisiones contractuales pendientes se identifican en su sección 1.1**.
   - **Clasificación por comportamiento esperado**:
-    - **Positivos (+)**: 50 escenarios (comportamientos válidos y permitidos por el sistema).
+    - **Positivos (+)**: 49 escenarios (42 titulados Positivo, 5 de Rendimiento y 2 de CI; estos últimos se agrupan como verificaciones de comportamiento esperado).
     - **Negativos (-)**: 52 escenarios (rechazos de validación, violaciones de permisos, conflictos de concurrencia e indisponibilidad).
-  - **Clasificación por tipología técnica**:
-    - Funcional de flujo: 48 escenarios.
-    - Validación de campos y contratos: 14 escenarios.
-    - Seguridad y permisos: 12 escenarios.
-    - Integridad transaccional y concurrencia: 18 escenarios.
-    - Rendimiento bajo carga: 7 escenarios.
-    - CI y reproducibilidad: 3 escenarios.
+  - **Clasificación verificable por encabezado del catálogo**:
+    - Positivo: 42 escenarios.
+    - Negativo: 52 escenarios.
+    - Rendimiento: 5 escenarios.
+    - CI: 2 escenarios.
+    - Total: **101 escenarios**. Estas categorías son excluyentes para el recuento; no sustituyen el campo Tipo de cada escenario.
 - **Distribución de familias por herramienta primaria (34 familias)**:
   - **Karate**: 19 familias (CP-01, CP-02, CP-03, CP-04, CP-05, CP-06, CP-07, CP-08, CP-09, CP-10, CP-11, CP-12, CP-15, CP-16, CP-17, CP-18, CP-20, CP-21, CP-22) — *55.9%*.
   - **Appium**: 7 familias (CP-24, CP-25, CP-26, CP-27, CP-28, CP-29, CP-30) — *20.6%*.
   - **JMeter**: 6 familias (CP-13, CP-14, CP-19, CP-31, CP-32, CP-33) — *17.6%*.
-  - **Selenium**: 1 familia primaria (CP-23 E2E integrado; actúa además como soporte complementario en 15 familias) — *2.9%*.
+  - **Selenium**: 1 familia primaria (CP-23 E2E integrado; también actúa como herramienta complementaria según las filas de esta matriz) — *2.9%*.
   - **GitHub Actions (CI transversal)**: 1 familia (CP-34) — *2.9%*.
   - **Total**: 19 + 7 + 6 + 1 + 1 = **34 familias (100.0%)**.
 
 ### 3.2 Cobertura de ejecución (Estado actual M0)
 - **Ejecutado con evidencia formal previa**: Pruebas Unitarias y MySQL base (QA-02: 564 pruebas, 546 aprobadas, 18 fallidas en búsqueda/contrato).
-- **Suites obligatorias del curso (Karate, Selenium, Appium, JMeter)**: **0 ejecutados (Todos los 102 escenarios se encuentran formalmente en estado `PENDIENTE`)**.
+- **Suites obligatorias del curso (Karate, Selenium, Appium, JMeter)**: **0 ejecutados (Todos los 101 escenarios se encuentran formalmente en estado `PENDIENTE`)**.
 - **Defectos abiertos conocidos**: 2 hallazgos en QA-02 (`QA02-H01` en `BusquedaVacantesMySqlTest` y `QA02-H02` en `DetalleVacanteMySqlTest`, asignados para resolución en QA-07).
