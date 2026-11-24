@@ -4,7 +4,7 @@
 - **Responsable**: R3 (@luisvalenzuela25).
 - **Revisor asignado**: R1 (@stephany-toribio).
 - **Hito**: M0 (Alcance y línea base).
-- **Versión**: 1.1.0 (Corregida tras revisión cruzada).
+- **Versión**: 1.2.0 (Revisión técnica de consistencia).
 - **Fecha**: 24/11/2026.
 - **Rama**: `feature/QA-04-matriz-pruebas`.
 
@@ -12,13 +12,13 @@
 
 ## 1. Convenciones y estados de prueba
 
-Cada caso de prueba se desglosa desde las 34 familias base (`CP-01` a `CP-34`) utilizando **94 identificadores canónicos de escenario** (`CP-XX-YY`), correspondientes a 50 escenarios positivos y 44 negativos.
+Cada caso de prueba se desglosa desde las 34 familias base (`CP-01` a `CP-34`) utilizando **102 identificadores canónicos de escenario** (`CP-XX-YY`), correspondientes exactamente a 50 escenarios positivos y 52 negativos.
 - **Estados posibles de ciclo de vida**:
   - `PENDIENTE`: Diseñado y documentado, a la espera de ejecución en su suite automatizada correspondiente.
-  - `EJECUTADO`: Prueba ejecutada en el ambiente local/QA pero con resultado aún no consolidado.
+  - `EJECUTADO`: Prueba corrida en el ambiente local/QA pero con resultado aún no consolidado.
   - `APROBADO`: Ejecutada exitosamente con aserciones cumplidas y evidencia registrada.
   - `DEFECTUOSO`: Ejecutada con fallos o aserciones no cumplidas (se vincula a un defecto formal Sev1-Sev4).
-- **Estado inicial**: **Todos los 94 escenarios inician en estado `PENDIENTE`** dentro de esta entrega de diseño de QA-04.
+- **Estado inicial**: **Todos los 102 escenarios inician en estado `PENDIENTE`** dentro de esta entrega de diseño de QA-04.
 - **Manejo de identificadores**: Los scripts no deben quemar IDs numéricos de usuarios ni de entidades de negocio (se resuelven dinámicamente mediante login o consultas previas). Para catálogos inmutables del sistema, los IDs corresponden a las constantes oficiales sembradas por los seeders base (`EstadoPostulacionSeeder`: 1=Recibido, 2=En Revisión, 3=Entrevista, 4=Contratado, 5=Rechazado; `MotivoRechazoSeeder`: 1=Perfil no se ajusta, 2=Expectativa salarial alta, 3=Proceso cerrado).
 
 ---
@@ -337,7 +337,7 @@ Cada caso de prueba se desglosa desde las 34 familias base (`CP-01` a `CP-34`) u
   - **Precondiciones**: Vacante en condición `VAC-APROB-SIN-PAGO`.
   - **Datos**: Tarjeta de prueba válida (últimos 4 dígitos `4242`), monto acorde al tarifario.
   - **Pasos**: `POST /api/v1/empresas/me/vacantes/{vacante}/pago`.
-  - **Resultado esperado**: HTTP 201 Created o 200 OK; resultado `exitoso`; vacante pasa a estar publicada.
+  - **Resultado esperado**: HTTP 201 Created contractual; mensaje 'Pago simulado aprobado. La vacante ya está publicada.'; resultado `exitoso`.
   - **Comprobación de persistencia**: Fila en `pagos_vacante` con `resultado = 'exitoso'`, `monto` y `tarjeta_ultimos4`.
   - **Dependencias**: QA-07, QA-16, QA-20. | **Estado inicial**: `PENDIENTE`.
 
@@ -347,7 +347,7 @@ Cada caso de prueba se desglosa desde las 34 familias base (`CP-01` a `CP-34`) u
   - **Actor**: `USR-EMP-01`.
   - **Precondiciones**: Vacante en condición `VAC-BORRADOR` o `VAC-RECHAZADA`.
   - **Pasos**: `POST /api/v1/empresas/me/vacantes/{vacante}/pago`.
-  - **Resultado esperado**: HTTP 409 Conflict o 422.
+  - **Resultado esperado**: HTTP 409 Conflict; `code = 'VACANCY_NOT_APPROVED'`.
   - **Comprobación de persistencia**: No se genera pago exitoso en BD.
   - **Dependencias**: QA-07, QA-17. | **Estado inicial**: `PENDIENTE`.
 
@@ -355,7 +355,7 @@ Cada caso de prueba se desglosa desde las 34 familias base (`CP-01` a `CP-34`) u
   - **Objetivo**: Rechazar pago con número de tarjeta o fecha de expiración inválidos.
   - **Tipo**: Validación / Negativa (Karate).
   - **Actor**: `USR-EMP-01`.
-  - **Datos**: Tarjeta con menos de 16 dígitos o formato erróneo.
+  - **Datos**: Tarjeta con formato erróneo o incompleto.
   - **Pasos**: `POST /api/v1/empresas/me/vacantes/{vacante}/pago`.
   - **Resultado esperado**: HTTP 422 Unprocessable Entity.
   - **Comprobación de persistencia**: Sin registro en `pagos_vacante`.
@@ -367,60 +367,140 @@ Cada caso de prueba se desglosa desde las 34 familias base (`CP-01` a `CP-34`) u
   - **Actor**: `USR-EMP-02`.
   - **Precondiciones**: Vacante perteneciente a `USR-EMP-01`.
   - **Pasos**: Enviar POST a `/api/v1/empresas/me/vacantes/{vacante_empresa1}/pago` con token de empresa 2.
-  - **Resultado esperado**: HTTP 403 Forbidden o 404 Not Found (`RESOURCE_NOT_FOUND` / `FORBIDDEN`).
+  - **Resultado esperado**: HTTP 403 Forbidden (`FORBIDDEN`).
   - **Comprobación de persistencia**: Sin cambios.
   - **Dependencias**: QA-05, QA-17. | **Estado inicial**: `PENDIENTE`.
+
+- **CP-09-05 (Negativo - Pago Duplicado sobre Vacante ya Pagada)**
+  - **Objetivo**: Rechazar cualquier intento de volver a pagar una vacante que ya cuenta con un pago exitoso previo.
+  - **Tipo**: Integridad / Negativa (Karate).
+  - **Actor**: `USR-EMP-01`.
+  - **Precondiciones**: Vacante ya en condición `VAC-DISPONIBLE` con pago previo exitoso (CP-09-01 ejecutado).
+  - **Pasos**: Enviar un segundo request `POST /api/v1/empresas/me/vacantes/{vacante}/pago` con datos de tarjeta válidos.
+  - **Resultado esperado**: HTTP 409 Conflict contractual; `code = 'VACANCY_ALREADY_PAID'`; mensaje 'La vacante ya tiene un pago exitoso.'.
+  - **Comprobación de persistencia**: El recuento de filas en `pagos_vacante` con `resultado = 'exitoso'` para dicha vacante se mantiene exactamente en 1; no se duplica la publicación.
+  - **Dependencias**: QA-07, QA-17. | **Estado inicial**: `PENDIENTE`.
 
 ---
 
 ## 4. Bloque 3: Búsqueda, Disponibilidad y Postulación (RF-06, RF-07, RNF-02)
 
-### CP-10: Reglas de Disponibilidad de Vacantes
-- **CP-10-01 (Negativo - Postulación en Vacante Pausada)**
-  - **Objetivo**: Denegar postulación si la empresa pausó la oferta.
-  - **Tipo**: Lógica de Negocio / Negativa (Karate, PHPUnit/MySQL).
-  - **Actor**: `USR-CND-01`.
-  - **Precondiciones**: Vacante en condición `VAC-PAUSADA`.
-  - **Pasos**: `POST /api/v1/candidatos/me/postulaciones` con body `{ "vacante_id": <id_pausada> }`.
-  - **Resultado esperado**: HTTP 404 Not Found; `code = 'VACANCY_NOT_AVAILABLE'`.
-  - **Comprobación de persistencia**: No se crea fila en `postulaciones`.
-  - **Dependencias**: QA-07, QA-08, QA-17. | **Estado inicial**: `PENDIENTE`.
-
-- **CP-10-02 (Negativo - Postulación en Vacante Vencida)**
-  - **Objetivo**: Denegar postulación si la fecha fin de vigencia ya pasó.
+### CP-10: Reglas de Disponibilidad de Vacantes (11 Condiciones de Indisponibilidad)
+- **CP-10-01 (Negativo - Postulación en Vacante Borrador / Sin Revisión)**
+  - **Objetivo**: Denegar postulación si la oferta no ha sido revisada por moderación (`VAC-BORRADOR`).
   - **Tipo**: Lógica de Negocio / Negativa (Karate).
   - **Actor**: `USR-CND-01`.
-  - **Precondiciones**: Vacante en condición `VAC-VENCIDA`.
+  - **Precondiciones**: Vacante creada pero sin fila en `revisiones_vacante`.
+  - **Pasos**: `POST /api/v1/candidatos/me/postulaciones` con body `{ "vacante_id": <id_borrador> }`.
+  - **Resultado esperado**: HTTP 404 Not Found; `code = 'VACANCY_NOT_AVAILABLE'`.
+  - **Comprobación de persistencia**: Sin registro en `postulaciones`.
+  - **Dependencias**: QA-07, QA-17. | **Estado inicial**: `PENDIENTE`.
+
+- **CP-10-02 (Negativo - Postulación en Vacante No Aprobada)**
+  - **Objetivo**: Denegar postulación si la vacante fue rechazada administrativamente (`VAC-RECHAZADA`).
+  - **Tipo**: Lógica de Negocio / Negativa (Karate).
+  - **Actor**: `USR-CND-01`.
+  - **Precondiciones**: Vacante con `decision = 'no_aprobada'`.
+  - **Pasos**: `POST /api/v1/candidatos/me/postulaciones` con body `{ "vacante_id": <id_rechazada> }`.
+  - **Resultado esperado**: HTTP 404 Not Found; `VACANCY_NOT_AVAILABLE`.
+  - **Comprobación de persistencia**: Sin registro en `postulaciones`.
+  - **Dependencias**: QA-07, QA-17. | **Estado inicial**: `PENDIENTE`.
+
+- **CP-10-03 (Negativo - Postulación en Vacante Aprobada sin Pago)**
+  - **Objetivo**: Denegar postulación si la vacante fue aprobada pero no pagada (`VAC-APROB-SIN-PAGO`).
+  - **Tipo**: Lógica de Negocio / Negativa (Karate).
+  - **Actor**: `USR-CND-01`.
+  - **Precondiciones**: Vacante aprobada sin fila en `pagos_vacante`.
+  - **Pasos**: `POST /api/v1/candidatos/me/postulaciones` con body `{ "vacante_id": <id_sin_pago> }`.
+  - **Resultado esperado**: HTTP 404 Not Found; `VACANCY_NOT_AVAILABLE`.
+  - **Comprobación de persistencia**: Sin registro en `postulaciones`.
+  - **Dependencias**: QA-07, QA-17. | **Estado inicial**: `PENDIENTE`.
+
+- **CP-10-04 (Negativo - Postulación en Vacante con Pago Fallido)**
+  - **Objetivo**: Denegar postulación si la vacante tuvo intentos de pago pero ninguno exitoso (`VAC-PAGO-FALLIDO`).
+  - **Tipo**: Lógica de Negocio / Negativa (Karate).
+  - **Actor**: `USR-CND-01`.
+  - **Precondiciones**: Vacante con fila en `pagos_vacante` donde `resultado = 'fallido'`.
+  - **Pasos**: `POST /api/v1/candidatos/me/postulaciones` con body `{ "vacante_id": <id_pago_fallido> }`.
+  - **Resultado esperado**: HTTP 404 Not Found; `VACANCY_NOT_AVAILABLE`.
+  - **Comprobación de persistencia**: Sin registro en `postulaciones`.
+  - **Dependencias**: QA-07, QA-17. | **Estado inicial**: `PENDIENTE`.
+
+- **CP-10-05 (Negativo - Postulación en Vacante Pausada)**
+  - **Objetivo**: Denegar postulación si la empresa pausó temporalmente la oferta (`VAC-PAUSADA`).
+  - **Tipo**: Lógica de Negocio / Negativa (Karate, PHPUnit/MySQL).
+  - **Actor**: `USR-CND-01`.
+  - **Precondiciones**: Vacante publicada con `estado_empleo = 'pausada'`.
+  - **Pasos**: `POST /api/v1/candidatos/me/postulaciones` con body `{ "vacante_id": <id_pausada> }`.
+  - **Resultado esperado**: HTTP 404 Not Found; `VACANCY_NOT_AVAILABLE`.
+  - **Comprobación de persistencia**: Sin registro en `postulaciones`.
+  - **Dependencias**: QA-07, QA-17. | **Estado inicial**: `PENDIENTE`.
+
+- **CP-10-06 (Negativo - Postulación en Vacante Finalizada por la Empresa)**
+  - **Objetivo**: Denegar postulación si la empresa dio por concluida la convocatoria (`VAC-FINALIZADA`).
+  - **Tipo**: Lógica de Negocio / Negativa (Karate).
+  - **Actor**: `USR-CND-01`.
+  - **Precondiciones**: Vacante con `estado_empleo = 'finalizada'`.
+  - **Pasos**: `POST /api/v1/candidatos/me/postulaciones` con body `{ "vacante_id": <id_finalizada> }`.
+  - **Resultado esperado**: HTTP 404 Not Found; `VACANCY_NOT_AVAILABLE`.
+  - **Comprobación de persistencia**: Sin registro en `postulaciones`.
+  - **Dependencias**: QA-07, QA-17. | **Estado inicial**: `PENDIENTE`.
+
+- **CP-10-07 (Negativo - Postulación en Vacante Vencida)**
+  - **Objetivo**: Denegar postulación si la fecha fin de vigencia ya expiró (`VAC-VENCIDA`).
+  - **Tipo**: Lógica de Negocio / Negativa (Karate).
+  - **Actor**: `USR-CND-01`.
+  - **Precondiciones**: Vacante con `fecha_fin_vigencia < CURDATE()`.
   - **Pasos**: `POST /api/v1/candidatos/me/postulaciones` con body `{ "vacante_id": <id_vencida> }`.
   - **Resultado esperado**: HTTP 404 Not Found; `VACANCY_NOT_AVAILABLE`.
   - **Comprobación de persistencia**: Sin nueva postulación.
-  - **Dependencias**: QA-07, QA-08, QA-17. | **Estado inicial**: `PENDIENTE`.
+  - **Dependencias**: QA-07, QA-17. | **Estado inicial**: `PENDIENTE`.
 
-- **CP-10-03 (Negativo - Postulación en Vacante con Puestos Cubiertos)**
-  - **Objetivo**: Denegar postulación si ya se alcanzó el total de contratados (`contratados == numero_vacantes`).
+- **CP-10-08 (Negativo - Postulación en Vacante con Vigencia Futura)**
+  - **Objetivo**: Denegar postulación si la fecha de inicio de vigencia aún no ha llegado (`VAC-VIGENCIA-FUTURA`).
+  - **Tipo**: Lógica de Negocio / Negativa (Karate).
+  - **Actor**: `USR-CND-01`.
+  - **Precondiciones**: Vacante con `fecha_inicio_vigencia > CURDATE()`.
+  - **Pasos**: `POST /api/v1/candidatos/me/postulaciones` con body `{ "vacante_id": <id_futura> }`.
+  - **Resultado esperado**: HTTP 404 Not Found; `VACANCY_NOT_AVAILABLE`.
+  - **Comprobación de persistencia**: Sin registro en `postulaciones`.
+  - **Dependencias**: QA-07, QA-17. | **Estado inicial**: `PENDIENTE`.
+
+- **CP-10-09 (Negativo - Postulación en Vacante con Cupos Agotados)**
+  - **Objetivo**: Denegar postulación si ya se alcanzó el total de contratados (`contratados == numero_vacantes`, `VAC-COMPLETA`).
   - **Tipo**: Lógica de Negocio / Negativa (Karate, PHPUnit/MySQL).
   - **Actor**: `USR-CND-01`.
-  - **Precondiciones**: Vacante en condición `VAC-COMPLETA`.
+  - **Precondiciones**: Vacante con todos sus puestos cubiertos.
   - **Pasos**: `POST /api/v1/candidatos/me/postulaciones` con body `{ "vacante_id": <id_completa> }`.
   - **Resultado esperado**: HTTP 404 Not Found; `VACANCY_NOT_AVAILABLE`.
   - **Comprobación de persistencia**: Sin cambios en BD.
-  - **Dependencias**: QA-07, QA-08, QA-17. | **Estado inicial**: `PENDIENTE`.
+  - **Dependencias**: QA-07, QA-17. | **Estado inicial**: `PENDIENTE`.
 
-- **CP-10-04 (Negativo - Postulación en Vacante Eliminada)**
-  - **Objetivo**: Denegar postulación si la vacante fue borrada lógicamente (soft delete).
+- **CP-10-10 (Negativo - Postulación en Vacante de Empresa Suspendida)**
+  - **Objetivo**: Denegar postulación si la cuenta de la empresa propietaria fue suspendida (`VAC-EMPRESA-SUSP`).
   - **Tipo**: Lógica de Negocio / Negativa (Karate).
   - **Actor**: `USR-CND-01`.
-  - **Precondiciones**: Vacante en condición `VAC-ELIMINADA` (`deleted_at IS NOT NULL`).
+  - **Precondiciones**: Vacante aprobada y pagada pero con usuario empresa en `estado_cuenta = 'suspendido'`.
+  - **Pasos**: `POST /api/v1/candidatos/me/postulaciones` con body `{ "vacante_id": <id_empresa_suspendida> }`.
+  - **Resultado esperado**: HTTP 404 Not Found; `VACANCY_NOT_AVAILABLE`.
+  - **Comprobación de persistencia**: Sin registro en `postulaciones`.
+  - **Dependencias**: QA-07, QA-17. | **Estado inicial**: `PENDIENTE`.
+
+- **CP-10-11 (Negativo - Postulación en Vacante Eliminada)**
+  - **Objetivo**: Denegar postulación si la vacante fue borrada lógicamente (`deleted_at IS NOT NULL`, `VAC-ELIMINADA`).
+  - **Tipo**: Lógica de Negocio / Negativa (Karate).
+  - **Actor**: `USR-CND-01`.
+  - **Precondiciones**: Vacante con soft delete.
   - **Pasos**: `POST /api/v1/candidatos/me/postulaciones` con body `{ "vacante_id": <id_eliminada> }`.
   - **Resultado esperado**: HTTP 404 Not Found; `VACANCY_NOT_AVAILABLE`.
   - **Comprobación de persistencia**: Sin cambios en BD.
-  - **Dependencias**: QA-07, QA-08, QA-17. | **Estado inicial**: `PENDIENTE`.
+  - **Dependencias**: QA-07, QA-17. | **Estado inicial**: `PENDIENTE`.
 
 ---
 
 ### CP-11: Búsqueda, Filtros y Detalle de Vacante Disponible
 - **CP-11-01 (Positivo - Búsqueda Pública con Filtros)**
-  - **Objetivo**: Filtrar vacantes disponibles por área y modalidad devolviendo solo las que cumplen las condiciones de disponibilidad.
+  - **Objetivo**: Filtrar vacantes disponibles por área y modalidad devolviendo solo las que cumplen las 7 condiciones de disponibilidad.
   - **Tipo**: Funcional / Positiva (Karate, Selenium, Appium).
   - **Actor**: Candidato autenticado.
   - **Pasos**: `GET /api/v1/vacantes?modalidad=remoto`.
@@ -465,9 +545,14 @@ Cada caso de prueba se desglosa desde las 34 familias base (`CP-01` a `CP-34`) u
   - **Objetivo**: Impedir que un candidato suspendido postule a una vacante.
   - **Tipo**: Seguridad / Negativa (Karate).
   - **Actor**: `USR-CND-03` (Suspendido).
-  - **Pasos**: `POST /api/v1/candidatos/me/postulaciones` con token de usuario suspendido.
-  - **Resultado esperado**: HTTP 403 Forbidden (`FORBIDDEN`).
-  - **Comprobación de persistencia**: Sin registros en `postulaciones`.
+  - **Procedimiento de preparación ejecutable**:
+    1. Se emite un token de prueba previo para el candidato (mientras estaba activo o mediante helper de pruebas).
+    2. Se ejecuta la suspensión administrativa en la base de datos: `UPDATE usuarios SET estado_cuenta = 'suspendido', fecha_suspension = NOW() WHERE correo = 'suspendido@qa.example.test'`.
+    3. Con el token previamente obtenido, se envía la petición de postulación.
+    4. Al finalizar la prueba, se restaura la cuenta con `QaSeeder`.
+  - **Pasos**: `POST /api/v1/candidatos/me/postulaciones` con el token del candidato suspendido.
+  - **Resultado esperado**: HTTP 403 Forbidden (`FORBIDDEN`); `PostulacionService` comprueba en BD `$usuarioCandidato->estado_cuenta !== 'activo'` y bloquea la operación.
+  - **Comprobación de persistencia**: Ninguna fila creada en `postulaciones`.
   - **Dependencias**: QA-08, QA-17. | **Estado inicial**: `PENDIENTE`.
 
 ---
@@ -542,18 +627,18 @@ Cada caso de prueba se desglosa desde las 34 familias base (`CP-01` a `CP-34`) u
   - **Actor**: `USR-EMP-02`.
   - **Precondiciones**: Vacante de `USR-EMP-01`.
   - **Pasos**: `PATCH /api/v1/empresas/me/vacantes/{vacante_empresa1}/pausar` con token de empresa 2.
-  - **Resultado esperado**: HTTP 403 Forbidden o 404 Not Found.
+  - **Resultado esperado**: HTTP 403 Forbidden (`FORBIDDEN`).
   - **Comprobación de persistencia**: `estado_empleo` permanece en `activa`.
   - **Dependencias**: QA-05, QA-17. | **Estado inicial**: `PENDIENTE`.
 
 - **CP-15-04 (Negativo - Inyección de Candidato en Body de Postulación)**
-  - **Objetivo**: Garantizar que el servidor ignore o rechace cualquier intento de suplantar `candidato_id` en el body.
+  - **Objetivo**: Garantizar que el servidor derive la identidad estrictamente del token y rechace o ignore `candidato_id` en el body.
   - **Tipo**: Seguridad / Negativa (Karate).
   - **Actor**: `USR-CND-01`.
   - **Datos**: Body `{ "vacante_id": 1, "candidato_id": 999 }`.
   - **Pasos**: `POST /api/v1/candidatos/me/postulaciones`.
-  - **Resultado esperado**: HTTP 201 Created (asociando la postulación al ID real del token de `USR-CND-01`) o 422 si el campo no está en el FormRequest; nunca asocia al candidato inyectado 999.
-  - **Comprobación de persistencia**: `postulaciones.candidato_id` coincide con `USR-CND-01`.
+  - **Resultado esperado**: HTTP 201 Created (asociando la postulación al ID real del token de `USR-CND-01`) o 422 si la regla de validación prohíbe el campo; nunca asocia al candidato inyectado.
+  - **Comprobación de persistencia**: `postulaciones.candidato_id` coincide estrictamente con `USR-CND-01`.
   - **Dependencias**: QA-05, QA-17. | **Estado inicial**: `PENDIENTE`.
 
 ---
@@ -674,7 +759,7 @@ Cada caso de prueba se desglosa desde las 34 familias base (`CP-01` a `CP-34`) u
   - **Objetivo**: Permitir contrataciones concurrentes exitosas si hay puestos suficientes (`numero_vacantes = 5`, contratando a 2 candidatos a la vez).
   - **Tipo**: Concurrencia (JMeter, PHPUnit/MySQL).
   - **Actor**: `USR-EMP-01`.
-  - **Precondiciones**: Vacante con 3 puestos libres.
+  - **Precondiciones**: Vacante con puestos libres suficientes.
   - **Pasos**: Contratar simultáneamente a 2 candidatos en entrevista.
   - **Resultado esperado**: Ambos requests retornan HTTP 200 OK.
   - **Comprobación de persistencia**: 2 contratados añadidos; `contratados <= numero_vacantes`.
@@ -779,7 +864,7 @@ Cada caso de prueba se desglosa desde las 34 familias base (`CP-01` a `CP-34`) u
 
 ### CP-23: Recorrido E2E Integrado Web
 - **CP-23-01 (Positivo - Recorrido E2E Completo de los Tres Roles)**
-  - **Objetivo**: Demostrar el flujo íntegro del negocio en navegador web:
+  - **Objetivo**: Demostrar el flujo íntegro del negocio en navegador web coordinando los 3 roles:
     1. Empresa `USR-EMP-01` inicia sesión y registra vacante.
     2. Administrador `USR-ADM-01` inicia sesión y aprueba la vacante en moderación.
     3. Empresa completa pago simulado con tarjeta de prueba; vacante pasa a publicada.
@@ -925,16 +1010,16 @@ Cada caso de prueba se desglosa desde las 34 familias base (`CP-01` a `CP-34`) u
 ---
 
 ### CP-30: Sesión Móvil, Reapertura y Logout
-- **CP-30-01 (Positivo - Reapertura de App con Sesión Válida)**
-  - **Objetivo**: Verificar que tras cerrar la PWA (finalizar tarea en el gestor de aplicaciones de Android) y reabrirla, la sesión se preserva si el token en almacenamiento persistente (`localStorage`/`IndexedDB`) sigue activo en el servidor.
+- **CP-30-01 (Positivo - Reapertura de App con Sesión Válida desde Segundo Plano)**
+  - **Objetivo**: Verificar que al pasar la PWA a segundo plano y reabrirla en Android manteniendo la instancia de navegación, la sesión se preserva conforme al contrato vigente de `sessionStorage` en el frontend (`AuthService.ts`). Si el equipo decide en QA-11/QA-23 cambiar a almacenamiento persistente (`localStorage`), este caso se actualizará con el nuevo contrato acordado.
   - **Tipo**: Funcional Móvil (Appium).
   - **Actor**: Candidato móvil.
-  - **Pasos**: Iniciar sesión -> Matar proceso en gestor Android -> Reabrir PWA desde el lanzador.
+  - **Pasos**: Iniciar sesión -> Poner PWA en segundo plano -> Reabrir PWA desde el conmutador de aplicaciones.
   - **Resultado esperado**: Acceso directo al área privada sin solicitar login nuevamente.
   - **Dependencias**: QA-23. | **Estado inicial**: `PENDIENTE`.
 
 - **CP-30-02 (Negativo - Reapertura con Token Expirado o Revocado)**
-  - **Objetivo**: Comprobar que si el token fue revocado en backend, la reapertura limpia el almacenamiento local y redirige al login sin exponer vistas privadas.
+  - **Objetivo**: Comprobar que si el token fue revocado en backend, la reapertura limpia el almacenamiento de sesión (`sessionStorage`) y redirige al login sin exponer vistas privadas.
   - **Tipo**: Seguridad Móvil (Appium).
   - **Actor**: Candidato con sesión revocada en servidor.
   - **Pasos**: Revocar token en DB -> Reabrir PWA.
@@ -1032,4 +1117,4 @@ Cada caso de prueba se desglosa desde las 34 familias base (`CP-01` a `CP-34`) u
   - **Actor**: Runner CI / Auditor de configuración.
   - **Pasos**: Ejecutar `db:seed --class=QaSeeder` en contenedor e inspeccionar log de salida.
   - **Resultado esperado**: Éxito sin volcados de contraseñas ni tokens en stdout.
-  - **Dependencias**: QA-02, QA-34. | **Estado inicial**: `PENDIENTE`.
+  - **Dependencias**: QA-02, QA-27, QA-30. | **Estado inicial**: `PENDIENTE`.

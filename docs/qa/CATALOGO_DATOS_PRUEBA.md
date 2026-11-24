@@ -4,7 +4,7 @@
 - **Responsable**: R3 (@luisvalenzuela25).
 - **Revisor asignado**: R1 (@stephany-toribio).
 - **Hito**: M0 (Alcance y línea base).
-- **Versión**: 1.1.0 (Corregida tras revisión cruzada).
+- **Versión**: 1.2.0 (Revisión técnica de consistencia).
 - **Fecha**: 24/11/2026.
 - **Rama**: `feature/QA-04-matriz-pruebas`.
 
@@ -96,22 +96,53 @@ Para validar exhaustivamente las 7 reglas de disponibilidad del sistema (`RF-04`
 
 ## 6. Procedimientos de aislamiento, limpieza y restauración
 
-### 6.1 Alcance exacto de `QaCleanupSeeder`
-Es crítico notar que `database/seeders/QaCleanupSeeder.php` **no realiza un vaciado indiscriminado de la base de datos**. Su diseño de seguridad establece que:
-- Elimina **únicamente** las cuentas de prueba autorizadas (`admin@qa.example.test`, `empresa1/2@qa.example.test`, `candidato1/2/3@qa.example.test`) y sus perfiles directos, tokens y solicitudes de password.
-- **Aborta con excepción si detecta dependencias funcionales**: Si una ejecución de prueba creó vacantes vinculadas a `empresa1` o postulaciones vinculadas a `candidato1`, `QaCleanupSeeder` **no las elimina y detiene su ejecución** para evitar estados huérfanos o corrupción de datos.
+### 6.1 Alcance exacto y restricciones de `QaCleanupSeeder`
+El seeder `database/seeders/QaCleanupSeeder.php` incorpora una protección estricta contra vaciados indiscriminados de la base de datos:
+- Elimina **únicamente** las cuentas de prueba autorizadas (`admin@qa.example.test`, `empresa1/2@qa.example.test`, `candidato1/2/3@qa.example.test`) y sus tokens y perfiles directos.
+- **Aborta intencionalmente si existen dependencias funcionales**: Si una ejecución de prueba creó vacantes vinculadas a `empresa1` o postulaciones vinculadas a `candidato1`, `QaCleanupSeeder` **no las elimina y detiene su ejecución** para evitar registros huérfanos o corrupción de datos.
 
-### 6.2 Estrategia de limpieza y restauración según la suite de pruebas
+### 6.2 Estrategia de limpieza por suite sin comandos destructivos no controlados
 
-| Tipo de suite | Entorno de BD | Mecanismo de Aislamiento y Limpieza | Procedimiento de Restauración |
-|---|---|---|---|
-| **PHPUnit Unit & Feature** | SQLite en memoria (`:memory:`) | Transacciones en memoria automáticas (`RefreshDatabase`). Cada prueba corre en aislamiento total sin persistencia en disco. | Automático al finalizar el proceso PHPUnit. |
-| **PHPUnit MySQL Integración** | MySQL `portalempleoshu04testing` | `DatabaseTransactions` en cada clase de prueba, o truncado ordenado de tablas transaccionales (`postulaciones`, `pagos_vacante`, `revisiones_vacante`, `empleos`). | Ejecución controlada de migraciones testing: `php artisan migrate --env=testing`. |
-| **Suites Funcionales / E2E (Karate, Selenium, Appium, JMeter)** | MySQL `portal_empleos_calidad_qa` | **Restauración estructural limpia**: Cuando una suite genere vacantes o postulaciones que bloqueen a `QaCleanupSeeder`, el procedimiento estándar de reset es refrescar la base de datos de QA: | ```bash
-docker compose exec app php artisan migrate:fresh --seed
-docker compose exec app php artisan db:seed --class=QaSeeder
-``` |
-| **Restablecimiento rápido de usuarios sin dependencias** | MySQL `portal_empleos_calidad_qa` | Ejecutar `QaCleanupSeeder` y luego `QaSeeder`. | ```bash
+Para no comprometer evidencias de otros integrantes ni vaciar tablas sin comprobación, se establecen los siguientes mecanismos por tipo de prueba:
+
+#### A. Pruebas Unitarias y Feature (Laravel)
+- **Aislamiento**: Utilizan SQLite en memoria (`:memory:`).
+- **Limpieza**: Automática por proceso mediante el trait `RefreshDatabase`. Ninguna mutación persiste en disco.
+
+#### B. Pruebas MySQL de Integración
+- **Aislamiento**: Conexión exclusiva a `portalempleoshu04testing` (puerto 3307).
+- **Verificación de conexión previa obligatoria**:
+```bash
+docker compose exec \
+  -e APP_ENV=testing \
+  -e DB_CONNECTION=mysql \
+  -e DB_HOST=mysql \
+  -e DB_PORT=3306 \
+  -e DB_DATABASE=portalempleoshu04testing \
+  app php artisan tinker --execute='dump(DB::selectOne("SELECT DATABASE() AS nombre"));'
+```
+- **Limpieza controlada**:
+  - En pruebas secuenciales: el trait `DatabaseTransactions` revierte los cambios al finalizar cada método.
+  - En pruebas de concurrencia (procesos independientes que no comparten transacciones): truncado o depuración controlada por script de las tablas transaccionales en orden estricto de dependencias foráneas (`postulaciones` $\rightarrow$ `pagos_vacante` $\rightarrow$ `revisiones_vacante` $\rightarrow$ `empleos`), conservando los catálogos base. El comando `php artisan migrate --env=testing` se reserva exclusivamente para la preparación inicial del esquema estructural, no para la limpieza de datos.
+
+#### C. Suites Funcionales y E2E (Karate, Selenium, Appium, JMeter)
+- **Principio de no colisión**: Las pruebas deben crear sus entidades con prefijos dinámicos o identificadores de ejecución únicos (p. ej., títulos de vacante con timestamp o UUID), permitiendo que múltiples suites corran sin interferir entre sí.
+- **Restablecimiento rápido de usuarios sin dependencias**:
+Si solo se utilizaron las cuentas base y no se generaron vacantes ni postulaciones persistentes:
+```bash
 docker compose exec app php artisan db:seed --class=QaCleanupSeeder
 docker compose exec app php artisan db:seed --class=QaSeeder
-``` |
+```
+- **Reconstrucción estructural en entorno desechable exclusivo**:
+El comando `migrate:fresh` es potencialmente destructivo y **nunca debe ejecutarse en caliente ni asumirse como paso automático entre pruebas**. Solo se permite como reset inicial de un entorno local desechable bajo las siguientes tres comprobaciones previas obligatorias:
+1. Comprobar que no hay otras suites ni usuarios ejecutando pruebas en ese momento.
+2. Verificar que la base de datos conectada sea estrictamente la base aislada de QA:
+```bash
+docker compose exec app php artisan tinker --execute='dump(DB::selectOne("SELECT DATABASE() AS nombre"));'
+```
+*(El resultado debe ser estrictamente `portal_empleos_calidad_qa`)*.
+3. Solo tras confirmar lo anterior, proceder a la reconstrucción en frío:
+```bash
+docker compose exec app php artisan migrate:fresh --seed
+docker compose exec app php artisan db:seed --class=QaSeeder
+```

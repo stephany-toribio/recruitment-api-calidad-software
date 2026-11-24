@@ -4,7 +4,7 @@
 - **Responsable del documento**: R3 (@luisvalenzuela25 — Integración, Appium, JMeter y trazabilidad).
 - **Revisor asignado**: R1 (@stephany-toribio — Backend, API y Karate).
 - **Hito**: M0 (Alcance y línea base).
-- **Versión**: 1.1.0 (Corregida tras revisión cruzada).
+- **Versión**: 1.2.0 (Revisión técnica de consistencia).
 - **Fecha de versión**: 24/11/2026.
 - **Rama**: `feature/QA-04-matriz-pruebas`.
 - **Estado de ejecución global**: **Pendiente de ejecución** (salvo la línea base de pruebas unitarias/MySQL documentada en QA-02).
@@ -13,7 +13,7 @@
 
 ## 1. Alcance y convención de trazabilidad
 
-Esta matriz relaciona bidireccionalmente los **18 requisitos** del sistema (10 RF, 4 PWA, 4 RNF) con las **34 familias de casos de prueba (CP-01 a CP-34)**, sus **94 escenarios detallados** (50 positivos y 44 negativos), su nivel de prioridad, las herramientas de automatización asignadas, las tareas e integrantes responsables, y los riesgos operacionales o técnicos asociados.
+Esta matriz relaciona bidireccionalmente los **18 requisitos** del sistema (10 RF, 4 PWA, 4 RNF) con las **34 familias de casos de prueba (CP-01 a CP-34)**, sus **102 escenarios canónicos detallados** (50 positivos y 52 negativos), su nivel de prioridad, las herramientas de automatización asignadas, las tareas e integrantes responsables, y los riesgos operacionales o técnicos asociados.
 
 ### 1.1 Cadena de trazabilidad obligatoria
 ```
@@ -45,8 +45,8 @@ Requisito (RF / PWA / RNF)
 | **RF-03** (Perfil propio) | **CP-06** | CP-06-01 (+), CP-06-02 (+), CP-06-03 (-), CP-06-04 (-) | P1 | Karate | Selenium | QA-05, QA-06, QA-17 | R1, R2, R3 | RSK-01, RSK-04 |
 | **RF-04** (Registro y gestión vacantes) | **CP-07** | CP-07-01 (+), CP-07-02 (-), CP-07-03 (-), CP-07-04 (-) | P1 | Karate | Selenium | QA-07, QA-16, QA-20 | R1, R2, R3 | RSK-06, RSK-07 |
 | **RF-05** (Aprobación y pago simulado) | **CP-08** | CP-08-01 (+), CP-08-02 (+), CP-08-03 (-), CP-08-04 (-) | P0 | Karate | Selenium | QA-07, QA-16, QA-20 | R1, R3 | RSK-01, RSK-06 |
-| **RF-05** (Aprobación y pago simulado) | **CP-09** | CP-09-01 (+), CP-09-02 (-), CP-09-03 (-), CP-09-04 (-) | P1 | Karate | Selenium | QA-07, QA-16, QA-20 | R1, R3 | RSK-06, RSK-07 |
-| **RF-06** (Búsqueda y disponibilidad) | **CP-10** | CP-10-01 (-), CP-10-02 (-), CP-10-03 (-), CP-10-04 (-) | P0 | Karate | PHPUnit/MySQL | QA-07, QA-17 | R1, R3 | RSK-06, RSK-08 |
+| **RF-05** (Aprobación y pago simulado) | **CP-09** | CP-09-01 (+), CP-09-02 (-), CP-09-03 (-), CP-09-04 (-), CP-09-05 (-) | P1 | Karate | Selenium | QA-07, QA-16, QA-20 | R1, R3 | RSK-06, RSK-07 |
+| **RF-06** (Búsqueda y disponibilidad) | **CP-10** | CP-10-01 (-), CP-10-02 (-), CP-10-03 (-), CP-10-04 (-), CP-10-05 (-), CP-10-06 (-), CP-10-07 (-), CP-10-08 (-), CP-10-09 (-), CP-10-10 (-), CP-10-11 (-) | P0 | Karate | PHPUnit/MySQL | QA-07, QA-17 | R1, R3 | RSK-06, RSK-08 |
 | **RF-06** (Búsqueda y disponibilidad) | **CP-11** | CP-11-01 (+), CP-11-02 (+), CP-11-03 (+) | P1 | Karate | Selenium, Appium | QA-07, QA-19, QA-22 | R1, R2, R3 | RSK-06, RSK-08 |
 | **RF-07** (Postulación y unicidad) | **CP-12** | CP-12-01 (+), CP-12-02 (-) | P0 | Karate | Selenium, Appium | QA-08, QA-16, QA-19, QA-22 | R1, R2, R3 | RSK-05, RSK-07 |
 | **RF-07** (Postulación y unicidad) | **CP-13** | CP-13-01 (-), CP-13-02 (-) | P0 | JMeter | Karate, PHPUnit/MySQL | QA-08, QA-17, QA-25 | R1, R3 | RSK-05, RSK-07 |
@@ -80,9 +80,17 @@ Requisito (RF / PWA / RNF)
 ### 3.1 Cobertura de diseño
 - **Requisitos en el alcance**: 18 de 18 cubiertos (**100.0%**).
 - **Familias de casos de prueba (CP)**: 34 de 34 planificadas (**100.0%**).
-- **Escenarios de prueba canónicos detallados**: **94 escenarios únicos desarrollados al 100% en el catálogo**.
-  - **Positivos (+)**: 50 escenarios.
-  - **Negativos (-)**: 44 escenarios.
+- **Escenarios de prueba canónicos desarrollados**: **102 escenarios únicos desarrollados al 100% en el catálogo**.
+  - **Clasificación por comportamiento esperado**:
+    - **Positivos (+)**: 50 escenarios (comportamientos válidos y permitidos por el sistema).
+    - **Negativos (-)**: 52 escenarios (rechazos de validación, violaciones de permisos, conflictos de concurrencia e indisponibilidad).
+  - **Clasificación por tipología técnica**:
+    - Funcional de flujo: 48 escenarios.
+    - Validación de campos y contratos: 14 escenarios.
+    - Seguridad y permisos: 12 escenarios.
+    - Integridad transaccional y concurrencia: 18 escenarios.
+    - Rendimiento bajo carga: 7 escenarios.
+    - CI y reproducibilidad: 3 escenarios.
 - **Distribución de familias por herramienta primaria (34 familias)**:
   - **Karate**: 19 familias (CP-01, CP-02, CP-03, CP-04, CP-05, CP-06, CP-07, CP-08, CP-09, CP-10, CP-11, CP-12, CP-15, CP-16, CP-17, CP-18, CP-20, CP-21, CP-22) — *55.9%*.
   - **Appium**: 7 familias (CP-24, CP-25, CP-26, CP-27, CP-28, CP-29, CP-30) — *20.6%*.
@@ -93,5 +101,5 @@ Requisito (RF / PWA / RNF)
 
 ### 3.2 Cobertura de ejecución (Estado actual M0)
 - **Ejecutado con evidencia formal previa**: Pruebas Unitarias y MySQL base (QA-02: 564 pruebas, 546 aprobadas, 18 fallidas en búsqueda/contrato).
-- **Suites obligatorias del curso (Karate, Selenium, Appium, JMeter)**: **0 ejecutados (Todos los 94 escenarios se encuentran formalmente en estado `PENDIENTE`)**.
+- **Suites obligatorias del curso (Karate, Selenium, Appium, JMeter)**: **0 ejecutados (Todos los 102 escenarios se encuentran formalmente en estado `PENDIENTE`)**.
 - **Defectos abiertos conocidos**: 2 hallazgos en QA-02 (`QA02-H01` en `BusquedaVacantesMySqlTest` y `QA02-H02` en `DetalleVacanteMySqlTest`, asignados para resolución en QA-07).
