@@ -1,6 +1,6 @@
 # Registro y Matriz de Riesgos — QA-04
 
-- **Proyecto**: Portal de Empleos CREO+ (PWA y API REST) — Calidad de Software.
+- **Proyecto**: Portal de Empleos CREO+ (Web, PWA, APK Android y API REST) — Calidad de Software.
 - **Responsable**: R3 (@luisvalenzuela25).
 - **Revisor asignado**: R1 (@stephany-toribio).
 - **Hito**: M0 (Alcance y línea base).
@@ -55,6 +55,9 @@ $$\text{Severidad} = \text{Probabilidad (P)} \times \text{Impacto (I)}$$
 | **RSK-10** | **Incompatibilidad de entorno local/CI (Node, Docker, JDK)**: Diferencias entre la máquina del desarrollador (Node 24, Windows) y el entorno estándar del proyecto (Node 22, Linux CI). | RNF-04<br>`CP-34` | 3 | 2 | **6** | **Alto** | **P1** | **R2** / **R3** (@aquinoestoyxd, @luisvalenzuela25) | Estandarización mediante Dockerfiles y fijación de versiones de engines en `package.json` y acciones de GitHub Actions. | Ejecución limpia del workflow de CI en develop sin fallos de compilación ni ejecución de suites (QA-27, QA-28). |
 | **RSK-11** | **Pérdida de conexión durante postulación y estado incierto en PWA**: El usuario envía su postulación, se corta la red antes de recibir respuesta y el cliente simula éxito o reenvía automáticamente duplicando peticiones. | PWA-02, RF-07<br>`CP-27` | 3 | 3 | **9** | **Crítico** | **P0** | **R2** / **R3** (@aquinoestoyxd, @luisvalenzuela25) | Comportamiento honesto de la PWA: sin escrituras offline, banner de error de red y mecanismo de consulta del resultado persistente en el servidor antes de permitir reintentar. | Prueba en Appium (CP-27 en QA-22/QA-23) cortando la red y verificando que no se emiten éxitos ficticios. |
 | **RSK-12** | **Desbordamiento de recursos del contenedor MySQL durante pruebas de carga**: Bloqueos de tablas prolongados o agotamiento de conexiones en `portal_empleos_calidad_qa`. | RNF-02, RNF-03<br>`CP-33` | 2 | 3 | **6** | **Alto** | **P1** | **R3** (@luisvalenzuela25) | Configuración de `max_connections`, timeouts de transacciones y reinicio de base previo a la ejecución masiva; pruebas con rampa de subida progresiva. | Verificación de métricas de Docker Compose sin reinicio de contenedores durante las ejecuciones de JMeter en QA-25. |
+| **RSK-13** | Incompatibilidad de Capacitor, Android SDK, JDK o Gradle que impida generar o instalar el APK. | PWA-01, RNF-04; CP-24-03, CP-24-04 | 2 | 3 | **6** | **Alto** | **P1** | **R2 / R3** | Fijar versiones compatibles y verificar tempranamente la compilación e instalación en Android. | APK generado, instalado y abierto con evidencia en QA-10 y QA-21. |
+| **RSK-14** | APK funcional pero sin interacciones realmente nativas demostrables mediante Appium. | PWA-04; CP-25-03, CP-29-03, CP-29-04 | 3 | 3 | **9** | **Crítico** | **P0** | **R3 / R2** | Implementar una interacción nativa funcional y verificar swipe, tap, selectores y contextos tempranamente. | Flujo Appium aprobado con evidencia de controles nativos en QA-22. |
+| **RSK-15** | Casos automatizados sin vinculación documentada con tickets reales de Jira. | RNF-04; CP-34-03 | 3 | 3 | **9** | **Crítico** | **P0** | **R3** | Configurar Jira desde M0 y exigir trazabilidad en las cuatro suites. | Tickets, scripts, reportes y retests verificables en QA-29 y QA-31. |
 
 ---
 
@@ -63,5 +66,19 @@ $$\text{Severidad} = \text{Probabilidad (P)} \times \text{Impacto (I)}$$
 1. **Revisión en Stand-ups / Jornadas**: En cada sesión de trabajo, el equipo evalúa si algún riesgo ha cambiado de estado o si un bloqueo en progreso eleva su probabilidad.
 2. **Puerta de paso por Hito**:
    - Para cerrar **M1 (Flujo de negocio)**: Los riesgos `RSK-01`, `RSK-05`, `RSK-06`, `RSK-07` y `RSK-08` deben tener mitigaciones técnicas probadas con evidencia en API y pruebas unitarias/MySQL.
-   - Para cerrar **M2 (PWA y entorno QA)**: Los riesgos `RSK-03`, `RSK-04` y `RSK-11` deben estar mitigados y demostrados en Android.
+   - Para cerrar **M2 (PWA, APK y entorno QA)**: Los riesgos `RSK-03`, `RSK-04`, `RSK-11` y `RSK-13` deben estar mitigados y demostrados en Android.
    - Para cerrar **M5 (Entrega final)**: Todos los riesgos P0 y P1 deben encontrarse en estado cerrado o controlado sin defectos Sev1/Sev2 pendientes.
+
+### Controles adicionales de seguimiento
+
+- M0: verificar la disponibilidad de Jira y responsables
+  de trazabilidad para controlar RSK-15.
+- M2: verificar la generación e instalación del APK
+  para controlar RSK-13.
+- M4: demostrar interacciones nativas y automatización
+  estable para controlar RSK-14.
+- M5: verificar el cierre o control documentado de los
+  riesgos y la trazabilidad completa de las cuatro suites.
+
+Las probabilidades e impactos de los riesgos adicionales
+son estimaciones iniciales que deberán revisarse en equipo.

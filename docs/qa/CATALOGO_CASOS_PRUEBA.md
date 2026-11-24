@@ -12,13 +12,13 @@
 
 ## 1. Convenciones y estados de prueba
 
-Cada caso de prueba se desglosa desde las 34 familias base (`CP-01` a `CP-34`) utilizando **102 identificadores canónicos de escenario** (`CP-XX-YY`), correspondientes exactamente a 50 escenarios positivos y 52 negativos.
+Cada caso de prueba se desglosa desde las 34 familias base (`CP-01` a `CP-34`) utilizando **111 identificadores canónicos de escenario** (`CP-XX-YY`), correspondientes a 101 escenarios originales y 10 escenarios adicionales para APK Android y Jira.
 - **Estados posibles de ciclo de vida**:
   - `PENDIENTE`: Diseñado y documentado, a la espera de ejecución en su suite automatizada correspondiente.
   - `EJECUTADO`: Prueba corrida en el ambiente local/QA pero con resultado aún no consolidado.
   - `APROBADO`: Ejecutada exitosamente con aserciones cumplidas y evidencia registrada.
   - `DEFECTUOSO`: Ejecutada con fallos o aserciones no cumplidas (se vincula a un defecto formal Sev1-Sev4).
-- **Estado inicial**: **Todos los 101 escenarios inician en estado `PENDIENTE`** dentro de esta entrega de diseño de QA-04.
+- **Estado inicial**: **Todos los 111 escenarios inician en estado `PENDIENTE`** dentro de esta entrega de diseño de QA-04.
 - **Manejo de identificadores**: Los scripts no deben quemar IDs numéricos de usuarios ni de entidades de negocio (se resuelven dinámicamente mediante login o consultas previas). Para catálogos inmutables del sistema, los IDs corresponden a las constantes oficiales sembradas por los seeders base (`EstadoPostulacionSeeder`: 1=Recibido, 2=En Revisión, 3=Entrevista, 4=Contratado, 5=Rechazado; `MotivoRechazoSeeder`: 1=Perfil no se ajusta, 2=Expectativa salarial alta, 3=Proceso cerrado).
 
 ---
@@ -900,7 +900,7 @@ Todos conservan estado de ejecución `PENDIENTE` y preparación contractual pend
 
 ---
 
-## 6. Bloque 5: PWA Móvil Android (PWA-01 a PWA-04)
+## 6. Bloque 5: PWA y APK Android (PWA-01 a PWA-04)
 
 ### CP-24: Manifiesto e Instalación Standalone en Android
 - **CP-24-01 (Positivo - Instalación y Modo Standalone)**
@@ -922,6 +922,57 @@ Todos conservan estado de ejecución `PENDIENTE` y preparación contractual pend
 
 ---
 
+
+
+#### CP-24-03: Generacion, instalacion y apertura del APK
+
+- **Tipo**: Positivo
+- **Prioridad**: P0
+- **Requisitos**: PWA-01, RNF-04
+- **Controles RUB**: RUB-A02, RUB-A03
+- **Tareas**: QA-10, QA-21
+- **Estado**: PENDIENTE
+- **Ticket Jira**: Pendiente de vinculacion real
+- **Precondiciones**: Android SDK, build Angular y configuracion Capacitor.
+
+**Pasos**:
+
+1. Compilar Angular para el ambiente QA.
+2. Sincronizar el proyecto Android con Capacitor.
+3. Generar e identificar el APK.
+4. Instalar el APK en Android.
+5. Abrir la aplicacion y verificar su pantalla inicial.
+
+**Resultado esperado**: APK instalable, apertura exitosa y API QA configurada.
+
+**Evidencia requerida**: Log de build, hash del APK y captura de apertura.
+
+
+
+#### CP-24-04: Capabilities y contextos Appium
+
+- **Tipo**: Positivo
+- **Prioridad**: P0
+- **Requisitos**: PWA-01, RNF-04
+- **Controles RUB**: RUB-A01, RUB-A02, RUB-A05
+- **Tareas**: QA-21
+- **Estado**: PENDIENTE
+- **Ticket Jira**: Pendiente de vinculacion real
+- **Precondiciones**: APK de pruebas instalado y servidor Appium disponible.
+
+**Pasos**:
+
+1. Iniciar sesion Appium con UiAutomator2.
+2. Consultar los contextos disponibles.
+3. Localizar un elemento en NATIVE_APP.
+4. Cambiar al contexto WebView cuando corresponda.
+5. Localizar un elemento estable del frontend.
+6. Regresar al contexto nativo.
+
+**Resultado esperado**: Sesion estable y contextos requeridos automatizables.
+
+**Evidencia requerida**: Capabilities, logs y evidencia de cambio de contexto.
+
 ### CP-25: Diseño Móvil, Accesibilidad y Teclado Virtual
 - **CP-25-01 (Positivo - Usabilidad en Viewports Móviles)**
   - **Objetivo**: Verificar formularios operables en resoluciones 360×800 y 412×915 con teclado virtual desplegado.
@@ -940,6 +991,31 @@ Todos conservan estado de ejecución `PENDIENTE` y preparación contractual pend
   - **Dependencias**: QA-12, QA-22. | **Estado inicial**: `PENDIENTE`.
 
 ---
+
+
+
+#### CP-25-03: Gestos tactiles swipe y tap en Android
+
+- **Tipo**: Positivo
+- **Prioridad**: P0
+- **Requisitos**: PWA-04
+- **Controles RUB**: RUB-A04, RUB-A05
+- **Tareas**: QA-12, QA-22
+- **Estado**: PENDIENTE
+- **Ticket Jira**: Pendiente de vinculacion real
+- **Precondiciones**: APK instalado, datos de prueba y sesion Appium.
+
+**Pasos**:
+
+1. Localizar elementos mediante selectores estables.
+2. Ejecutar swipe sobre una superficie desplazable.
+3. Comprobar el cambio observable de contenido.
+4. Ejecutar tap sobre un control identificado.
+5. Interactuar con un elemento realmente nativo.
+
+**Resultado esperado**: Gestos reconocidos y navegacion sin errores.
+
+**Evidencia requerida**: Script, jerarquia de elementos y capturas.
 
 ### CP-26: Apertura sin Conexión y Privacidad de Caché
 - **CP-26-01 (Positivo - Vista Offline Honesta)**
@@ -969,6 +1045,32 @@ Todos conservan estado de ejecución `PENDIENTE` y preparación contractual pend
 
 ---
 
+
+
+#### CP-26-04: Apertura del APK sin conexion
+
+- **Tipo**: Negativo
+- **Prioridad**: P0
+- **Requisitos**: PWA-02, RNF-01
+- **Controles RUB**: RUB-A05
+- **Tareas**: QA-11, QA-23
+- **Estado**: PENDIENTE
+- **Ticket Jira**: Pendiente de vinculacion real
+- **Precondiciones**: APK instalado y ambiente Android controlado.
+
+**Pasos**:
+
+1. Abrir el APK con conexion disponible.
+2. Interrumpir la conectividad.
+3. Cerrar y reabrir la aplicacion.
+4. Intentar consultar informacion remota.
+5. Verificar el tratamiento de datos privados.
+6. Restablecer la conectividad.
+
+**Resultado esperado**: Error de red controlado, sin datos privados expuestos.
+
+**Evidencia requerida**: Reporte Appium y evidencia offline/online.
+
 ### CP-27: Pérdida de Conexión en Escrituras y Recuperación
 - **CP-27-01 (Negativo - Corte de Red Durante Envío de Postulación)**
   - **Objetivo**: Demostrar que ante corte de red durante una postulación, la PWA NO simula éxito ficticio ni reenvía a ciegas.
@@ -989,7 +1091,33 @@ Todos conservan estado de ejecución `PENDIENTE` y preparación contractual pend
 
 ---
 
-### CP-28: Actualización entre Builds de la PWA
+
+
+#### CP-27-03: Interrupcion de red durante postulacion en APK
+
+- **Tipo**: Negativo
+- **Prioridad**: P0
+- **Requisitos**: PWA-02, RF-07, RNF-02
+- **Controles RUB**: RUB-A05, RUB-A06
+- **Tareas**: QA-22, QA-23
+- **Estado**: PENDIENTE
+- **Ticket Jira**: Pendiente de vinculacion real
+- **Precondiciones**: Candidato ficticio y vacante disponible.
+
+**Pasos**:
+
+1. Iniciar una postulacion.
+2. Interrumpir la red antes de confirmar su resultado.
+3. Comprobar que no se muestra un exito ficticio.
+4. Restablecer la conectividad.
+5. Consultar el resultado persistente antes de reintentar.
+6. Verificar que no existen postulaciones duplicadas.
+
+**Resultado esperado**: Resultado coherente con la API y ausencia de duplicados.
+
+**Evidencia requerida**: Reporte Appium, registro de red y comprobacion API.
+
+### CP-28: Actualización de PWA y APK
 - **CP-28-01 (Positivo - Detección de Nueva Versión)**
   - **Objetivo**: Comprobar que el Service Worker detecta un nuevo build desplegado sin pérdida silenciosa de formularios.
   - **Tipo**: PWA / Ciclo de vida (Appium).
@@ -1008,7 +1136,32 @@ Todos conservan estado de ejecución `PENDIENTE` y preparación contractual pend
 
 ---
 
-### CP-29: Flujo Móvil Completo en PWA Android
+
+
+#### CP-28-03: Actualizacion del APK entre versiones
+
+- **Tipo**: Positivo
+- **Prioridad**: P1
+- **Requisitos**: PWA-03, RNF-04
+- **Controles RUB**: RUB-A03, RUB-A05
+- **Tareas**: QA-10, QA-23
+- **Estado**: PENDIENTE
+- **Ticket Jira**: Pendiente de vinculacion real
+- **Precondiciones**: Dos APK compatibles para actualizacion de la aplicacion.
+
+**Pasos**:
+
+1. Instalar la primera version.
+2. Registrar version y estado de la aplicacion.
+3. Instalar la segunda version como actualizacion.
+4. Abrir nuevamente la aplicacion.
+5. Verificar navegacion y tratamiento de la sesion.
+
+**Resultado esperado**: Nueva version operativa sin perdida silenciosa de datos.
+
+**Evidencia requerida**: Versiones, hashes y reporte de actualizacion.
+
+### CP-29: Flujo Móvil Completo en PWA y APK Android
 - **CP-29-01 (Positivo - Recorrido Completo desde Dispositivo Android)**
   - **Objetivo**: Demostrar login, búsqueda de empleo, consulta de detalle y postulación desde la PWA instalada en Android mediante Appium.
   - **Tipo**: E2E Móvil (Appium).
@@ -1027,6 +1180,63 @@ Todos conservan estado de ejecución `PENDIENTE` y preparación contractual pend
   - **Dependencias**: QA-22. | **Estado inicial**: `PENDIENTE`.
 
 ---
+
+
+
+#### CP-29-03: Flujo end-to-end del candidato desde APK
+
+- **Tipo**: Positivo
+- **Prioridad**: P0
+- **Requisitos**: PWA-01, PWA-04, RF-02, RF-06, RF-07
+- **Controles RUB**: RUB-A01, RUB-A04, RUB-A05, RUB-A06
+- **Tareas**: QA-22
+- **Estado**: PENDIENTE
+- **Ticket Jira**: Pendiente de vinculacion real
+- **Precondiciones**: APK instalado, candidato activo y vacante disponible.
+
+**Pasos**:
+
+1. Abrir el APK mediante Appium.
+2. Iniciar sesion como candidato.
+3. Buscar vacantes.
+4. Ejecutar gestos swipe y tap.
+5. Consultar el detalle de una vacante.
+6. Confirmar la postulacion mediante control nativo.
+7. Verificar confirmacion del servidor.
+8. Consultar Mis postulaciones.
+9. Comprobar persistencia mediante API.
+10. Cerrar sesion.
+
+**Resultado esperado**: Flujo completo exitoso y una postulacion persistente.
+
+**Evidencia requerida**: Reporte Appium, capturas y comprobacion API.
+
+
+
+#### CP-29-04: Confirmacion y cancelacion mediante dialogo nativo
+
+- **Tipo**: Negativo
+- **Prioridad**: P0
+- **Requisitos**: PWA-04, RF-07
+- **Controles RUB**: RUB-A04, RUB-A05
+- **Tareas**: QA-22
+- **Estado**: PENDIENTE
+- **Ticket Jira**: Pendiente de vinculacion real
+- **Precondiciones**: APK con interaccion nativa funcional implementada.
+
+**Pasos**:
+
+1. Seleccionar una vacante disponible.
+2. Abrir el dialogo nativo de confirmacion.
+3. Identificar los controles en contexto NATIVE_APP.
+4. Cancelar mediante tap sobre el control nativo.
+5. Verificar que no se creo una postulacion.
+6. Volver a abrir el dialogo y confirmar.
+7. Comprobar una unica postulacion persistente.
+
+**Resultado esperado**: Cancelar no crea registros y confirmar crea uno solo.
+
+**Evidencia requerida**: Jerarquia nativa, reporte y verificacion API.
 
 ### CP-30: Sesión Móvil, Reapertura y Logout
 - **CP-30-01 (Positivo - Reapertura de App con Sesión Válida desde Segundo Plano)**
@@ -1054,6 +1264,32 @@ Todos conservan estado de ejecución `PENDIENTE` y preparación contractual pend
   - **Dependencias**: QA-23. | **Estado inicial**: `PENDIENTE`.
 
 ---
+
+
+
+#### CP-30-04: Sesion y reapertura del APK
+
+- **Tipo**: Positivo
+- **Prioridad**: P0
+- **Requisitos**: RF-02, PWA-02, PWA-03, RNF-01
+- **Controles RUB**: RUB-A05, RUB-A06
+- **Tareas**: QA-23
+- **Estado**: PENDIENTE
+- **Ticket Jira**: Pendiente de vinculacion real
+- **Precondiciones**: APK instalado y candidato ficticio disponible.
+
+**Pasos**:
+
+1. Iniciar sesion.
+2. Cerrar y reabrir la aplicacion.
+3. Verificar comportamiento segun contrato de sesion.
+4. Cerrar sesion.
+5. Intentar acceder a una pantalla protegida.
+6. Reabrir el APK y comprobar que no hay acceso indebido.
+
+**Resultado esperado**: Sesion coherente y acceso protegido tras logout.
+
+**Evidencia requerida**: Reporte Appium y verificacion de revocacion.
 
 ## 7. Bloque 6: Rendimiento, Carga y CI (RNF-03, RNF-04)
 
@@ -1137,3 +1373,28 @@ Todos conservan estado de ejecución `PENDIENTE` y preparación contractual pend
   - **Pasos**: Ejecutar `db:seed --class=QaSeeder` en contenedor e inspeccionar log de salida.
   - **Resultado esperado**: Éxito sin volcados de contraseñas ni tokens en stdout.
   - **Dependencias**: QA-02, QA-27, QA-30. | **Estado inicial**: `PENDIENTE`.
+
+
+#### CP-34-03: Trazabilidad de automatizacion con Jira
+
+- **Tipo**: CI
+- **Prioridad**: P0
+- **Requisitos**: RNF-04
+- **Controles RUB**: RUB-T01, RUB-T02, RUB-T03, RUB-T04
+- **Tareas**: QA-04, QA-29, QA-31
+- **Estado**: PENDIENTE
+- **Ticket Jira**: Pendiente de vinculacion real
+- **Precondiciones**: Proyecto Jira y reportes de las suites disponibles.
+
+**Pasos**:
+
+1. Identificar los casos automatizados de cada herramienta.
+2. Verificar su enlace con tickets reales de Jira.
+3. Relacionar requisito, control RUB y caso de prueba.
+4. Vincular script, commit, reporte y resultado.
+5. Verificar defecto y retest cuando corresponda.
+6. Comprobar que las evidencias no contienen secretos.
+
+**Resultado esperado**: Trazabilidad completa y verificable de las cuatro suites.
+
+**Evidencia requerida**: Matriz, tickets Jira y enlaces a reportes reales.

@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "master": {
     "repo": "stephany-toribio/recruitment-api-calidad-software",
     "number": 3,
@@ -30,9 +30,9 @@
     },
     {
       "id": "E03",
-      "title": "PWA instalable y experiencia móvil",
+      "title": "PWA, APK Android y experiencia móvil",
       "role": "R2",
-      "goal": "Entregar PWA Android con manifiesto, instalación, actualización y comportamiento honesto sin conexión.",
+      "goal": "Entregar PWA y APK Android mediante Capacitor con instalación, actualización y recuperación diferenciadas.",
       "issue": {
         "repo": "stephany-toribio/recruitment-api-calidad-software",
         "number": 6,
@@ -43,7 +43,7 @@
       "id": "E04",
       "title": "Automatización API con Karate",
       "role": "R1",
-      "goal": "Automatizar contratos, validaciones, permisos y flujo integral con reportes y datos repetibles.",
+      "goal": "Validar contratos JSON, estados HTTP, tiempos, variables dinámicas y reutilización mediante call.",
       "issue": {
         "repo": "stephany-toribio/recruitment-api-calidad-software",
         "number": 7,
@@ -54,7 +54,7 @@
       "id": "E05",
       "title": "Automatización web con Selenium",
       "role": "R2",
-      "goal": "Demostrar los recorridos de candidato, empresa y administrador desde la interfaz web.",
+      "goal": "Automatizar flujos críticos con selectores robustos y esperas explícitas o fluidas.",
       "issue": {
         "repo": "stephany-toribio/recruitment-api-calidad-software",
         "number": 8,
@@ -65,7 +65,7 @@
       "id": "E06",
       "title": "Automatización Android con Appium",
       "role": "R3",
-      "goal": "Instalar, abrir y probar la PWA en Android con evidencia del contexto y persistencia.",
+      "goal": "Validar APK, capabilities, contextos, gestos e interacciones nativas y flujo end-to-end.",
       "issue": {
         "repo": "stephany-toribio/recruitment-api-calidad-software",
         "number": 9,
@@ -76,7 +76,7 @@
       "id": "E07",
       "title": "Rendimiento y concurrencia con JMeter",
       "role": "R3",
-      "goal": "Medir cargas controladas, comprobar integridad y tratar cuellos de botella demostrados.",
+      "goal": "Ejecutar cargas realistas con Thread Groups, CSV, listeners, assertions y dashboard HTML.",
       "issue": {
         "repo": "stephany-toribio/recruitment-api-calidad-software",
         "number": 10,
@@ -87,7 +87,7 @@
       "id": "E08",
       "title": "CI, trazabilidad, evidencias y entrega",
       "role": "R3",
-      "goal": "Mantener el seguimiento, ejecutar regresión, preparar el informe y publicar una release coordinada.",
+      "goal": "Acreditar trazabilidad Jira, regresión, reportes de las cuatro herramientas y entrega final con APK.",
       "issue": {
         "repo": "stephany-toribio/recruitment-api-calidad-software",
         "number": 11,
@@ -112,18 +112,18 @@
   "stages": {
     "M0": "Alcance y línea base",
     "M1": "Flujo de negocio estable",
-    "M2": "PWA y entorno QA",
+    "M2": "PWA, APK y entorno QA",
     "M3": "API automatizada",
     "M4": "Web y Android automatizados",
     "M5": "Rendimiento, regresión y entrega"
   },
   "gates": {
-    "M0": "README de ambos repositorios delimitados; ambiente reproducible, datos ficticios y línea base registrada.",
+    "M0": "Alcance actualizado, entorno reproducible, línea base, matrices CP/RUB y preparación de trazabilidad Jira.",
     "M1": "Registro, permisos, publicación, postulación, retiro, decisiones e historial verificados sin defectos graves abiertos.",
-    "M2": "PWA instalada y actualizable en Android, falta de red controlada y entorno QA accesible.",
-    "M3": "Karate positivo, negativo y de flujo integral ejecutado con reportes y fixtures.",
-    "M4": "Selenium y Appium ejecutados; PWA instalada y recorrido Android demostrado.",
-    "M5": "Carga medida, integridad comprobada, regresión aprobada, CI/evidencias/informe y release coordinada."
+    "M2": "PWA instalable, APK generado e instalado, comportamiento sin red y entorno QA accesible.",
+    "M3": "Karate con esquemas JSON, códigos HTTP, tiempos, variables dinámicas y call ejecutado con reportes.",
+    "M4": "Selenium y Appium ejecutados, selectores robustos, esperas, APK, gestos nativos y flujos end-to-end.",
+    "M5": "JMeter con CSV, assertions y HTML; integridad, regresión, Jira, evidencias y release con APK."
   },
   "requirements": [
     [
@@ -168,19 +168,19 @@
     ],
     [
       "PWA-01",
-      "PWA instalable y apertura en Android"
+      "PWA y APK instalables y apertura en Android"
     ],
     [
       "PWA-02",
-      "Caché pública, vista offline y escrituras solo en línea"
+      "Caché pública web, comportamiento offline y escrituras solo en línea en PWA y APK"
     ],
     [
       "PWA-03",
-      "Actualización, reapertura y recuperación de la PWA"
+      "Actualización, reapertura y recuperación diferenciadas de PWA y APK"
     ],
     [
       "PWA-04",
-      "Diseño móvil, accesibilidad y selectores estables"
+      "Diseño móvil, accesibilidad, selectores estables e interacción nativa en APK"
     ],
     [
       "RNF-01",
@@ -475,8 +475,8 @@
     {
       "id": "CP-24",
       "requirements": "PWA-01",
-      "scenario": "Instalación y apertura desde el lanzador Android",
-      "expected": "Manifiesto/iconos correctos y apertura instalada en modo standalone",
+      "scenario": "Instalación y apertura de PWA y APK Android",
+      "expected": "PWA standalone y APK instalable con verificaciones diferenciadas",
       "tools": "Android, Appium",
       "tasks": [
         "QA-10",
@@ -487,7 +487,7 @@
     {
       "id": "CP-25",
       "requirements": "PWA-04",
-      "scenario": "Pantallas móviles, orientación, teclado y foco",
+      "scenario": "Pantallas PWA y APK, orientación, teclado y foco",
       "expected": "Acciones accesibles y sin desbordamientos que bloqueen el recorrido",
       "tools": "Selenium, Appium",
       "tasks": [
@@ -498,8 +498,8 @@
     {
       "id": "CP-26",
       "requirements": "PWA-02, RNF-01",
-      "scenario": "Apertura sin red y revisión de caché",
-      "expected": "Shell/vista offline; sin tokens, perfiles ni respuestas privadas en caché SW",
+      "scenario": "Comportamiento offline de PWA y APK",
+      "expected": "Vista offline; sin exposición de datos privados ni almacenamiento inseguro de tokens; caché SW verificada en PWA",
       "tools": "Android/DevTools, Appium",
       "tasks": [
         "QA-11",
@@ -521,19 +521,20 @@
     {
       "id": "CP-28",
       "requirements": "PWA-03",
-      "scenario": "Actualización instalada entre dos builds",
-      "expected": "Nueva versión usable, aviso/recuperación y formularios sin pérdida silenciosa",
+      "scenario": "Actualización diferenciada de PWA y APK",
+      "expected": "Nueva versión usable, recuperación y formularios sin pérdida silenciosa",
       "tools": "Android, Appium",
       "tasks": [
         "QA-11",
-        "QA-23"
+        "QA-23",
+        "QA-10"
       ]
     },
     {
       "id": "CP-29",
-      "requirements": "PWA-01, RF-02, RF-06, RF-07",
-      "scenario": "Login, búsqueda, detalle y postulación desde PWA Android",
-      "expected": "Ejecución Appium y persistencia demostradas en dispositivo/emulador",
+      "requirements": "PWA-01, PWA-04, RF-02, RF-06, RF-07",
+      "scenario": "Login, búsqueda, detalle y postulación desde APK Android",
+      "expected": "Appium con swipe, tap, interacción nativa, contextos y persistencia demostrada",
       "tools": "Appium",
       "tasks": [
         "QA-21",
@@ -543,7 +544,7 @@
     {
       "id": "CP-30",
       "requirements": "PWA-02, PWA-03, RF-02",
-      "scenario": "Sesión inválida, logout y reapertura móvil",
+      "scenario": "Sesión inválida, logout y reapertura de PWA y APK",
       "expected": "Reautenticación y mensajes coherentes; datos privados no expuestos",
       "tools": "Appium",
       "tasks": [
@@ -589,14 +590,15 @@
     {
       "id": "CP-34",
       "requirements": "RNF-04",
-      "scenario": "Reproducción desde copia limpia y CI con reportes",
-      "expected": "Comandos repetibles, fallos visibles y evidencia completa sin secretos",
+      "scenario": "Reproducción desde copia limpia, CI y trazabilidad Jira",
+      "expected": "Comandos repetibles, reportes, tickets vinculados y evidencia sin secretos",
       "tools": "CI, Karate, Selenium, Appium, JMeter",
       "tasks": [
         "QA-27",
         "QA-28",
         "QA-30",
-        "QA-31"
+        "QA-31",
+        "QA-29"
       ]
     }
   ],
@@ -648,7 +650,9 @@
         "Ejecutar npm ci y npm run build con Node.js 22.x; registrar resultado y corregir fallos reproducidos.",
         "Configurar las URL local y de producción/QA sin depender de las ramas deploy eliminadas.",
         "Comprobar que el artefacto de QA usa la API de esta copia y una dirección accesible desde Android, sin localhost del dispositivo.",
-        "Confirmar carga de rutas profundas, CORS y contrato de errores con la API; documentar la configuración."
+        "Confirmar carga de rutas profundas, CORS y contrato de errores con la API; documentar la configuración.",
+        "Preparar una configuración Angular reutilizable por Capacitor, sin depender de localhost dentro de Android.",
+        "Documentar la configuración del origen WebView y las comprobaciones CORS que se validarán en QA-13."
       ],
       "evidence": [
         "Log de compilación",
@@ -678,7 +682,9 @@
         "Definir identificadores de casos y datos ficticios, incluyendo usuarios de distinta propiedad y vacantes en cada condición.",
         "Priorizar permisos, duplicados, contratación concurrente, historial y pérdida de conexión.",
         "Definir resultados esperados y precondiciones; distinguir pendiente, ejecutado, aprobado y defectuoso.",
-        "Versionar la matriz y el registro de riesgos con responsable por rol y mitigación."
+        "Versionar la matriz y el registro de riesgos con responsable por rol y mitigación.",
+        "Mantener los 111 escenarios, 24 controles RUB y 15 riesgos relacionados y sin identificadores duplicados.",
+        "Incorporar los casos del APK y la trazabilidad Jira; distinguir diseño, ejecución y evidencia real."
       ],
       "evidence": [
         "Matriz de trazabilidad",
@@ -848,7 +854,7 @@
     },
     {
       "id": "QA-10",
-      "title": "Implementar manifiesto, iconos e instalación de la PWA",
+      "title": "Implementar PWA, Capacitor y generación de APK Android",
       "repo": "frontend",
       "epic": "E03",
       "stage": "M2",
@@ -856,14 +862,19 @@
       "pts": 3,
       "priority": "P1",
       "depends": [
-        "QA-03"
+        "QA-03",
+        "QA-13"
       ],
       "accept": [
         "Versionar manifiesto con nombre, short_name, start_url, scope, colores y display standalone.",
         "Proveer iconos válidos de 192 y 512 píxeles y recurso maskable cuando corresponda.",
         "Configurar la integración PWA compatible con Angular 19 y verificar la compilación de producción.",
         "Instalar y abrir la PWA desde el lanzador de Android bajo HTTPS; registrar dispositivo y modo standalone.",
-        "Verificar que las rutas y enlaces permanezcan dentro del alcance previsto."
+        "Verificar que las rutas y enlaces permanezcan dentro del alcance previsto.",
+        "Configurar Capacitor y Android con versiones compatibles.",
+        "Generar, instalar y abrir un APK identificado por versión y hash.",
+        "Versionar el proyecto Android y el procedimiento de compilación.",
+        "La implementación de Capacitor puede comenzar en paralelo con QA-13, pero su aceptación completa requiere un entorno QA bajo HTTPS."
       ],
       "evidence": [
         "Manifiesto e iconos",
@@ -893,7 +904,9 @@
         "Explicar la falta de conexión sin mostrar datos o confirmaciones de éxito inventados.",
         "Deshabilitar o fallar explícitamente postulaciones, pagos y cambios de estado sin red; no encolar escrituras para reenvío automático.",
         "Verificar actualización de una versión anterior a una nueva, recuperación y aviso sin perder silenciosamente formularios.",
-        "Comprobar recarga y navegación después de recuperar conexión."
+        "Comprobar recarga y navegación después de recuperar conexión.",
+        "Diferenciar el service worker de la PWA de los recursos empaquetados en el APK.",
+        "Verificar que el APK maneja pérdida de red sin escrituras automáticas ni exposición de datos privados."
       ],
       "evidence": [
         "Configuración del service worker",
@@ -924,7 +937,10 @@
         "Verificar al menos vistas de 360×800 y 412×915, orientación y teclado virtual sin ocultar acciones principales.",
         "Corregir desbordamientos y asegurar etiquetas accesibles, foco, navegación con teclado y mensajes asociados al campo.",
         "Usar identificadores estables para Selenium y Appium sin ligar las pruebas a posiciones o clases de estilo.",
-        "Evitar cambios visuales amplios que no respondan a un defecto del alcance."
+        "Evitar cambios visuales amplios que no respondan a un defecto del alcance.",
+        "Incorporar selectores estables para Selenium y Appium.",
+        "Implementar una interacción nativa funcional para Android, con confirmación y cancelación verificables.",
+        "Proveer una interacción funcional con controles Android realmente nativos que permita demostrar swipe y tap mediante Appium."
       ],
       "evidence": [
         "Lista de pantallas y tamaños",
@@ -955,7 +971,9 @@
         "Verificar HTTPS, CORS, rutas profundas, URL de API y conectividad desde Android.",
         "Separar base y credenciales del proyecto original; no exponer secretos en frontend, logs o evidencias.",
         "Documentar carga/restauración de datos ficticios, respaldo y retorno a una versión anterior.",
-        "Registrar commits desplegados y ejecutar una comprobación breve del flujo."
+        "Registrar commits desplegados y ejecutar una comprobación breve del flujo.",
+        "Verificar HTTPS y preparar la configuración CORS para el origen WebView previsto; la comprobación desde el APK instalado corresponde a QA-21.",
+        "Comprobar CORS y origen WebView según la configuración real, sin desactivar globalmente las protecciones de seguridad."
       ],
       "evidence": [
         "Inventario del entorno QA",
@@ -985,7 +1003,9 @@
         "Versionar proyecto Java/Maven con versiones compatibles, runner y configuración por entorno.",
         "Parametrizar baseUrl y credenciales de QA, sin tokens ni secretos en el repositorio.",
         "Preparar datos y limpieza por ejecución, reutilizables y restringidos al ambiente QA.",
-        "Generar reporte con comando reproducible y fallo del proceso cuando un escenario falla."
+        "Generar reporte con comando reproducible y fallo del proceso cuando un escenario falla.",
+        "Versionar helpers reutilizables mediante call y configuración de variables dinámicas y datos por ejecución.",
+        "Demostrar reutilización con un escenario de comprobación."
       ],
       "evidence": [
         "qa/karate con runner y configuración",
@@ -1016,7 +1036,9 @@
         "Automatizar registros válidos de candidato y empresa y login/logout con tokens reales.",
         "Usar Scenario Outline con datos variados para validaciones y duplicados.",
         "Comprobar códigos HTTP, estructura JSON, campos relevantes y persistencia.",
-        "Verificar cuenta bloqueada/suspendida y revocación del token según contrato; guardar resultados."
+        "Verificar cuenta bloqueada/suspendida y revocación del token según contrato; guardar resultados.",
+        "Validar exhaustivamente esquemas JSON, tipos, campos obligatorios, códigos HTTP y estructuras de error.",
+        "Incorporar aserciones de tiempos con umbrales documentados y datos parametrizados."
       ],
       "evidence": [
         "Features parametrizados",
@@ -1048,7 +1070,9 @@
         "Completar el escenario con empresa, administrador y candidato: crear, aprobar, pagar, buscar y postular.",
         "Avanzar por estados permitidos y verificar contratación y rechazo con motivo en casos independientes.",
         "Consultar historial y resultado del candidato con los identificadores devueltos por la API.",
-        "Preparar todas las condiciones de publicación y confirmar cambios persistentes sin depender de IDs fijos."
+        "Preparar todas las condiciones de publicación y confirmar cambios persistentes sin depender de IDs fijos.",
+        "Reutilizar features mediante call y encadenar tokens e identificadores obtenidos dinámicamente.",
+        "Validar esquemas, estados HTTP, tiempos y persistencia durante el flujo integral."
       ],
       "evidence": [
         "Features del flujo integral",
@@ -1080,7 +1104,8 @@
         "Probar token ausente/inválido, rol incorrecto y acceso a recursos de otro candidato o empresa.",
         "Probar postulación repetida, retiro no permitido, cupo cubierto y transiciones inválidas.",
         "Verificar códigos y errores del contrato y ausencia de escrituras ante rechazo.",
-        "Relacionar escenarios con los casos de concurrencia MySQL, sin presentar secuencias HTTP como prueba de simultaneidad."
+        "Relacionar escenarios con los casos de concurrencia MySQL, sin presentar secuencias HTTP como prueba de simultaneidad.",
+        "Validar esquemas JSON y códigos de error según el contrato confirmado, además de ausencia de mutaciones indebidas."
       ],
       "evidence": [
         "Features negativos",
@@ -1110,7 +1135,9 @@
         "Versionar runner, configuración por entorno y versiones compatibles del navegador/driver.",
         "Implementar Page Objects y esperas explícitas con selectores estables.",
         "Capturar evidencia y diagnóstico ante fallos; ejecutar sin pausas fijas como sincronización principal.",
-        "Separar fixtures y credenciales y registrar el comando y reporte."
+        "Separar fixtures y credenciales y registrar el comando y reporte.",
+        "Evitar XPath absolutos y selectores dependientes de posiciones o clases dinámicas.",
+        "Usar esperas explícitas o fluidas, sin pausas estáticas como sincronización principal."
       ],
       "evidence": [
         "qa/selenium",
@@ -1142,7 +1169,8 @@
         "Crear o preparar candidato ficticio, iniciar sesión, buscar, consultar detalle y postular.",
         "Comprobar confirmación, persistencia y aparición en Mis postulaciones.",
         "Probar validación del registro y prevención de un segundo envío/postulación.",
-        "Guardar resultado y capturas y limpiar solo los datos de la ejecución."
+        "Guardar resultado y capturas y limpiar solo los datos de la ejecución.",
+        "Ejecutar repetidamente los flujos E2E del candidato y documentar cualquier resultado intermitente."
       ],
       "evidence": [
         "Escenarios Selenium de candidato",
@@ -1174,7 +1202,8 @@
         "Preparar empresa/admin/candidato y completar aprobación, pago simulado y revisión empresarial.",
         "Avanzar a entrevista y contratar; ejecutar rechazo con motivo en una postulación distinta.",
         "Comprobar resultado visible al candidato y correspondencia con historial de la API.",
-        "Verificar navegación no autorizada y manejo de conflictos con esperas explícitas."
+        "Verificar navegación no autorizada y manejo de conflictos con esperas explícitas.",
+        "Ejecutar repetidamente los flujos críticos de empresa y administrador con evidencia de persistencia."
       ],
       "evidence": [
         "Escenarios Selenium de empresa/admin",
@@ -1206,7 +1235,10 @@
         "Versionar capabilities y configuración por entorno sin identificadores secretos del dispositivo.",
         "Verificar conexión al servidor y distinguir contexto nativo de contexto web.",
         "Definir y comprobar el método de apertura de la PWA instalada y su contexto automatizable.",
-        "Generar diagnóstico de un fallo controlado y comando reproducible."
+        "Generar diagnóstico de un fallo controlado y comando reproducible.",
+        "Configurar Android SDK, Appium, UiAutomator2 y capabilities reproducibles sobre el APK.",
+        "Demostrar disponibilidad y conmutación de contextos NATIVE_APP y WebView con evidencia.",
+        "Verificar conectividad real entre el APK instalado y la API QA bajo HTTPS, incluyendo CORS."
       ],
       "evidence": [
         "qa/appium y capabilities",
@@ -1221,7 +1253,7 @@
     },
     {
       "id": "QA-22",
-      "title": "Automatizar la PWA instalada y la postulación en Android",
+      "title": "Automatizar APK Android, gestos nativos y postulación end-to-end",
       "repo": "frontend",
       "epic": "E06",
       "stage": "M4",
@@ -1241,7 +1273,12 @@
         "Ejecutar con Appium login, búsqueda, detalle y postulación con datos ficticios.",
         "Registrar el modo de apertura y el contexto usado; no sustituir esta evidencia por la vista móvil del escritorio.",
         "Confirmar persistencia y prevención de duplicados; obtener capturas y reporte.",
-        "Si el contexto de la PWA no permite automatizar el flujo, resolver o registrar el bloqueo sin marcar el caso como aprobado."
+        "Si el contexto de la PWA no permite automatizar el flujo, resolver o registrar el bloqueo sin marcar el caso como aprobado.",
+        "Automatizar el flujo completo de postulación sobre APK.",
+        "Demostrar swipe y tap, incluyendo interacción con controles realmente nativos.",
+        "Comprobar que cancelar la confirmación no crea registros y confirmar crea una única postulación.",
+        "Verificar persistencia y generar un reporte E2E reproducible.",
+        "Demostrar swipe y tap sobre controles nativos identificados en NATIVE_APP; distinguir estos gestos de las interacciones sobre HTML en WebView."
       ],
       "evidence": [
         "Prueba Appium del flujo completo",
@@ -1256,7 +1293,7 @@
     },
     {
       "id": "QA-23",
-      "title": "Probar sesión, actualización y falta de red en Android",
+      "title": "Probar sesión, actualización y falta de red en PWA y APK",
       "repo": "frontend",
       "epic": "E06",
       "stage": "M4",
@@ -1273,7 +1310,9 @@
         "Comprobar que no aparece una postulación exitosa sin confirmación del servidor ni se reenvía automáticamente.",
         "Verificar cierre de sesión, token inválido y apertura posterior de la PWA.",
         "Actualizar entre dos versiones instaladas y comprobar navegación, sesión y recuperación.",
-        "Documentar con precisión cualquier paso manual de red/instalación y el resultado automatizado."
+        "Documentar con precisión cualquier paso manual de red/instalación y el resultado automatizado.",
+        "Validar sesión, cierre, reapertura y actualización del APK entre versiones compatibles.",
+        "Probar pérdida y recuperación de conexión con resultados coherentes y sin duplicados."
       ],
       "evidence": [
         "Casos Appium de resiliencia",
@@ -1304,7 +1343,10 @@
         "Preparar credenciales únicas en CSV y correlación de tokens/IDs; no compartir cuentas accidentalmente.",
         "Definir una línea base y objetivo inicial a validar: 25 usuarios virtuales, p95 de lecturas ≤2 s y escrituras/login ≤3 s, errores inesperados <1% y cero pérdida/duplicación de datos.",
         "Separar resultados 4xx esperados de errores inesperados y documentar recursos, ramp-up, duración y pausas.",
-        "Plantear exploración de 10/25/50 usuarios solo en QA aislado, con condiciones de parada; revisar los objetivos tras medir la línea base."
+        "Plantear exploración de 10/25/50 usuarios solo en QA aislado, con condiciones de parada; revisar los objetivos tras medir la línea base.",
+        "Configurar Thread Groups con carga realista, ramp-up, duración y timers cuando corresponda.",
+        "Implementar CSV Data Set Config, correlación dinámica y listeners adecuados.",
+        "Preparar suficientes cuentas independientes para cada perfil de carga aprobado."
       ],
       "evidence": [
         "Diseño de carga y criterios",
@@ -1337,7 +1379,9 @@
         "Correlacionar tokens y vacantes y controlar duplicados intencionales en escenarios separados.",
         "Registrar p50/p95/p99, throughput, errores, tamaño de muestra, recursos y configuración.",
         "Comprobar integridad de postulaciones, cupos e historial tras la carga.",
-        "Generar JTL y reporte HTML y registrar fallos o límites del entorno, sin convertir objetivos en resultados."
+        "Generar JTL y reporte HTML y registrar fallos o límites del entorno, sin convertir objetivos en resultados.",
+        "Incorporar Response Assertion y Duration Assertion con criterios de aceptación documentados.",
+        "Ejecutar JMeter en modo no gráfico y generar JTL y reporte HTML de los resultados reales."
       ],
       "evidence": [
         "Planes JMX y CSV de QA",
@@ -1455,10 +1499,13 @@
         "QA-04"
       ],
       "accept": [
-        "Vincular RF/caso/ejecución/defecto/PR/evidencia y reflejar los identificadores de GitHub en Jira si la entrega del curso lo requiere.",
         "Definir severidad, prioridad, responsable, pasos, esperado/obtenido y ambiente de cada defecto.",
         "Registrar retest y regresión, con reapertura cuando falle; evitar cerrar un defecto solo por tener un commit.",
-        "Mantener vista de avance por hito, bloqueos, carga por rol y riesgos sin duplicar estados contradictorios."
+        "Mantener vista de avance por hito, bloqueos, carga por rol y riesgos sin duplicar estados contradictorios.",
+        "Utilizar Jira obligatoriamente para trazabilidad académica.",
+        "Vincular todos los escenarios automatizados de las cuatro herramientas con tickets reales.",
+        "Relacionar requisito, CP, RUB, issue GitHub, script, commit/build, reporte y resultado.",
+        "Registrar defectos, correcciones y retests cuando existan."
       ],
       "evidence": [
         "Matriz enlazada",
@@ -1497,7 +1544,9 @@
         "Completar todos los casos P0/P1 trazados a requisitos; informar aprobados, fallidos y bloqueados.",
         "Resolver y repetir los defectos Sev1/Sev2; documentar los menores y su impacto.",
         "Comprobar instalación/actualización PWA, integridad tras concurrencia e historial.",
-        "Conservar un paquete de evidencias con versiones, fechas, ambiente y datos utilizados."
+        "Conservar un paquete de evidencias con versiones, fechas, ambiente y datos utilizados.",
+        "Incluir la regresión del APK y los flujos móviles en las verificaciones integradas.",
+        "Comprobar que las cuatro herramientas y la trazabilidad Jira cuentan con evidencia verificable."
       ],
       "evidence": [
         "Matriz de resultados final",
@@ -1528,7 +1577,9 @@
         "Presentar resultados reales de Karate/JMeter/Selenium/Appium con enlaces y limitaciones.",
         "Preparar manual de instalación, ejecución y recuperación de datos y un guion de demostración por rol.",
         "Demostrar flujo de aprobación y decisión, caso negativo, concurrencia y PWA Android.",
-        "Repartir la exposición entre las tres personas y verificar que otra persona reproduzca los pasos."
+        "Repartir la exposición entre las tres personas y verificar que otra persona reproduzca los pasos.",
+        "Consolidar la matriz de cumplimiento de los 24 controles RUB con evidencias reales.",
+        "Documentar los cinco criterios académicos, resultados, riesgos y limitaciones sin inventar calificaciones."
       ],
       "evidence": [
         "Informe y manual",
@@ -1560,7 +1611,9 @@
         "Registrar versiones/tags y los commits coordinados de frontend/API y sus artefactos.",
         "Validar instalación y actualización de la PWA publicada y prueba breve del flujo.",
         "Cerrar issues solo con evidencia, dejar riesgos residuales y retrospectiva del equipo.",
-        "Eliminar únicamente ramas temporales ya integradas; mantener main y develop y documentar recuperación."
+        "Eliminar únicamente ramas temporales ya integradas; mantener main y develop y documentar recuperación.",
+        "Entregar APK instalable identificado por versión, commit, configuración QA y hash SHA-256.",
+        "Documentar instalación, compatibilidad, procedimiento de compilación y verificación final."
       ],
       "evidence": [
         "Release y commits coordinados",
@@ -1584,5 +1637,21 @@
     "R2": "aquinoestoyxd",
     "R3": "luisvalenzuela25"
   },
-  "calendarDates": null
+  "calendarDates": null,
+  "academicQuality": {
+    "targetGrade": 20,
+    "plannedRequirements": 18,
+    "plannedCaseFamilies": 34,
+    "plannedScenarios": 111,
+    "rubricControls": 24,
+    "registeredRisks": 15,
+    "androidDelivery": "APK híbrido mediante Capacitor",
+    "pwaDelivery": true,
+    "traceabilityPlatform": "Jira",
+    "technicalManagement": "GitHub Projects",
+    "rubricDocument": "docs/RUBRICA_EVALUACION.md",
+    "rubricMatrix": "docs/qa/MATRIZ_RUBRICA.md",
+    "executionStatus": "Pendiente de acreditación",
+    "effortStatus": "Estimaciones originales pendientes de revisión"
+  }
 }

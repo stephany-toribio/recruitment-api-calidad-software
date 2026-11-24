@@ -1,6 +1,6 @@
 # Matriz de Trazabilidad de Requisitos, Casos y Riesgos — QA-04
 
-- **Proyecto**: Portal de Empleos CREO+ (PWA y API REST) — Calidad de Software.
+- **Proyecto**: Portal de Empleos CREO+ (Web, PWA, APK Android y API REST) — Calidad de Software.
 - **Responsable del documento**: R3 (@luisvalenzuela25 — Integración, Appium, JMeter y trazabilidad).
 - **Revisor asignado**: R1 (@stephany-toribio — Backend, API y Karate).
 - **Hito**: M0 (Alcance y línea base).
@@ -13,7 +13,7 @@
 
 ## 1. Alcance y convención de trazabilidad
 
-Esta matriz relaciona bidireccionalmente los **18 requisitos** del sistema (10 RF, 4 PWA, 4 RNF) con las **34 familias de casos de prueba (CP-01 a CP-34)**, sus **101 escenarios canónicos detallados** (49 positivos y 52 negativos), su nivel de prioridad, las herramientas de automatización asignadas, las tareas e integrantes responsables, y los riesgos operacionales o técnicos asociados.
+Esta matriz relaciona bidireccionalmente los **18 requisitos** del sistema (10 RF, 4 PWA, 4 RNF) con las **34 familias de casos de prueba (CP-01 a CP-34)**, sus **111 escenarios canónicos detallados** (56 de comportamiento esperado y 55 negativos), su nivel de prioridad, las herramientas de automatización asignadas, las tareas e integrantes responsables, y los riesgos operacionales o técnicos asociados.
 
 ### 1.1 Cadena de trazabilidad obligatoria
 ```
@@ -27,7 +27,7 @@ Requisito (RF / PWA / RNF)
 ```
 
 ### 1.2 Criterios de prioridad
-- **P0 (Crítico / Bloqueante)**: Autenticación, autorización de servidor, unicidad de postulación, integridad transaccional, concurrencia en contrataciones, cupos límite, estados finales y pérdida de conexión PWA.
+- **P0 (Crítico / Bloqueante)**: Autenticación, autorización de servidor, unicidad de postulación, integridad transaccional, concurrencia en contrataciones, cupos límite, estados finales y pérdida de conexión PWA/APK/APK.
 - **P1 (Esencial para el flujo)**: Registro válido/inválido, publicación, pagos simulados, filtros de búsqueda, transiciones intermedias, retiros válidos, instalación standalone PWA y pruebas de carga planificadas.
 - **P2 (Complementario / Calidad adicional)**: Accesibilidad responsiva no bloqueante, ordenación secundaria y validaciones visuales menores.
 
@@ -59,19 +59,19 @@ Requisito (RF / PWA / RNF)
 | **RF-09** (Seguimiento y retiro) | **CP-21** | CP-21-01 (+), CP-21-02 (+) | P1 | Karate | Selenium | QA-08, QA-09, QA-16 | R1, R2 | RSK-06, RSK-08 |
 | **RF-10** (Historial de decisiones) | **CP-22** | CP-22-01 (+), CP-22-02 (+), CP-22-03 (+) | P1 | Karate | Selenium | QA-09, QA-16, QA-20 | R2, R1, R3 | RSK-06, RSK-07 |
 | **RF-01..10** (Flujo integrado) | **CP-23** | CP-23-01 (+) | P0 | Selenium | Manual E2E | QA-19, QA-20, QA-30 | R2, R3 | RSK-02, RSK-07 |
-| **PWA-01** (Instalación y apertura Android) | **CP-24** | CP-24-01 (+), CP-24-02 (+) | P1 | Appium | Android DevTools | QA-10, QA-21, QA-22 | R2, R3 | RSK-03, RSK-04 |
-| **PWA-04** (Diseño móvil y accesibilidad) | **CP-25** | CP-25-01 (+), CP-25-02 (+) | P1 | Appium | Selenium | QA-12, QA-22 | R2, R3 | RSK-03, RSK-10 |
-| **PWA-02** (Offline y privacidad caché) | **CP-26** | CP-26-01 (+), CP-26-02 (-), CP-26-03 (-) | P0 | Appium | Android DevTools | QA-11, QA-23 | R2, R3 | RSK-04, RSK-11 |
-| **PWA-02** (Escritura con corte de red) | **CP-27** | CP-27-01 (-), CP-27-02 (+) | P0 | Appium | API REST | QA-11, QA-22, QA-23 | R2, R3 | RSK-04, RSK-05, RSK-11 |
-| **PWA-03** (Actualización entre builds) | **CP-28** | CP-28-01 (+), CP-28-02 (+) | P1 | Appium | Navegador Android | QA-11, QA-23 | R2, R3 | RSK-04, RSK-10 |
-| **PWA-01..04, RF-02,06,07** (Flujo móvil) | **CP-29** | CP-29-01 (+), CP-29-02 (+) | P0 | Appium | API REST | QA-21, QA-22 | R3 | RSK-03, RSK-04, RSK-05 |
-| **PWA-02..03, RF-02** (Sesión móvil) | **CP-30** | CP-30-01 (+), CP-30-02 (-), CP-30-03 (-) | P0 | Appium | API REST | QA-23 | R2, R3 | RSK-01, RSK-04 |
+| **PWA-01** (Instalación PWA y APK Android) | **CP-24** | CP-24-01 (+), CP-24-02 (+), CP-24-03 (+), CP-24-04 (+) | P1 | Appium | Android DevTools | QA-10, QA-21, QA-22 | R2, R3 | RSK-03, RSK-04, RSK-13 |
+| **PWA-04** (Diseño móvil y accesibilidad) | **CP-25** | CP-25-01 (+), CP-25-02 (+), CP-25-03 (+) | P1 | Appium | Selenium | QA-12, QA-22 | R2, R3 | RSK-03, RSK-10, RSK-14 |
+| **PWA-02** (Offline PWA/APK y privacidad) | **CP-26** | CP-26-01 (+), CP-26-02 (-), CP-26-03 (-), CP-26-04 (-) | P0 | Appium | Android DevTools | QA-11, QA-23 | R2, R3 | RSK-04, RSK-11 |
+| **PWA-02** (Escritura con corte de red) | **CP-27** | CP-27-01 (-), CP-27-02 (+), CP-27-03 (-) | P0 | Appium | API REST | QA-11, QA-22, QA-23 | R2, R3 | RSK-04, RSK-05, RSK-11 |
+| **PWA-03** (Actualización PWA y APK) | **CP-28** | CP-28-01 (+), CP-28-02 (+), CP-28-03 (+) | P1 | Appium | Navegador Android | QA-11, QA-23 | R2, R3 | RSK-04, RSK-10, RSK-13 |
+| **PWA-01..04, RF-02,06,07** (Flujo móvil) | **CP-29** | CP-29-01 (+), CP-29-02 (+), CP-29-03 (+), CP-29-04 (-) | P0 | Appium | API REST | QA-21, QA-22 | R3 | RSK-03, RSK-04, RSK-05, RSK-13, RSK-14 |
+| **PWA-02..03, RF-02** (Sesión móvil) | **CP-30** | CP-30-01 (+), CP-30-02 (-), CP-30-03 (-), CP-30-04 (+) | P0 | Appium | API REST | QA-23 | R2, R3 | RSK-01, RSK-04 |
 | **RNF-01** (Autorización de servidor) | **CP-15** | CP-15-01 (-), CP-15-02 (-), CP-15-03 (-), CP-15-04 (-) | P0 | Karate | Selenium | QA-05, QA-17, QA-20 | R1, R3 | RSK-01, RSK-02 |
 | **RNF-02** (Integridad y concurrencia) | *CP-13, CP-14, CP-19* | *Ver CP-13-02 (-), CP-14-01 (+), CP-19-01 (-)* | P0 | JMeter | PHPUnit/MySQL | QA-08, QA-09, QA-25 | R1, R2, R3 | RSK-05, RSK-07, RSK-09 |
 | **RNF-03** (Carga y rendimiento) | **CP-31** | CP-31-01 (+), CP-31-02 (+) | P1 | JMeter | Monitor Docker | QA-24, QA-25, QA-26 | R3, R1 | RSK-09, RSK-12 |
 | **RNF-03** (Carga y rendimiento) | **CP-32** | CP-32-01 (+), CP-32-02 (-) | P1 | JMeter | API REST | QA-24, QA-25, QA-26 | R3, R1 | RSK-01, RSK-09 |
 | **RNF-03** (Carga y rendimiento) | **CP-33** | CP-33-01 (+), CP-33-02 (+) | P0 | JMeter | PHPUnit/MySQL | QA-24, QA-25, QA-26 | R3, R1 | RSK-07, RSK-09 |
-| **RNF-04** (CI y reproducibilidad) | **CP-34** | CP-34-01 (+), CP-34-02 (+) | P0 | GitHub Actions | Docker / Shell | QA-27, QA-28, QA-30, QA-31 | R1, R2, R3 | RSK-02, RSK-10 |
+| **RNF-04** (CI, reproducibilidad y Jira) | **CP-34** | CP-34-01 (+), CP-34-02 (+), CP-34-03 (+) | P0 | GitHub Actions | Docker / Shell | QA-27, QA-28, QA-29, QA-30, QA-31 | R1, R2, R3 | RSK-02, RSK-10, RSK-15 |
 
 ---
 
@@ -80,16 +80,16 @@ Requisito (RF / PWA / RNF)
 ### 3.1 Cobertura de diseño
 - **Requisitos en el alcance**: 18 de 18 con familias asociadas (**100.0% de trazabilidad de diseño**; no acredita ejecución ni contratos confirmados).
 - **Familias de casos de prueba (CP)**: 34 de 34 planificadas (**100.0%**).
-- **Escenarios de prueba canónicos desarrollados**: **101 escenarios únicos descritos y referenciados en el catálogo; las decisiones contractuales pendientes se identifican en su sección 1.1**.
+- **Escenarios de prueba canónicos desarrollados**: **111 escenarios únicos descritos y referenciados en el catálogo; las decisiones contractuales pendientes se identifican en su sección 1.1**.
   - **Clasificación por comportamiento esperado**:
-    - **Positivos (+)**: 49 escenarios (42 titulados Positivo, 5 de Rendimiento y 2 de CI; estos últimos se agrupan como verificaciones de comportamiento esperado).
-    - **Negativos (-)**: 52 escenarios (rechazos de validación, violaciones de permisos, conflictos de concurrencia e indisponibilidad).
+    - **Positivos (+)**: 56 escenarios (48 clasificados como Positivo, 5 de Rendimiento y 3 de CI; estos últimos se agrupan como verificaciones de comportamiento esperado).
+    - **Negativos (-)**: 55 escenarios (rechazos de validación, violaciones de permisos, conflictos de concurrencia e indisponibilidad).
   - **Clasificación verificable por encabezado del catálogo**:
-    - Positivo: 42 escenarios.
-    - Negativo: 52 escenarios.
+    - Positivo: 48 escenarios.
+    - Negativo: 55 escenarios.
     - Rendimiento: 5 escenarios.
-    - CI: 2 escenarios.
-    - Total: **101 escenarios**. Estas categorías son excluyentes para el recuento; no sustituyen el campo Tipo de cada escenario.
+    - CI y trazabilidad: 3 escenarios.
+    - Total: **111 escenarios**. Estas categorías son excluyentes para el recuento; no sustituyen el campo Tipo de cada escenario.
 - **Distribución de familias por herramienta primaria (34 familias)**:
   - **Karate**: 19 familias (CP-01, CP-02, CP-03, CP-04, CP-05, CP-06, CP-07, CP-08, CP-09, CP-10, CP-11, CP-12, CP-15, CP-16, CP-17, CP-18, CP-20, CP-21, CP-22) — *55.9%*.
   - **Appium**: 7 familias (CP-24, CP-25, CP-26, CP-27, CP-28, CP-29, CP-30) — *20.6%*.
@@ -100,5 +100,43 @@ Requisito (RF / PWA / RNF)
 
 ### 3.2 Cobertura de ejecución (Estado actual M0)
 - **Ejecutado con evidencia formal previa**: Pruebas Unitarias y MySQL base (QA-02: 564 pruebas, 546 aprobadas, 18 fallidas en búsqueda/contrato).
-- **Suites obligatorias del curso (Karate, Selenium, Appium, JMeter)**: **0 ejecutados (Todos los 101 escenarios se encuentran formalmente en estado `PENDIENTE`)**.
+- **Suites obligatorias del curso (Karate, Selenium, Appium, JMeter)**: **0 ejecutados (Todos los 111 escenarios se encuentran formalmente en estado `PENDIENTE`)**.
 - **Defectos abiertos conocidos**: 2 hallazgos en QA-02 (`QA02-H01` en `BusquedaVacantesMySqlTest` y `QA02-H02` en `DetalleVacanteMySqlTest`, asignados para resolución en QA-07).
+
+---
+
+## 4. Trazabilidad académica y Jira
+
+La cobertura de los requisitos funcionales no sustituye la
+verificación de los criterios académicos.
+
+Consultar:
+
+- [Rúbrica de evaluación](../RUBRICA_EVALUACION.md).
+- [Matriz de cumplimiento académico](MATRIZ_RUBRICA.md).
+- [Catálogo de casos](CATALOGO_CASOS_PRUEBA.md).
+
+### Cadena de trazabilidad ampliada
+
+Requisito -> Familia CP -> Escenario CP -> Control RUB ->
+Herramienta -> Ticket Jira -> Issue GitHub -> Script ->
+Commit/build -> Ejecución -> Reporte -> Resultado.
+
+Cuando corresponda, se incorpora el defecto, la corrección,
+el retest y la regresión.
+
+### Estado actual
+
+- 18 requisitos definidos.
+- 34 familias de casos de prueba.
+- 111 escenarios diseñados.
+- 24 controles académicos RUB.
+- Tickets Jira pendientes de vinculación real.
+- Ejecuciones de las cuatro suites pendientes de acreditación.
+
+El APK Android se verificará mediante Capacitor y Appium.
+La PWA conservará sus comprobaciones independientes de
+instalación, actualización y comportamiento offline.
+
+Los porcentajes de diseño no representan una calificación
+obtenida ni resultados de automatización aprobados.
