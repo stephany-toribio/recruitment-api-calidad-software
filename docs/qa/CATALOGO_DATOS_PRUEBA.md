@@ -1,6 +1,6 @@
 # Catálogo de Datos Ficticios de Prueba — QA-04
 
-- **Proyecto**: Portal de Empleos CREO+ (PWA y API REST) — Calidad de Software.
+- **Proyecto**: Portal de Empleos CREO+ (Web, PWA, APK Android y API REST) — Calidad de Software.
 - **Responsable**: R3 (@luisvalenzuela25).
 - **Revisor asignado**: R1 (@stephany-toribio).
 - **Hito**: M0 (Alcance y línea base).
@@ -109,7 +109,7 @@ Para no comprometer evidencias de otros integrantes ni vaciar tablas sin comprob
 
 #### A. Pruebas Unitarias y Feature (Laravel)
 - **Aislamiento**: Utilizan SQLite en memoria (`:memory:`).
-- **Limpieza**: Automática por proceso mediante el trait `RefreshDatabase`. Ninguna mutación persiste en disco.
+- **Limpieza**: Aislamiento mediante SQLite en memoria y los mecanismos de preparación y limpieza definidos por cada clase. Verificar el uso efectivo de RefreshDatabase, migraciones o creación explícita de esquema antes de atribuir un mecanismo común a toda la suite.
 
 #### B. Pruebas MySQL de Integración
 - **Aislamiento**: Conexión exclusiva a `portalempleoshu04testing`; desde el host se usa el puerto publicado 3307 y entre contenedores `mysql:3306`.
@@ -150,3 +150,66 @@ docker compose exec app php artisan tinker --execute='dump(DB::selectOne("SELECT
 docker compose exec app php artisan migrate:fresh --seed
 docker compose exec app php artisan db:seed --class=QaSeeder
 ```
+
+---
+
+## 7. Datos adicionales para APK Android y Appium
+
+| Identificador | Dato o recurso | Finalidad | Estado |
+|---|---|---|---|
+| MOB-APK-01 | APK de primera version | Instalacion y apertura | Pendiente |
+| MOB-APK-02 | APK de segunda version | Actualizacion entre versiones | Pendiente |
+| MOB-DEV-01 | Emulador o dispositivo Android | Ejecucion Appium | Pendiente |
+| MOB-USR-01 | Candidato activo reservado | Flujo E2E | Pendiente de reserva |
+| MOB-VAC-01 | Vacante disponible exclusiva | Postulacion movil | Pendiente de creacion |
+| MOB-VAC-02 | Vacante disponible exclusiva | Cancelacion y confirmacion nativa | Pendiente de creacion |
+| MOB-NET-01 | Condiciones de red controladas | Pruebas offline y recuperacion | Pendiente |
+
+Cada APK debe identificarse mediante:
+
+- Commit de origen.
+- Identificador de aplicacion Android.
+- VersionCode y VersionName.
+- Hash SHA-256.
+- Configuracion del ambiente.
+- Tipo de compilacion.
+
+Para comprobar una actualizacion, ambos APK deben conservar
+el mismo identificador de aplicacion y una firma compatible,
+con VersionCode creciente.
+
+Las pruebas moviles deben reservar cuentas y entidades
+exclusivas o serializar su ejecucion cuando compartan datos.
+
+Los datos transaccionales se limpiaran siguiendo el
+procedimiento controlado de la suite correspondiente.
+
+No ejecutar QaCleanupSeeder esperando que elimine
+dependencias funcionales que no esta autorizado a borrar.
+
+## 8. Datos de carga JMeter
+
+Las 25 cuentas inicialmente propuestas corresponden
+al perfil objetivo inicial de 25 usuarios virtuales.
+
+QA-24 debe preparar suficientes cuentas unicas para cada
+perfil de carga que se apruebe.
+
+Si se ejecuta el escenario exploratorio de 50 usuarios
+autenticados simultaneamente, deben existir al menos
+50 cuentas independientes cuando cada usuario requiera
+credenciales propias.
+
+Los CSV no deben contener credenciales reales ni secretos
+versionados. La generacion y limpieza se documentaran
+por ejecucion.
+
+## 9. Identificadores Jira
+
+Las claves Jira se registraran una vez creados los tickets.
+
+No utilizar identificadores ficticios como evidencia real.
+
+Cada registro de ejecucion relacionara el escenario CP,
+control RUB, ticket Jira, ambiente, datos, resultado
+y reporte correspondiente.
