@@ -365,3 +365,46 @@ Issue: #19.
 
 Los estados corresponden exclusivamente a Karate.
 No sustituyen las validaciones mediante otras herramientas.
+
+## Resultados Karate - QA-16
+
+<!-- QA16-TRAZABILIDAD -->
+
+| Caso | Feature | Escenarios | Karate |
+| --- | --- | ---: | --- |
+| CP-07-01 | vacantes.feature | 1 | PASS |
+| CP-07-02 | vacantes.feature | 1 | PASS |
+| CP-07-03 | vacantes.feature | 1 | PASS |
+| CP-07-04 | vacantes.feature | 1 | PASS |
+| CP-08-01 | moderacion.feature | 1 | PASS |
+| CP-08-02 | moderacion.feature | 1 | PASS |
+| CP-08-03 | moderacion.feature | 2 | PASS |
+| CP-08-04 | moderacion.feature | 1 | PASS |
+| CP-09-01 | pagos.feature | 1 | PASS |
+| CP-09-02 | pagos.feature | 2 | PASS |
+| CP-09-03 | pagos.feature | 4 | PASS |
+| CP-09-04 | pagos.feature | 1 | PASS |
+| CP-09-05 | pagos.feature | 1 | PASS |
+| CP-12-01 | postulaciones.feature | 1 | PASS |
+| CP-12-02 | postulaciones.feature | 1 | PASS |
+| CP-16-01 | contratacion.feature | 1 | PASS |
+| CP-16-02 | contratacion.feature | 1 | PASS |
+| CP-16-03 | contratacion.feature | 1 | PASS |
+| CP-17-01 | rechazo.feature | 1 | PASS |
+| CP-17-02 | rechazo.feature | 1 | PASS |
+| CP-17-03 | rechazo.feature | 2 | PASS |
+| CP-21-01 | seguimiento.feature | 1 | PASS |
+| CP-21-02 | seguimiento.feature | 2 | PASS |
+| CP-22-01 | historial.feature | 1 | PASS |
+| CP-22-02 | historial.feature | 1 | PASS |
+| CP-22-03 | historial.feature | 1 | PASS |
+| QA16-E2E-01 | flujo-integral.feature | 1 | PASS |
+
+Issue GitHub: #20.
+
+Evidencia: [Resultados QA-16](../evidencias/QA-16/RESULTADOS.md).
+
+Cobertura: 26 casos canonicos y 34 escenarios.
+
+Los estados corresponden exclusivamente a Karate.
+No sustituyen Selenium, Appium, JMeter ni Jira.

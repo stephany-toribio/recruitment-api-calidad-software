@@ -1,0 +1,15 @@
+{
+  "id": "#number",
+  "candidato": {
+    "nombre": "#string",
+    "apellidos": "#string"
+  },
+  "fecha_postulacion": "#string",
+  "estado": {
+    "codigo": "#string",
+    "nombre": "#string"
+  },
+  "retirada": "#boolean",
+  "retirada_en": "##string",
+  "movimientos": "#[] movimientoSchema"
+}

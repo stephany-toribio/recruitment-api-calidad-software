@@ -1,0 +1,17 @@
+{
+  "success": true,
+  "message": "Postulación registrada.",
+  "data": {
+    "id": "#number",
+    "estado": {
+      "codigo": "recibido",
+      "nombre": "Recibido"
+    },
+    "retirada": false,
+    "fecha_postulacion": "#string",
+    "vacante": {
+      "id": "#number",
+      "titulo": "#string"
+    }
+  }
+}

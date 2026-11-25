@@ -1,0 +1,5 @@
+array:3 [
+  "database" => "portal_empleos_calidad_qa"
+  "karate_residuales" => 0
+  "cuentas_qa_no_karate" => 6
+] // vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:1

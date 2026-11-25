@@ -1,0 +1,28 @@
+- **CP-07-01 (Positivo - Creación de Vacante)**
+- **CP-07-02 (Negativo - Salario Mínimo Mayor a Máximo)**
+- **CP-07-03 (Negativo - Fecha Fin Anterior a Fecha Inicio)**
+- **CP-07-04 (Negativo - Número de Vacantes Menor o Igual a Cero)**
+- **CP-08-01 (Positivo - Administrador Aprueba Vacante)**
+- **CP-08-02 (Positivo - Administrador No Aprueba con Motivo)**
+- **CP-08-03 (Negativo - No Aprobar sin Motivo)**
+- **CP-08-04 (Negativo - Empresa Intenta Aprobar Vacante)**
+- **CP-09-01 (Positivo - Pago Exitoso)**
+- **CP-09-02 (Negativo - Pago de Vacante No Aprobada)**
+- **CP-09-03 (Negativo - Pago con Datos de Tarjeta Inválidos)**
+- **CP-09-04 (Negativo - Empresa B Intenta Pagar Vacante de Empresa A)**
+- **CP-09-05 (Negativo - Pago Duplicado sobre Vacante ya Pagada)**
+  - **Precondiciones**: Vacante ya en condición `VAC-DISPONIBLE` con pago previo exitoso (CP-09-01 ejecutado).
+- **CP-12-01 (Positivo - Creación Exitosa en Recibido)**
+- **CP-12-02 (Negativo - Candidato con Cuenta Suspendida Postula)**
+  - **Precondiciones**: CP-12-01 ejecutado previamente.
+- **CP-16-01 (Positivo - Recibido a En Revisión)**
+- **CP-16-02 (Positivo - En Revisión a Entrevista)**
+- **CP-16-03 (Positivo - Entrevista a Contratado con Cupo)**
+- **CP-17-01 (Positivo - Rechazo desde En Revisión)**
+- **CP-17-02 (Positivo - Rechazo desde Entrevista)**
+- **CP-17-03 (Negativo - Rechazo sin Motivo)**
+- **CP-21-01 (Positivo - Mis Postulaciones)**
+- **CP-21-02 (Positivo - Consulta de Vacante Histórica Pausada o Eliminada)**
+- **CP-22-01 (Positivo - Consulta de Historial Completo por la Empresa)**
+- **CP-22-02 (Positivo - Conservación de Motivo en Historial tras Múltiples Cambios)**
+- **CP-22-03 (Positivo - Historial Mantiene Registros de Postulaciones Retiradas)**

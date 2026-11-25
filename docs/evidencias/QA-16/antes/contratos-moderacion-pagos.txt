@@ -1,0 +1,291 @@
+===== REVISION ADMINISTRATIVA =====
+<?php
+
+namespace App\Http\Controllers\Api\V1\Admin;
+
+use App\Http\Controllers\Api\V1\BaseApiController;
+use App\Http\Requests\Moderacion\AprobarMasivoRequest;
+use App\Http\Requests\Moderacion\NoAprobarVacanteRequest;
+use App\Http\Resources\Api\V1\VacanteRevisionResource;
+use App\Models\Empleo;
+use App\Services\Vacantes\RevisionVacanteService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+// HU-22: revisión administrativa de vacantes (MOD-01 a MOD-05)
+class RevisionVacanteController extends BaseApiController
+{
+    public function __construct(
+        private RevisionVacanteService $revisionService
+    ) {
+    }
+
+        public function index(Request $request): JsonResponse
+    {
+        $filtros = $request->validate([
+            'revision' => [
+                'sometimes',
+                'required',
+                'string',
+                'in:pendiente,aprobada,no_aprobada,todas',
+            ],
+            'page' => [
+                'sometimes',
+                'required',
+                'integer',
+                'min:1',
+            ],
+        ]);
+
+        $pagina = $this->revisionService->listar(
+            $filtros['revision'] ?? 'pendiente',
+            (int) ($filtros['page'] ?? 1)
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Listado administrativo de vacantes',
+            'data' => VacanteRevisionResource::collection(
+                $pagina->getCollection()
+            )->resolve($request),
+            'meta' => [
+                'current_page' => $pagina->currentPage(),
+                'per_page' => $pagina->perPage(),
+                'total' => $pagina->total(),
+                'last_page' => $pagina->lastPage(),
+            ],
+        ]);
+    }
+
+    public function pendientes(): JsonResponse
+    {
+        return $this->successResponse(
+            VacanteRevisionResource::collection($this->revisionService->pendientes()),
+            'Vacantes pendientes de revisión'
+        );
+    }
+
+    public function show(Empleo $vacante): JsonResponse
+    {
+        return $this->successResponse(
+            new VacanteRevisionResource($this->revisionService->detalle($vacante)),
+            'Detalle de la vacante'
+        );
+    }
+
+    public function aprobar(Request $request, Empleo $vacante): JsonResponse
+    {
+        $vacante = $this->revisionService->aprobar($vacante, $request->user()->id);
+
+        return $this->successResponse(
+            new VacanteRevisionResource($vacante),
+            'Vacante aprobada. La empresa ya puede realizar el pago.'
+        );
+    }
+
+    public function aprobarMasivo(AprobarMasivoRequest $request): JsonResponse
+    {
+        $resultado = $this->revisionService->aprobarMasivo(
+            $request->validated('vacantes'),
+            $request->user()->id
+        );
+
+        $cantidad = count($resultado['aprobadas']);
+
+        return $this->successResponse(
+            $resultado,
+            $cantidad === 1 ? 'Se aprobó 1 vacante.' : "Se aprobaron {$cantidad} vacantes."
+        );
+    }
+
+    public function noAprobar(NoAprobarVacanteRequest $request, Empleo $vacante): JsonResponse
+    {
+        $vacante = $this->revisionService->noAprobar(
+            $vacante,
+            $request->user()->id,
+            $request->validated('motivo')
+        );
+
+        return $this->successResponse(
+            new VacanteRevisionResource($vacante),
+            'Vacante marcada como no aprobada.'
+        );
+    }
+}
+===== CONTROLADOR DE PAGOS =====
+<?php
+
+namespace App\Http\Controllers\Api\V1;
+
+use App\Http\Requests\Pagos\PagarVacanteRequest;
+use App\Http\Resources\Api\V1\PagoVacanteResource;
+use App\Http\Resources\Api\V1\VacanteEmpresaResource;
+use App\Models\Empleo;
+use App\Services\Vacantes\PagoVacanteService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+
+class PagoVacanteController extends BaseApiController
+{
+    public function __construct(
+        private PagoVacanteService $pagoService
+    ) {
+    }
+
+    public function show(Request $request, Empleo $vacante): JsonResponse
+    {
+        $resumen = $this->pagoService->resumen($vacante, $request->user()->id);
+
+        return $this->successResponse(
+            array_merge($resumen, [
+                'intentos' => PagoVacanteResource::collection($resumen['intentos']),
+            ]),
+            'Resumen de pago de la vacante'
+        );
+    }
+
+    public function store(PagarVacanteRequest $request, Empleo $vacante): JsonResponse
+    {
+        $resultado = $this->pagoService->pagar($vacante, $request->user()->id, $request->validated());
+
+        return $this->successResponse(
+            $this->respuestaIntento($resultado),
+            'Pago simulado aprobado. La vacante ya está publicada.',
+            201
+        );
+    }
+
+    private function respuestaIntento(array $resultado): array
+    {
+        return [
+            'pago'    => new PagoVacanteResource($resultado['pago']),
+            'vacante' => new VacanteEmpresaResource($resultado['vacante']),
+        ];
+    }
+}
+===== SERVICIO DE PAGOS =====
+<?php
+
+namespace App\Services\Vacantes;
+
+use App\Exceptions\BusinessException;
+use App\Models\Empleo;
+use App\Models\PagoVacante;
+use App\Models\RevisionVacante;
+use Illuminate\Support\Facades\DB;
+
+class PagoVacanteService
+{
+    private const RELACIONES_EMPRESA = ['nivelPuesto', 'areaEstudio', 'habilidades', 'revision', 'pagos'];
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function resumen(Empleo $vacante, int $usuarioId): array
+    {
+        $this->verificarAcceso($vacante, $usuarioId);
+
+        $vacante->load(['revision', 'pagos' => fn ($query) => $query->orderByDesc('id')]);
+
+        return [
+            'vacante_id' => $vacante->id,
+            'estado_pago' => PagoVacante::estadoDe($vacante->pagos),
+            'puede_pagar' => $this->estaAprobada($vacante) && ! $this->tienePagoExitoso($vacante),
+            'tarifa_por_puesto' => (float) config('pago_vacantes.tarifa_por_puesto'),
+            'unidad_cobro' => config('pago_vacantes.unidad_cobro'),
+            'max_contrataciones' => $vacante->numero_vacantes,
+            'monto' => $this->calcularMonto($vacante),
+            'moneda' => config('pago_vacantes.moneda'),
+            'intentos' => $vacante->pagos,
+        ];
+    }
+
+    /**
+     * @return array{pago: PagoVacante, vacante: Empleo}
+     */
+    public function pagar(Empleo $vacante, int $usuarioId, array $datos): array
+    {
+        return $this->registrarIntento($vacante, $usuarioId, PagoVacante::EXITOSO, substr($datos['numero_tarjeta'], -4));
+    }
+
+    /**
+     * Todas las verificaciones van antes del insert: si alguna falla no se registra nada.
+     * Después del insert no se lanza ninguna excepción, para no perder el intento.
+     *
+     * @return array{pago: PagoVacante, vacante: Empleo}
+     */
+    private function registrarIntento(Empleo $vacante, int $usuarioId, string $resultado, ?string $ultimos4): array
+    {
+        return DB::transaction(function () use ($vacante, $usuarioId, $resultado, $ultimos4) {
+            // Bloqueo de lectura de la vacante: un pago no se cruza con otro pago ni con una eliminación
+            $bloqueada = Empleo::withTrashed()->whereKey($vacante->getKey())->lockForUpdate()->firstOrFail();
+
+            $this->verificarAcceso($bloqueada, $usuarioId);
+
+            if (! $this->estaAprobada($bloqueada)) {
+                throw new BusinessException('La vacante debe estar aprobada para realizar el pago.', 409, 'VACANCY_NOT_APPROVED');
+            }
+
+            if ($this->tienePagoExitoso($bloqueada)) {
+                throw new BusinessException('La vacante ya tiene un pago exitoso.', 409, 'VACANCY_ALREADY_PAID');
+            }
+
+            $pago = PagoVacante::create([
+                'empleo_id' => $bloqueada->id,
+                'resultado' => $resultado,
+                'monto' => $this->calcularMonto($bloqueada),
+                'moneda' => config('pago_vacantes.moneda'),
+                'tarjeta_ultimos4' => $ultimos4,
+            ]);
+
+            return [
+                'pago' => $pago,
+                'vacante' => $bloqueada->load(self::RELACIONES_EMPRESA),
+            ];
+        });
+    }
+
+    // Primero la propiedad (403) y después la eliminación (409): a otra empresa no se le revela el estado
+    private function verificarAcceso(Empleo $vacante, int $usuarioId): void
+    {
+        $vacante->loadMissing('empresa');
+
+        if ((int) $vacante->empresa?->usuario_id !== $usuarioId) {
+            throw new BusinessException('No tienes permisos para realizar esta acción.', 403, 'FORBIDDEN');
+        }
+
+        if ($vacante->trashed()) {
+            throw new BusinessException('La vacante fue eliminada y no se puede modificar.', 409, 'VACANCY_DELETED');
+        }
+    }
+
+    private function estaAprobada(Empleo $vacante): bool
+    {
+        return RevisionVacante::estadoDe($vacante->revision) === RevisionVacante::APROBADA;
+    }
+
+    private function tienePagoExitoso(Empleo $vacante): bool
+    {
+        return $vacante->pagos()->where('resultado', PagoVacante::EXITOSO)->exists();
+    }
+
+    // 'puesto' → tarifa × max_contrataciones · 'vacante' → tarifa (un solo cobro por anuncio)
+    private function calcularMonto(Empleo $vacante): float
+    {
+        $tarifa = (float) config('pago_vacantes.tarifa_por_puesto');
+
+        if (config('pago_vacantes.unidad_cobro') === 'vacante') {
+            return round($tarifa, 2);
+        }
+
+        return round($tarifa * $vacante->numero_vacantes, 2);
+    }
+}
+===== RECURSOS DE VACANTES Y PAGOS =====
+app/Http/Resources/Api/V1/VacanteRevisionResource.php
+app/Http/Resources/Api/V1/VacanteDetalleResource.php
+app/Http/Resources/Api/V1/PagoVacanteResource.php
+app/Http/Resources/Api/V1/VacanteEmpresaResource.php
+app/Http/Resources/Api/V1/VacanteResource.php
+app/Http/Resources/Api/V1/VacanteBusquedaResource.php

@@ -962,7 +962,7 @@ Consultar MATRIZ_TRAZABILIDAD.md y las evidencias QA-05.
   - **Tipo**: Integridad / Positiva (Karate).
   - **Actor**: `USR-EMP-01`.
   - **Pasos**: Consultar historial de postulación rechazada.
-  - **Resultado esperado**: Objeto `motivo_rechazo` presente con ID y texto descriptivo.
+  - **Resultado esperado**: Campo `motivo_rechazo` con el texto descriptivo correspondiente al catalogo. El identificador se verifica en MySQL mediante `motivo_rechazo_id`.
   - **Comprobación de persistencia**: Relación persistente con `motivos_rechazo`.
   - **Dependencias**: QA-09, QA-16. | **Estado inicial**: `PENDIENTE`.
 

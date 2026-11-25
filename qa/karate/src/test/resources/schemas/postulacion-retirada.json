@@ -1,0 +1,13 @@
+{
+  "success": true,
+  "message": "Te retiraste de la postulación.",
+  "data": {
+    "id": "#number",
+    "estado": {
+      "codigo": "#string",
+      "nombre": "#string"
+    },
+    "retirada": true,
+    "retirada_en": "#string"
+  }
+}

@@ -224,3 +224,25 @@ todas las suites y futuros pipelines CI.
   puede requerir recuperar la limpieza manualmente.
 
 Evidencia: [Incidencias QA-15](../evidencias/QA-15/INCIDENCIAS.md).
+
+## Seguimiento tecnico QA-16
+
+<!-- QA16-RIESGOS -->
+
+| Riesgo | Control verificado | Estado residual |
+| --- | --- | --- |
+| Exposicion de tokens | Eliminacion de argumentos sensibles y escaneo | Controlado en ejecuciones verificadas |
+| Fixtures residuales | Limpieza transaccional por UUID | Controlado en ejecuciones verificadas |
+| Dependencias entre escenarios | Precondiciones independientes | Tres regresiones completas PASS |
+| Cobertura incompleta por filtros | Conteos estrictos full y demo | Control implementado |
+| Fallos en exposicion | Dos ensayos demo exitosos | Requiere ensayo integrado |
+| Interferencia entre herramientas | Aislamiento por UUID y coordinacion | Mantener ejecucion controlada |
+| Interrupcion forzada | Trap EXIT y recuperacion por UUID | Recuperacion manual si el trap no se ejecuta |
+| Exceso de permisos | Casos negativos de negocio | Cobertura exhaustiva QA-17 pendiente |
+| Rendimiento bajo carga | Aserciones locales de tiempo | JMeter pendiente |
+| Entrega de notificaciones | Persistencia verificada | Entrega efectiva no verificada |
+
+No se eliminan riesgos canonicos ni se modifican
+sus puntuaciones sin una evaluacion especifica.
+
+Evidencia: [QA-16](../evidencias/QA-16/RESULTADOS.md).

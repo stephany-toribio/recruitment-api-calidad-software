@@ -1,0 +1,47 @@
+{
+  "success": true,
+  "message": "Pago simulado aprobado. La vacante ya está publicada.",
+  "data": {
+    "pago": {
+      "id": "#number",
+      "resultado": "exitoso",
+      "monto": "#number",
+      "tarjeta": "**** 4242",
+      "fecha": "#string"
+    },
+    "vacante": {
+      "id": "#number",
+      "titulo": "#string",
+      "descripcion": "#string",
+      "requisitos": "#[] #string",
+      "beneficios": "#[] #string",
+      "nivel_puesto": {
+        "id": "#number",
+        "nombre": "#string"
+      },
+      "area_profesional": {
+        "id": "#number",
+        "nombre": "#string"
+      },
+      "tipo_empleo": "remoto",
+      "ubicacion": null,
+      "salario_min": "#number",
+      "salario_max": "#number",
+      "fecha_inicio_vigencia": "#string",
+      "fecha_fin_vigencia": "#string",
+      "max_contrataciones": "#number",
+      "habilidades": "#[5] habilidadSchema",
+      "estado": {
+        "general": "publicada",
+        "revision": "aprobada",
+        "motivo_no_aprobacion": null,
+        "pago": "pagado",
+        "disponibilidad": "activa",
+        "vigente": true,
+        "publicada_en": "#string"
+      },
+      "creado_en": "#string",
+      "eliminado_en": null
+    }
+  }
+}

@@ -1,0 +1,18 @@
+===== QA-16 =====
+Modo: full
+Run ID: a1473373-21ba-42f4-9848-6e08e42c93c3
+===== EJECUCION KARATE =====
+feature: classpath:features/business/vacantes.feature
+scenarios:  4 | passed:  0 | failed:  4 | time: 8.4178
+scenarios:    4 | passed:     0 | failed: 4
+[INFO] BUILD FAILURE
+Exit code Maven: 1
+PASS: Escaneo preventivo de secretos
+scenarios:  4 | passed:  0 | failed:  4 | time: 8.4178
+scenarios:    4 | passed:     0 | failed: 4
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 13.66 s <<< FAILURE! -- in creo.BusinessTest
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0
+[INFO] BUILD FAILURE
+ERROR: Revisar ejecucion Karate privada
+ERROR: Revisar limpieza de a1473373-21ba-42f4-9848-6e08e42c93c3
+Reportes privados: /tmp/tmp.iR5NCDtB8H

@@ -57,7 +57,7 @@ No utilizar las bases del proyecto original.
 ## 5. Smoke sin autenticacion
 
     mvn -B -ntp -f qa/karate/pom.xml \
-      -Dkarate.env=local clean test
+      -Dkarate.env=local -Dtest=SmokeTest,SensitiveLogModifierTest clean test
 
 Ejecuta tres escenarios Karate y seis pruebas
 unitarias Java del modificador de logs.
@@ -267,3 +267,91 @@ No ejecutar contra bases de datos productivas.
 - docs/evidencias/QA-15/reportes/
 - docs/qa/MATRIZ_TRAZABILIDAD.md
 - docs/qa/MATRIZ_RUBRICA.md
+
+---
+
+## QA-16: Flujo funcional de negocio
+
+Issue GitHub: #20.
+
+### Suite completa
+
+    unset QA16_TAGS
+    qa/karate/scripts/run-qa16.sh full
+
+Resultado obligatorio: 34 escenarios aprobados.
+
+### Demostracion en vivo
+
+    unset QA16_TAGS
+    qa/karate/scripts/run-qa16.sh demo
+
+Resultado obligatorio: cuatro escenarios aprobados.
+
+Escenarios seleccionados:
+
+- CP-07-02: rango salarial invalido.
+- CP-09-05: pago duplicado.
+- CP-12-02: candidato suspendido.
+- QA16-E2E-01: flujo integral de negocio.
+
+### Diagnostico por feature
+
+    QA16_TAGS="@postulaciones" \
+      qa/karate/scripts/run-qa16.sh full
+
+    QA16_TAGS="@contratacion,@rechazo" \
+      qa/karate/scripts/run-qa16.sh full
+
+Los filtros sirven para desarrollo y diagnostico.
+No equivalen a una regresion completa.
+
+### Preparacion
+
+- Docker Compose operativo.
+- API local disponible en el puerto 8002.
+- MySQL QA con catalogos inicializados.
+- Java 21 y Maven 3.9.
+- Python 3.
+- No ejecutar suites simultaneamente sobre
+  el mismo directorio target de Maven.
+
+### Fixtures de negocio
+
+Cada ejecucion genera un UUID y una contraseña
+temporal.
+
+Los registros, vacantes, revisiones, pagos y
+postulaciones se crean mediante operaciones HTTP.
+
+Las consultas PHP verifican persistencia y
+preparan estados exclusivos del entorno QA.
+
+La limpieza elimina las entidades de la ejecucion
+en orden de dependencias y dentro de una transaccion.
+
+No pasar tokens o contraseñas como argumentos
+explicitos de call.
+
+### Resultados
+
+- 26 casos canonicos.
+- 34 escenarios Karate.
+- Tres regresiones completas aprobadas.
+- Dos ensayos demo aprobados.
+- Seis incidencias corregidas.
+
+### Reportes
+
+El runner informa el directorio privado de reportes.
+
+Una vez aprobado el escaneo de secretos, consultar:
+
+    karate-reports/karate-summary.html
+
+Las evidencias revisadas se encuentran en:
+
+    docs/evidencias/QA-16/
+
+QA-17 completa la cobertura de autorizacion,
+conflictos y restricciones adicionales.

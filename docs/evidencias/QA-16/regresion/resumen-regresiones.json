@@ -1,0 +1,52 @@
+{
+  "full-01": {
+    "escenarios": 34,
+    "aprobados": 34,
+    "fallidos": 0,
+    "run_id": "620ed1fc-4d4c-4575-93e0-a4faee892453",
+    "tiempo_junit_segundos": 308.1,
+    "secretos": "PASS",
+    "limpieza": "PASS",
+    "reportes_privados": "/tmp/tmp.s5SqEKcFri"
+  },
+  "full-02": {
+    "escenarios": 34,
+    "aprobados": 34,
+    "fallidos": 0,
+    "run_id": "31950358-2e2c-4fea-bf2c-cfe44bbbffda",
+    "tiempo_junit_segundos": 251.6,
+    "secretos": "PASS",
+    "limpieza": "PASS",
+    "reportes_privados": "/tmp/tmp.fRDKeOpEp5"
+  },
+  "demo-01": {
+    "escenarios": 4,
+    "aprobados": 4,
+    "fallidos": 0,
+    "run_id": "18b74f71-1aa8-4c45-bf54-3b44d5969650",
+    "tiempo_junit_segundos": 32.96,
+    "secretos": "PASS",
+    "limpieza": "PASS",
+    "reportes_privados": "/tmp/tmp.eNncQUijZf"
+  },
+  "demo-02": {
+    "escenarios": 4,
+    "aprobados": 4,
+    "fallidos": 0,
+    "run_id": "0ab61841-500d-4174-97c1-a9bbd4a8e028",
+    "tiempo_junit_segundos": 33.8,
+    "secretos": "PASS",
+    "limpieza": "PASS",
+    "reportes_privados": "/tmp/tmp.xvlKlyDi9i"
+  },
+  "qa15": {
+    "escenarios": 39,
+    "aprobados": 39,
+    "fallidos": 0,
+    "run_id": "2cc9aeba-2477-4d7e-b78d-fd2af1b13415",
+    "tiempo_junit_segundos": 71.53,
+    "secretos": "PASS",
+    "limpieza": "PASS",
+    "reportes_privados": "/tmp/tmp.YUteRLqyT2"
+  }
+}
