@@ -257,3 +257,19 @@ no acredita retrospectivamente aquella ejecución.
 
 Las suites futuras deben documentar su propio
 procedimiento de preparación y restauración de datos.
+
+## Anexo QA-06 - Fixtures de registro
+
+<!-- QA06-DATOS -->
+
+- Correos sinteticos con dominio example.test.
+- DNI, celular y RUC generados para la suite.
+- Identificadores de catalogo consultados dinamicamente.
+- Contrasena sintetica exclusiva de integracion.
+- Seeders de roles, estudios, areas, idiomas y habilidades.
+- Preparacion dentro de transacciones aisladas.
+- Reversion al finalizar cada prueba.
+
+Base de integracion: portalempleoshu04testing.
+
+No utilizar datos personales ni credenciales reales.

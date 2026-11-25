@@ -1540,3 +1540,25 @@ Consultar MATRIZ_TRAZABILIDAD.md y las evidencias QA-05.
 
 La cobertura auxiliar no sustituye los casos Karate,
 Selenium, Appium ni sus evidencias formales.
+
+## Anexo QA-06 - Registro y perfiles
+
+<!-- QA06-CONTRATOS -->
+
+La implementacion se verifico mediante 49 pruebas nuevas
+de integracion MySQL y 49 pruebas auxiliares frontend.
+
+| Familia | Evidencia |
+| --- | --- |
+| CP-01 | Registro, duplicados, formatos y persistencia del candidato |
+| CP-02 | Registro, duplicados, formatos y persistencia de empresa |
+| CP-06 | Consulta, actualizacion, autorizacion y propiedad |
+
+Se mantienen los identificadores canonicos existentes.
+
+Los escenarios auxiliares no constituyen nuevas ejecuciones
+formales de Karate, Selenium o Appium.
+
+La respuesta del registro empresarial no incluye el rol
+en su recurso JSON. El rol se comprueba mediante persistencia
+y autorizacion.
