@@ -1,12 +1,12 @@
 # Catálogo Detallado de Casos de Prueba — QA-04
 
-- **Proyecto**: Portal de Empleos CREO+ (PWA y API REST) — Calidad de Software.
+- **Proyecto**: Portal de Empleos CREO+ (Web, PWA, APK Android y API REST) — Calidad de Software.
 - **Responsable**: R3 (@luisvalenzuela25).
-- **Revisor asignado**: R1 (@stephany-toribio).
+- **Validación**: Verificación técnica y evidencia; sin revisión cruzada formal obligatoria.
 - **Hito**: M0 (Alcance y línea base).
-- **Versión**: 1.4.0 (Contratos de autenticación confirmados en QA-05).
-- **Fecha**: 24/11/2026.
-- **Rama**: `feature/QA-04-matriz-pruebas`.
+- **Versión**: 1.5.0 (Sincronización posterior a QA-05).
+- **Fecha**: 25/11/2026.
+- **Rama de actualización**: docs/QA-04-trazabilidad-post-QA-05.
 
 ---
 
@@ -18,7 +18,7 @@ Cada caso de prueba se desglosa desde las 34 familias base (`CP-01` a `CP-34`) u
   - `EJECUTADO`: Prueba corrida en el ambiente local/QA pero con resultado aún no consolidado.
   - `APROBADO`: Ejecutada exitosamente con aserciones cumplidas y evidencia registrada.
   - `DEFECTUOSO`: Ejecutada con fallos o aserciones no cumplidas (se vincula a un defecto formal Sev1-Sev4).
-- **Estado inicial**: **Todos los 111 escenarios inician en estado `PENDIENTE`** dentro de esta entrega de diseño de QA-04.
+- **Estado inicial del diseño**: Los 111 escenarios se mantienen como referencia canónica. Los resultados se registran por herramienta; las suites académicas todavía están pendientes.
 - **Manejo de identificadores**: Los scripts no deben quemar IDs numéricos de usuarios ni de entidades de negocio (se resuelven dinámicamente mediante login o consultas previas). Para catálogos inmutables del sistema, los IDs corresponden a las constantes oficiales sembradas por los seeders base (`EstadoPostulacionSeeder`: 1=Recibido, 2=En Revisión, 3=Entrevista, 4=Contratado, 5=Rechazado; `MotivoRechazoSeeder`: 1=Perfil no se ajusta, 2=Expectativa salarial alta, 3=Proceso cerrado).
 
 ---
@@ -45,6 +45,95 @@ sustituye la ejecución de Karate, Selenium, Appium o JMeter.
 
 Los estados de ejecución de las suites académicas permanecen
 PENDIENTE hasta contar con sus propias evidencias.
+
+---
+
+
+<!-- QA04-POST-QA05 -->
+
+### 1.2 Contratos adicionales confirmados en QA-05
+
+Versiones integradas:
+
+- Backend PR #33: merge commit 6d7d0a9.
+- Frontend PR #19: merge commit 9e43699.
+
+#### Autenticación e identidad
+
+- POST /api/v1/auth/login recibe correo y password.
+- Login válido: HTTP 200, token y rol autenticado.
+- GET /api/v1/auth/me identifica al usuario mediante su token.
+- Token ausente, inválido o revocado: HTTP 401.
+- Credenciales incorrectas: HTTP 401.
+- Quinto intento fallido: HTTP 429 y bloqueo de quince minutos.
+- Login de cuenta suspendida: HTTP 403 sin nuevo token.
+
+#### Contrato de autorización
+
+Una restricción ordinaria por rol o pertenencia devuelve
+HTTP 403 con error_code FORBIDDEN.
+
+Cuando el middleware detecta una cuenta autenticada
+no habilitada, devuelve adicionalmente:
+
+    {
+      "success": false,
+      "message": "Tu cuenta no está habilitada para realizar esta acción.",
+      "error_code": "FORBIDDEN",
+      "reason": "ACCOUNT_NOT_ACTIVE"
+    }
+
+El campo reason corresponde al middleware de cuenta
+autenticada, no necesariamente al endpoint de login.
+
+#### Política de sesiones
+
+| Condición | Comportamiento esperado |
+|---|---|
+| HTTP 401 del token vigente | Invalidar sesión |
+| HTTP 403 ordinario | Conservar sesión |
+| HTTP 403 ACCOUNT_NOT_ACTIVE del token vigente | Invalidar sesión |
+| HTTP 401 o 403 de token anterior | Conservar sesión nueva |
+| Error durante login | No invalidar otra sesión |
+| Payload inesperado | Manejar error sin excepciones |
+| Logout exitoso | Limpiar sesión y revocar token |
+| Respuesta tardía de logout | Proteger la sesión nueva |
+
+La protección ante respuestas tardías de logout
+requiere todavía una prueba específica de concurrencia.
+
+#### Autorización y propiedad
+
+- CP-15-02: candidato recibe HTTP 403 al consultar
+  o pausar vacantes privadas de empresa.
+- CP-06-03: HTTP 404 para postulación inexistente
+  y HTTP 403 para postulación ajena.
+- La consulta directa del perfil de candidato por una
+  empresa requiere una postulación no retirada,
+  vinculada a una vacante propia no eliminada.
+- El administrador conserva el acceso autorizado.
+- CP-06-04: los identificadores ajenos no modifican
+  la identidad autenticada.
+- CP-15-04: candidato_id inyectado devuelve HTTP 422
+  VALIDATION_ERROR y no genera una postulación.
+
+### 1.3 Ejecuciones complementarias
+
+- PHPUnit: 279 pruebas y 1811 aserciones aprobadas.
+- Node Test: 12/12 PASS.
+- Python HTTP: 24/24 PASS.
+- Playwright: 12/12 PASS.
+- Compilaciones Angular: 3/3 PASS.
+
+Los identificadores W01-W12 son referencias auxiliares.
+
+Las ejecuciones académicas de Karate, Selenium,
+Appium y JMeter permanecen pendientes.
+
+No se crean nuevos identificadores canónicos
+ni se duplican los 111 escenarios existentes.
+
+Consultar MATRIZ_TRAZABILIDAD.md y las evidencias QA-05.
 
 ---
 

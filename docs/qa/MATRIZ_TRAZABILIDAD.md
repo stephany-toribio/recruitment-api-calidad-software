@@ -2,18 +2,18 @@
 
 - **Proyecto**: Portal de Empleos CREO+ (Web, PWA, APK Android y API REST) — Calidad de Software.
 - **Responsable del documento**: R3 (@luisvalenzuela25 — Integración, Appium, JMeter y trazabilidad).
-- **Revisor asignado**: R1 (@stephany-toribio — Backend, API y Karate).
+- **Validación**: Verificación técnica y evidencia.
 - **Hito**: M0 (Alcance y línea base).
-- **Versión**: 1.3.0 (Corrección documental; revisión de R1 pendiente).
-- **Fecha de versión**: 24/11/2026.
-- **Rama**: `feature/QA-04-matriz-pruebas`.
-- **Estado de ejecución global**: **Pendiente de ejecución** (salvo la línea base de pruebas unitarias/MySQL documentada en QA-02).
+- **Versión**: 1.4.0 (Trazabilidad posterior a QA-05).
+- **Fecha de versión**: 25/11/2026.
+- **Rama de actualización**: docs/QA-04-trazabilidad-post-QA-05.
+- **Estado de ejecución global**: Regresiones QA-02 y QA-05 registradas; suites académicas pendientes.
 
 ---
 
 ## 1. Alcance y convención de trazabilidad
 
-Esta matriz relaciona bidireccionalmente los **18 requisitos** del sistema (10 RF, 4 PWA, 4 RNF) con las **34 familias de casos de prueba (CP-01 a CP-34)**, sus **111 escenarios canónicos detallados** (56 de comportamiento esperado y 55 negativos), su nivel de prioridad, las herramientas de automatización asignadas, las tareas e integrantes responsables, y los riesgos operacionales o técnicos asociados.
+Esta matriz relaciona bidireccionalmente los **18 requisitos** del sistema (10 RF, 4 PWA, 4 RNF) con las **34 familias de casos de prueba (CP-01 a CP-34)**, sus **111 escenarios canónicos detallados**, su nivel de prioridad, las herramientas de automatización asignadas, las tareas e integrantes responsables, y los riesgos operacionales o técnicos asociados.
 
 ### 1.1 Cadena de trazabilidad obligatoria
 ```
@@ -27,7 +27,7 @@ Requisito (RF / PWA / RNF)
 ```
 
 ### 1.2 Criterios de prioridad
-- **P0 (Crítico / Bloqueante)**: Autenticación, autorización de servidor, unicidad de postulación, integridad transaccional, concurrencia en contrataciones, cupos límite, estados finales y pérdida de conexión PWA/APK/APK.
+- **P0 (Crítico / Bloqueante)**: Autenticación, autorización de servidor, unicidad de postulación, integridad transaccional, concurrencia en contrataciones, cupos límite, estados finales y pérdida de conexión PWA/APK.
 - **P1 (Esencial para el flujo)**: Registro válido/inválido, publicación, pagos simulados, filtros de búsqueda, transiciones intermedias, retiros válidos, instalación standalone PWA y pruebas de carga planificadas.
 - **P2 (Complementario / Calidad adicional)**: Accesibilidad responsiva no bloqueante, ordenación secundaria y validaciones visuales menores.
 
@@ -140,3 +140,77 @@ instalación, actualización y comportamiento offline.
 
 Los porcentajes de diseño no representan una calificación
 obtenida ni resultados de automatización aprobados.
+
+
+<!-- QA04-POST-QA05 -->
+
+## Seguimiento de ejecuciones QA-05
+
+### Versiones verificadas
+
+| Repositorio | PR | Commit probado | Merge commit |
+|---|---|---|---|
+| Backend | 33 | 4bb1b1c | 6d7d0a9 |
+| Frontend | 19 | 738210c | 9e43699 |
+
+### Resultados
+
+| Herramienta | Resultado |
+|---|---|
+| PHPUnit Auth | 55 pruebas, 583 aserciones PASS |
+| PHPUnit Unit/Feature | 259 pruebas, 1645 aserciones PASS |
+| PHPUnit MySQL Propiedad | 20 pruebas, 166 aserciones PASS |
+| PHPUnit total sin duplicar | 279 pruebas, 1811 aserciones PASS |
+| Node Test | 12/12 PASS |
+| Python HTTP | 24/24 PASS |
+| Playwright | 12/12 PASS |
+| Compilaciones Angular | 3/3 PASS |
+
+Auth está incluida en Unit/Feature.
+No se declara ejecutada toda la suite MySQL.
+
+### Trazabilidad de regresiones auxiliares
+
+| ID | Requisito | Caso relacionado | Cobertura | Resultado |
+|---|---|---|---|---|
+| W01 | RF-02, RF-03 | CP-03-01, CP-06-01 | Login y perfil candidato | PASS |
+| W02 | RF-02, RF-03 | CP-03-02, CP-06 | Login y perfil empresa | PASS |
+| W03 | RF-02 | CP-03-03 | Login administrador | PASS |
+| W04 | RF-02 | CP-03 | Persistencia tras recarga | PASS |
+| W05 | RF-02 | CP-05-03 | Token inválido | PASS |
+| W06 | RF-02 | CP-04-03 | Cuenta suspendida | PASS |
+| W07 | RNF-01 | CP-15 | Navegación restringida | PASS |
+| W08 | RF-02 | CP-05-01, CP-05-02 | Logout candidato | PASS |
+| W09 | RF-02 | CP-05 | Logout empresa | PASS |
+| W10 | RF-02 | CP-05 | Logout admin | PASS |
+| W11 | RF-02, RNF-01 | CP-04-03, CP-05-02 | Suspensión y aislamiento | PASS |
+| W12 | RF-02 | CP-03-01, CP-04 | Reactivación y login | PASS |
+
+Las relaciones anteriores indican cobertura complementaria,
+no aprobación completa del caso canónico.
+
+### Contratos adicionales verificados
+
+| Caso | Herramienta | Resultado auxiliar |
+|---|---|---|
+| CP-04-01 | PHPUnit | PASS |
+| CP-04-02 | PHPUnit | PASS |
+| CP-06-03 | PHPUnit/MySQL | PASS |
+| CP-06-04 | PHPUnit/MySQL | PASS |
+| CP-15-01 | PHPUnit | PASS |
+| CP-15-02 | PHPUnit/MySQL (GET y PATCH); HTTP (GET) | PASS |
+| CP-15-04 | PHPUnit/MySQL | PASS |
+
+### Evidencias versionadas
+
+- [Backend QA-05](../evidencias/QA-05/RESULTADOS.md).
+- [Regresión backend](../evidencias/QA-05/regresion-sesiones/).
+- [Frontend QA-05](https://github.com/stephany-toribio/web-app-calidad-software/blob/9e43699/docs/evidencias/QA-05/REGRESION_FINAL.md).
+- [Reporte navegador](https://github.com/stephany-toribio/web-app-calidad-software/blob/9e43699/docs/evidencias/QA-05/regresion-wsl/browser/resultados-browser.json).
+
+### Ejecución académica pendiente
+
+Karate, Selenium, JMeter, Appium y vinculación real
+en Jira mantienen sus propios estados de ejecución.
+
+Las pruebas auxiliares no sustituyen la rúbrica.

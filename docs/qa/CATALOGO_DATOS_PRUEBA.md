@@ -2,11 +2,11 @@
 
 - **Proyecto**: Portal de Empleos CREO+ (Web, PWA, APK Android y API REST) — Calidad de Software.
 - **Responsable**: R3 (@luisvalenzuela25).
-- **Revisor asignado**: R1 (@stephany-toribio).
+- **Validación**: Verificación técnica y evidencia.
 - **Hito**: M0 (Alcance y línea base).
-- **Versión**: 1.3.0 (Corrección documental; revisión de R1 pendiente).
-- **Fecha**: 24/11/2026.
-- **Rama**: `feature/QA-04-matriz-pruebas`.
+- **Versión**: 1.4.0 (Datos verificados en QA-05).
+- **Fecha de versión**: 25/11/2026.
+- **Rama de actualización**: docs/QA-04-trazabilidad-post-QA-05.
 
 ---
 
@@ -213,3 +213,47 @@ No utilizar identificadores ficticios como evidencia real.
 Cada registro de ejecucion relacionara el escenario CP,
 control RUB, ticket Jira, ambiente, datos, resultado
 y reporte correspondiente.
+
+
+<!-- QA04-POST-QA05 -->
+
+## 10. Datos utilizados en QA-05
+
+| Fixture | Uso verificado |
+|---|---|
+| USR-CND-01 | Login, perfil, permisos y logout |
+| USR-CND-02 | Suspensión temporal y reactivación |
+| USR-CND-03 | Rechazo de login por suspensión |
+| USR-EMP-01 | Login, perfil y logout empresa |
+| USR-ADM-01 | Login y administración |
+
+### Condiciones de ejecución
+
+- API QA: http://127.0.0.1:8002.
+- Frontend QA: http://127.0.0.1:4201.
+- Base funcional: portal_empleos_calidad_qa.
+- Base integración: portalempleoshu04testing.
+- Unit/Feature: SQLite en memoria.
+- Credenciales parametrizadas o introducidas de forma
+  interactiva sin mostrarlas en los logs.
+
+### Aislamiento y limpieza
+
+- Utilizar contextos independientes de navegador.
+- Resolver identificadores dinámicamente.
+- No compartir tokens entre usuarios.
+- Reservar las cuentas mutables durante la ejecución.
+- Restaurar USR-CND-02 al finalizar.
+- Mantener USR-CND-03 suspendido.
+- Revocar tokens emitidos durante la prueba.
+- No ejecutar limpieza destructiva sobre datos ajenos.
+
+La ejecución final de QA-05 confirmó la reactivación
+de USR-CND-02 y cero tokens pendientes de revocación
+registrados por el runner.
+
+Una ejecución previa fue interrumpida. La limpieza final
+no acredita retrospectivamente aquella ejecución.
+
+Las suites futuras deben documentar su propio
+procedimiento de preparación y restauración de datos.
