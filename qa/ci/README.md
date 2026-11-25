@@ -91,5 +91,14 @@ satisfactoria en GitHub Actions.
 
 ## Estado
 
-Implementacion inicial preparada.
-Ejecucion remota pendiente de verificacion.
+Implementacion integrada mediante PR #45.
+
+Ejecucion remota FULL verificada:
+
+- PHPUnit: 708/708.
+- Karate: 109/109.
+- Run ID: 45710340550.
+- Resultado: PASS.
+
+Consultar docs/evidencias/QA-27/RESULTADOS.md
+para resultados, incidencias y artefactos.
