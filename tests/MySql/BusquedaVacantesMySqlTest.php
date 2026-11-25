@@ -778,6 +778,11 @@ class BusquedaVacantesMySqlTest extends TestCase
     ): void {
         $titulo = $this->prepararGrupoPaginado();
 
+        // Mantener la vacante disponible durante la prueba de conteo.
+        $this->vacantes[0]->update([
+            'numero_vacantes' => $cantidad + 1,
+        ]);
+
         $this->crearPostulaciones(
             $cantidad,
             (int) $this->vacantes[0]->id
@@ -910,6 +915,11 @@ class BusquedaVacantesMySqlTest extends TestCase
         string $textoEsperado
     ): void {
         $titulo = $this->prepararGrupoPaginado();
+
+        // Mantener la vacante disponible durante la prueba de conteo.
+        $this->vacantes[0]->update([
+            'numero_vacantes' => $cantidad + 1,
+        ]);
 
         $this->crearPostulaciones(
             $cantidad,
@@ -1376,6 +1386,11 @@ class BusquedaVacantesMySqlTest extends TestCase
     {
         $titulo = $this->prepararGrupoPaginado();
         $this->autenticarCandidatoHttp();
+
+        // Mantener la vacante disponible durante la prueba de conteo.
+        $this->vacantes[2]->update([
+            'numero_vacantes' => 11,
+        ]);
 
         $this->crearPostulaciones(
             10,

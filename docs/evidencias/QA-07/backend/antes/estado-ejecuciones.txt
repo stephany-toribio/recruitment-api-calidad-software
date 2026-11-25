@@ -1,0 +1,3 @@
+BusquedaVacantesMySqlTest: exit code 1
+DetalleVacanteMySqlTest: exit code 1
+DisponibilidadVacanteMySqlTest: exit code 0

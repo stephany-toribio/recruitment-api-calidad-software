@@ -117,3 +117,31 @@ QA-05 está cerrado dentro del alcance verificado.
 Los riesgos pendientes conservan su seguimiento.
 
 Evidencia: ../evidencias/QA-05/RESULTADOS.md.
+
+## Seguimiento posterior a QA-07
+
+<!-- QA07-RIESGOS -->
+
+### RSK-08 - Fallos de linea base MySQL
+
+Los 18 fallos historicos fueron corregidos.
+
+Regresion final:
+- MySQL: 384/384 PASS.
+- Unit/Feature: 259/259 PASS.
+
+El hallazgo historico se considera resuelto en la
+regresion local. Se mantiene el seguimiento de
+regresiones futuras.
+
+### Riesgos residuales QA-07
+
+| ID auxiliar | Riesgo | Seguimiento |
+|---|---|---|
+| QA07-R01 | Integracion visual y E2E no verificada | QA-19, QA-20 |
+| QA07-R02 | Concurrencia de pagos no evaluada especificamente | QA-24, QA-25 |
+| QA07-R03 | Autocompletado ignorado por algunos navegadores | QA-20 |
+| QA07-R04 | Ejecucion movil y APK pendientes | QA-21, QA-22 |
+| QA07-R05 | Vinculacion Jira pendiente | QA-29 |
+
+Consultar docs/evidencias/QA-07/DEFECTOS.md.

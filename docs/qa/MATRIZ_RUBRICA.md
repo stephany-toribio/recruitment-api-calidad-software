@@ -103,3 +103,21 @@ la generación ni instalación de un APK.
 
 Consultar MATRIZ_TRAZABILIDAD.md para conocer
 la correspondencia de las regresiones QA-05.
+
+## Evidencias preparatorias de QA-07
+
+<!-- QA07-RUBRICA -->
+
+- 643 pruebas PHPUnit aprobadas.
+- 26 pruebas auxiliares frontend aprobadas.
+- 18 fallos historicos resueltos.
+- Defecto Luhn reproducido mediante RED y corregido mediante GREEN.
+- Contratos de API y matriz de disponibilidad documentados.
+- Compilaciones Angular estandar, QA y Android aprobadas.
+- Evidencias verificadas mediante SHA256.
+
+Estas evidencias son complementarias.
+
+No se modifican los estados de acreditacion de los
+24 controles de la rubrica. Su cumplimiento formal
+requiere las herramientas obligatorias y Jira.

@@ -159,6 +159,8 @@ class DetalleVacanteMySqlTest extends TestCase
             'id',
             'titulo',
             'descripcion',
+            'requisitos',
+            'beneficios',
             'empresa',
             'nivel_puesto',
             'area_profesional',
@@ -184,6 +186,13 @@ class DetalleVacanteMySqlTest extends TestCase
         sort($actuales);
 
         $this->assertSame($esperadas, $actuales);
+
+        $this->assertCount(22, $respuesta);
+        $this->assertIsArray($respuesta['requisitos']);
+        $this->assertIsArray($respuesta['beneficios']);
+        $this->assertSame([], $respuesta['requisitos']);
+        $this->assertSame([], $respuesta['beneficios']);
+
 
         $this->assertSame(
             [
@@ -234,6 +243,101 @@ class DetalleVacanteMySqlTest extends TestCase
         ] as $campo) {
             $this->assertArrayNotHasKey($campo, $respuesta);
         }
+    }
+
+
+    public function test_detalle_publico_conserva_requisitos_y_beneficios(): void
+    {
+        $requisitos = [
+            'Conocimientos de SQL',
+            'Capacidad de documentacion',
+        ];
+
+        $beneficios = [
+            'Capacitacion continua',
+            'Horario flexible',
+        ];
+
+        DB::table('empleos')
+            ->where('id', $this->vacante->getKey())
+            ->update([
+                'requisitos' => json_encode(
+                    $requisitos,
+                    JSON_THROW_ON_ERROR
+                ),
+                'beneficios' => json_encode(
+                    $beneficios,
+                    JSON_THROW_ON_ERROR
+                ),
+            ]);
+
+        $respuesta = $this->resolverRecurso(
+            $this->consultar()
+        );
+
+        $this->assertSame(
+            $requisitos,
+            $respuesta['requisitos']
+        );
+
+        $this->assertSame(
+            $beneficios,
+            $respuesta['beneficios']
+        );
+
+        foreach ($respuesta['requisitos'] as $requisito) {
+            $this->assertIsString($requisito);
+        }
+
+        foreach ($respuesta['beneficios'] as $beneficio) {
+            $this->assertIsString($beneficio);
+        }
+
+        $this->assertArrayNotHasKey(
+            'postulaciones_count',
+            $respuesta
+        );
+
+        $this->assertArrayNotHasKey(
+            'porcentaje_match',
+            $respuesta
+        );
+    }
+
+    public function test_detalle_http_expone_requisitos_y_beneficios_publicos(): void
+    {
+        $requisitos = ['Conocimientos de Python'];
+        $beneficios = ['Trabajo remoto'];
+
+        DB::table('empleos')
+            ->where('id', $this->vacante->getKey())
+            ->update([
+                'requisitos' => json_encode(
+                    $requisitos,
+                    JSON_THROW_ON_ERROR
+                ),
+                'beneficios' => json_encode(
+                    $beneficios,
+                    JSON_THROW_ON_ERROR
+                ),
+            ]);
+
+        $token = $this->crearTokenHttp(
+            (int) $this->candidato->usuario_id
+        );
+
+        $this->consultarHttp(
+            '/api/v1/vacantes/'.$this->vacante->getKey(),
+            $token
+        )
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.requisitos', $requisitos)
+            ->assertJsonPath('data.beneficios', $beneficios)
+            ->assertJsonMissingPath('data.postulaciones_count')
+            ->assertJsonMissingPath('data.porcentaje_match')
+            ->assertJsonMissingPath('data.pagos')
+            ->assertJsonMissingPath('data.revision');
     }
 
     public function test_conserva_salarios_ausentes_y_normaliza_descripcion_empresarial_vacia(): void
