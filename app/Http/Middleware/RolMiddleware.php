@@ -32,6 +32,7 @@ class RolMiddleware
                 'success' => false,
                 'message' => 'Tu cuenta no está habilitada para realizar esta acción.',
                 'error_code' => 'FORBIDDEN',
+                'reason' => 'ACCOUNT_NOT_ACTIVE',
             ], Response::HTTP_FORBIDDEN);
         }
 

@@ -274,6 +274,9 @@ class Qa05SuspensionTest extends TestCase
         ]);
 
         $this->assertNotNull(PersonalAccessToken::findToken($token));
-        $this->api('GET', $ruta, [], $token)->assertForbidden();
+        $this->api('GET', $ruta, [], $token)
+            ->assertForbidden()
+            ->assertJsonPath('error_code', 'FORBIDDEN')
+            ->assertJsonPath('reason', 'ACCOUNT_NOT_ACTIVE');
     }
 }

@@ -165,7 +165,9 @@ class Qa05PasswordTest extends TestCase
         ]);
 
         $this->api('PUT', self::RUTA, $this->datos(), $token)
-            ->assertForbidden()->assertJsonPath('error_code', 'FORBIDDEN');
+            ->assertForbidden()
+            ->assertJsonPath('error_code', 'FORBIDDEN')
+            ->assertJsonPath('reason', 'ACCOUNT_NOT_ACTIVE');
 
         $this->assertSame($hash, $usuario->fresh()->password);
         $this->assertNotNull(PersonalAccessToken::findToken($token));

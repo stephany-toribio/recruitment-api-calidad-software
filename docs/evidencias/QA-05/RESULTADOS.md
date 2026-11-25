@@ -252,3 +252,40 @@ coordinada mediante su PR correspondiente.
 
 Los defectos y resultados deben incorporarse a Jira
 mediante QA-29 cuando esté disponible su estructura.
+
+
+## Contrato específico de invalidación de sesión
+
+Se amplió RolMiddleware para distinguir una cuenta
+no habilitada de una restricción normal de permisos.
+
+Se conserva HTTP 403 y error_code FORBIDDEN.
+Cuando la cuenta autenticada no está habilitada,
+se incorpora reason ACCOUNT_NOT_ACTIVE.
+
+El frontend utiliza este motivo para invalidar
+exclusivamente la sesión asociada a la petición.
+
+### Regresión posterior al cambio
+
+| Suite | Pruebas | Aserciones | Resultado |
+|---|---:|---:|---|
+| Auth | 55 | 583 | PASS |
+| Unit/Feature | 259 | 1645 | PASS |
+| Propiedad MySQL | 20 | 166 | PASS |
+| Total sin duplicar | 279 | 1811 | PASS |
+
+Auth está incluida en Unit/Feature.
+
+Se incorporaron diez aserciones adicionales.
+No se registraron fallos en las suites ejecutadas.
+
+### Evidencias
+
+- [Auth](regresion-sesiones/auth-reason.txt)
+- [Unit/Feature](regresion-sesiones/unit-feature-reason.txt)
+- [MySQL](regresion-sesiones/mysql-reason.txt)
+- [Hashes](regresion-sesiones/SHA256SUMS.txt)
+
+La integración requiere coordinar las versiones
+de backend y frontend.

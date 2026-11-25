@@ -1,0 +1,3 @@
+22e2a7a43eae04f7160cfb0dfab8e40517939d0875c69905e9ff3ad39ae15a86  docs/evidencias/QA-05/regresion-sesiones/auth-reason.txt
+0a0b4118525f4d6da190d33ab96c253a48dbbf6666e0b04bd654c15b19c26699  docs/evidencias/QA-05/regresion-sesiones/unit-feature-reason.txt
+e2d0d8c4b7683fdf3367cc75f671924a4799cda6471cce5045cb80f6b043b180  docs/evidencias/QA-05/regresion-sesiones/mysql-reason.txt
