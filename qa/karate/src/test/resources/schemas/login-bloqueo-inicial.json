@@ -1,0 +1,9 @@
+{
+  "success": false,
+  "message": "Cuenta bloqueada temporalmente. Intente más tarde.",
+  "errors": {
+    "intentos_fallidos": 5,
+    "intentos_restantes": 0,
+    "bloqueado_hasta": "#string"
+  }
+}

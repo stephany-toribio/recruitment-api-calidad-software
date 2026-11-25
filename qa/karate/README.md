@@ -181,3 +181,89 @@ antes de iniciar otra ejecucion.
 
 QA-14 prepara la infraestructura y no acredita
 por si sola todos los criterios de la rubrica.
+
+---
+
+## QA-15: Registro y autenticacion
+
+### Prerrequisitos
+
+- Java 21 y Maven disponibles.
+- Docker Compose operativo.
+- API QA accesible en http://127.0.0.1:8002.
+- MySQL QA inicializado con los catalogos necesarios.
+- Python 3 disponible.
+- Ejecutar desde la raiz del repositorio.
+
+### Comprobar disponibilidad
+
+    docker compose ps
+
+    curl -fsS http://127.0.0.1:8002/up
+
+### Ejecutar suite completa
+
+    qa/karate/scripts/run-qa15.sh full
+
+Cobertura esperada: 39 escenarios.
+
+### Ejecutar demostracion en vivo
+
+    qa/karate/scripts/run-qa15.sh demo
+
+Cobertura esperada: 8 escenarios representativos.
+
+El modo demo utiliza los mismos features de la suite
+completa. No modifica las reglas de negocio.
+
+### Ejecutar QA-14 independientemente
+
+    qa/karate/scripts/run-local.sh
+
+El runner de QA-14 se ejecuta de manera independiente
+y escribe sus nuevos resultados fuera de las evidencias
+historicas por defecto.
+
+### Consultar los reportes
+
+Cada ejecucion QA-15 informa al finalizar el directorio
+privado que contiene los reportes.
+
+Una vez confirmado el escaneo de secretos, abrir:
+
+    karate-reports/karate-summary.html
+
+La carpeta generada por Maven tambien se encuentra en:
+
+    qa/karate/target/karate-reports/
+
+Una ejecucion posterior puede reemplazar el contenido
+de target. Los reportes seleccionados se conservan en
+docs/evidencias/QA-15/reportes/.
+
+### Aislamiento y limpieza
+
+El ejecutor genera un UUID y una password temporal
+independientes. No requiere introducir credenciales
+manualmente.
+
+Los registros funcionales se crean mediante la API.
+
+El puente Java-PHP permite comprobar persistencia y
+preparar estados exclusivos de los fixtures QA.
+
+El fixture de administrador se crea directamente
+porque no existe registro publico para ese rol.
+
+La expiracion del bloqueo se simula exclusivamente
+despues de comprobar el bloqueo real.
+
+No ejecutar contra bases de datos productivas.
+
+### Evidencias y trazabilidad
+
+- docs/evidencias/QA-15/RESULTADOS.md
+- docs/evidencias/QA-15/INCIDENCIAS.md
+- docs/evidencias/QA-15/reportes/
+- docs/qa/MATRIZ_TRAZABILIDAD.md
+- docs/qa/MATRIZ_RUBRICA.md

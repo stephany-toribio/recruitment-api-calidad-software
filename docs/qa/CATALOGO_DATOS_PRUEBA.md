@@ -322,3 +322,19 @@ qa/karate/scripts/run-local.sh.
 Las seis cuentas QA compartidas no se eliminan.
 
 Base autorizada: portal_empleos_calidad_qa.
+
+## Fixtures dinamicos QA-15
+
+- Generacion por UUID independiente.
+- Correos sinteticos bajo qa.example.test.
+- DNI, celular y RUC dinamicos.
+- Password temporal aleatoria compatible con PasswordSegura.
+- Referencias dinamicas a catalogos activos.
+- Creacion de perfiles mediante API.
+- Administrador sintetico creado mediante fixture.
+- Bloqueo real y expiracion controlada del fixture.
+- Limpieza restringida a la base QA local.
+- Prohibido utilizar cuentas compartidas para pruebas
+  que alteren su estado de autenticacion.
+- Resultado observado: cero usuarios Karate residuales
+  y seis cuentas QA compartidas presentes.

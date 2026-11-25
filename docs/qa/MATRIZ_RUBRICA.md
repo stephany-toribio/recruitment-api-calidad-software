@@ -192,3 +192,20 @@ Evidencias: docs/evidencias/QA-14/.
 
 No se considera acreditado el puntaje completo
 de Karate hasta ejecutar QA-15, QA-16 y QA-17.
+
+## Evidencia funcional QA-15
+
+| Control | Evidencia verificada | Estado del alcance QA-15 |
+| --- | --- | --- |
+| RUB-K01 | Esquemas JSON y validacion de errores | PASS |
+| RUB-K02 | HTTP 200, 201, 401, 403, 422, 429 | PASS |
+| RUB-K03 | Aserciones de tiempo de respuesta | PASS |
+| RUB-K04 | UUID, datos, identificadores y tokens | PASS |
+| RUB-K05 | Helpers reutilizados mediante call | PASS |
+
+- Suite completa: 39/39 escenarios aprobados.
+- Suite demo: 8/8 escenarios aprobados.
+- Repetibilidad: dos ejecuciones completas consecutivas.
+- Evidencia: [QA-15](../evidencias/QA-15/RESULTADOS.md).
+
+La cobertura integral de Karate requiere QA-16 y QA-17.

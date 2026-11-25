@@ -1,0 +1,29 @@
+{
+    "success": true,
+    "datos": {
+        "nombre": "Candidato",
+        "apellidos": "Ficticio QA15",
+        "dni": "01060696",
+        "fecha_nacimiento": "2000-01-01",
+        "genero": "prefiero no decir",
+        "correo": "karate-6dd7b706-dacb-4317-bc1c-eb0070529be5-c5e78a31592e9574@qa.example.test",
+        "celular": "945410000",
+        "busca_primer_empleo": true,
+        "estudios": [
+            {
+                "tipo_estudio_id": 7,
+                "area_estudio_id": 1
+            }
+        ],
+        "idiomas": [
+            {
+                "idioma_id": 1,
+                "nivel_escrito": "nativo",
+                "nivel_oral": "nativo"
+            }
+        ],
+        "habilidades": [
+            14
+        ]
+    }
+}

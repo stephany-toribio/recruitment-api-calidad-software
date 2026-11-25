@@ -1,0 +1,32 @@
+===== QA-15 =====
+Modo: full
+Run ID: 375a13d5-3b7f-43c1-b468-b3763bbc74a8
+===== EJECUCION KARATE =====
+feature: classpath:features/auth/bloqueo-suspension.feature
+scenarios:  3 | passed:  3 | failed:  0 | time: 11.5521
+feature: classpath:features/auth/login.feature
+scenarios:  3 | passed:  3 | failed:  0 | time: 6.8851
+feature: classpath:features/auth/registro-candidato.feature
+scenarios: 17 | passed: 17 | failed:  0 | time: 25.1948
+feature: classpath:features/auth/registro-empresa.feature
+scenarios: 12 | passed: 12 | failed:  0 | time: 17.4897
+feature: classpath:features/auth/sesiones.feature
+scenarios:  4 | passed:  4 | failed:  0 | time: 8.7934
+scenarios:   39 | passed:    39 | failed: 0
+[INFO] BUILD SUCCESS
+Exit code Maven: 0
+PASS: Escaneo preventivo de secretos
+scenarios:  3 | passed:  3 | failed:  0 | time: 11.5521
+scenarios:  3 | passed:  3 | failed:  0 | time: 6.8851
+scenarios: 17 | passed: 17 | failed:  0 | time: 25.1948
+scenarios: 12 | passed: 12 | failed:  0 | time: 17.4897
+scenarios:  4 | passed:  4 | failed:  0 | time: 8.7934
+scenarios:   39 | passed:    39 | failed: 0
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 74.39 s -- in creo.AuthTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+PASS: Ejecucion funcional QA-15
+Fixtures eliminados: 16
+Fixtures restantes: 0
+PASS: Limpieza QA-15
+Reportes privados: /tmp/tmp.6LHDI0zELa

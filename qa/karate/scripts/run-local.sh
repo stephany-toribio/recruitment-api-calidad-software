@@ -8,7 +8,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 
 cd "$ROOT"
 
-EVIDENCIA="$ROOT/docs/evidencias/QA-14/autenticacion"
+EVIDENCIA="${QA14_EVIDENCIA_DIR:-$ROOT/qa/karate/target-evidencias/QA-14}"
 
 mkdir -p "$EVIDENCIA"
 
@@ -19,7 +19,7 @@ RUN_ID="$(python3 -c 'import uuid; print(uuid.uuid4())')"
 export KARATE_FIXTURE_EMAIL="karate-${RUN_ID}@qa.example.test"
 
 export KARATE_FIXTURE_PASSWORD="$(
-    python3 -c 'import secrets; print("Qa1!" + secrets.token_hex(16))'
+    python3 -c 'import secrets; print("Qa1#" + secrets.token_hex(16))'
 )"
 
 export KARATE_RUN_ID="$RUN_ID"
@@ -108,6 +108,7 @@ set +e
 mvn -B -ntp \
     -f qa/karate/pom.xml \
     -Dkarate.env=local \
+    -Dtest=SmokeTest,SensitiveLogModifierTest \
     clean test \
     > "$PRIVADO/maven.txt" 2>&1
 
