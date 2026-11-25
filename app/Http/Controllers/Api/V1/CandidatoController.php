@@ -86,9 +86,32 @@ class CandidatoController extends BaseApiController
 
 
     // GET /api/v1/candidatos/{candidato} (Ver perfil por ID)
-    public function show(Candidato $candidato): JsonResponse
+    public function show(Request $request, Candidato $candidato): JsonResponse
     {
+        if ($request->user()->rol?->nombre !== 'admin') {
+            $empresaId = $request->user()->empresa?->id;
+
+            $tieneVinculo = $empresaId !== null
+                && \App\Models\Postulacion::query()
+                    ->where('candidato_id', $candidato->id)
+                    ->whereNull('retirada_en')
+                    ->whereHas('empleo', function ($query) use ($empresaId) {
+                        $query->where('empresa_id', $empresaId)
+                            ->whereNull('empleos.deleted_at');
+                    })
+                    ->exists();
+
+            if (! $tieneVinculo) {
+                throw new \App\Exceptions\BusinessException(
+                    'No tienes permisos para realizar esta acción.',
+                    403,
+                    'FORBIDDEN'
+                );
+            }
+        }
+
         $candidato = $this->candidatoService->cargarPerfil($candidato);
+
         return $this->successResponse(
             new CandidatoResource($candidato),
             'Perfil de candidato obtenido exitosamente'
