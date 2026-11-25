@@ -1,0 +1,32 @@
+PHPUnit 11.5.56 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.3.37
+Configuration: /var/www/html/phpunit.mysql.xml
+
+....................                                              20 / 20 (100%)
+
+Time: 00:02.689, Memory: 42.50 MB
+
+Qa05Propiedad My Sql (Tests\MySql\Qa05PropiedadMySql)
+ ✔ Cp06 01 perfil propio procede del token
+ ✔ Cp06 02 edita solo el perfil propio
+ ✔ Cp06 04 identificadores ajenos no cambian el objetivo
+ ✔ Empresa sin postulacion no consulta candidato por ruta directa
+ ✔ Empresa vinculada puede consultar perfil por ruta directa
+ ✔ Empresa no elude retiro usando ruta directa
+ ✔ Empresa no elude vacante eliminada usando ruta directa
+ ✔ Admin puede consultar perfil por ruta directa
+ ✔ Cp06 03 empresa ajena no consulta perfil de postulacion
+ ✔ Empresa duena consulta perfil de su postulante
+ ✔ Cp06 03 postulacion inexistente responde 404
+ ✔ Cp15 03 empresa ajena no modifica vacante with data set "pausar"
+ ✔ Cp15 03 empresa ajena no modifica vacante with data set "reanudar"
+ ✔ Cp15 03 empresa ajena no modifica vacante with data set "finalizar"
+ ✔ Cp15 03 empresa ajena no modifica vacante with data set "eliminar"
+ ✔ Cp15 04 rechaza candidato ajeno sin crear postulaciones
+ ✔ Postulacion valida usa identidad del token
+ ✔ Cp15 01 sin token no consulta postulaciones
+ ✔ Cp15 02 candidato no invoca operacion de empresa
+ ✔ Cp15 02 candidato no consulta vacantes de empresa
+
+OK (20 tests, 166 assertions)

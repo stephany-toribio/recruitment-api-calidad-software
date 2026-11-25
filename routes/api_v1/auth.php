@@ -19,13 +19,13 @@ Route::prefix('auth')->group(function () {
 
     // Rutas protegidas con Sanctum (header Authorization: Bearer {token})
     Route::middleware('auth:sanctum')->group(function () {
-        Route::get('/me', [AuthController::class, 'me']);
+        Route::get('/me', [AuthController::class, 'me'])->middleware('rol:candidato,empresa,admin');
         Route::post('/logout', [AuthController::class, 'logout']);
 
         // GET /api/v1/auth/usuarios/me
-        Route::get('/usuarios/me', [AuthController::class, 'show']);
+        Route::get('/usuarios/me', [AuthController::class, 'show'])->middleware('rol:candidato,empresa,admin');
 
         // PUT /api/v1/auth/usuarios/me/password
-        Route::put('/usuarios/me/password', [AuthController::class, 'cambiarPassword']);
+        Route::put('/usuarios/me/password', [AuthController::class, 'cambiarPassword'])->middleware('rol:candidato,empresa,admin');
     });
 });
