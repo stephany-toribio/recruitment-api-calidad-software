@@ -408,3 +408,41 @@ Cobertura: 26 casos canonicos y 34 escenarios.
 
 Los estados corresponden exclusivamente a Karate.
 No sustituyen Selenium, Appium, JMeter ni Jira.
+
+<!-- QA17-CIERRE -->
+
+## Resultados Karate QA-17
+
+| Caso | Feature | Resultado Karate |
+| --- | --- | --- |
+| CP-06-01 | perfiles.feature | PASS |
+| CP-06-02 | perfiles.feature | PASS |
+| CP-06-03 | perfiles.feature | PASS |
+| CP-06-04 | perfiles.feature | PASS |
+| CP-10-01 | disponibilidad.feature | PASS |
+| CP-10-02 | disponibilidad.feature | PASS |
+| CP-10-03 | disponibilidad.feature | PASS |
+| CP-10-04 | disponibilidad.feature | PASS |
+| CP-10-05 | disponibilidad.feature | PASS |
+| CP-10-06 | disponibilidad.feature | PASS |
+| CP-10-07 | disponibilidad.feature | PASS |
+| CP-10-08 | disponibilidad.feature | PASS |
+| CP-10-09 | disponibilidad.feature | PASS |
+| CP-10-10 | disponibilidad.feature | PASS |
+| CP-10-11 | disponibilidad.feature | PASS |
+| CP-13-01 | duplicados.feature | PASS |
+| CP-15-01 | autorizacion.feature | PASS |
+| CP-15-02 | autorizacion.feature | PASS |
+| CP-15-03 | autorizacion.feature | PASS |
+| CP-15-04 | autorizacion.feature | PASS |
+| CP-18-01 | transiciones-invalidas.feature | PASS |
+| CP-18-02 | transiciones-invalidas.feature | PASS |
+| CP-18-03 | transiciones-invalidas.feature | PASS |
+| CP-20-01 | retiros.feature | PASS |
+| CP-20-02 | retiros.feature | PASS |
+| CP-20-03 | retiros.feature | PASS |
+| CP-20-04 | retiros.feature | PASS |
+
+Evidencia: [QA-17](../evidencias/QA-17/RESULTADOS.md).
+
+CP-13-02: concurrencia no acreditada por Karate.

@@ -303,6 +303,207 @@ function consultarVacante(string $runId, int $id): array
     ];
 }
 
+
+
+function prepararIndisponibilidad(
+    string $runId,
+    int $vacanteId,
+    string $condicion,
+    array $candidatos
+): array {
+
+    return DB::transaction(function () use (
+        $runId, $vacanteId, $condicion, $candidatos
+    ) {
+
+        $a = alcance($runId);
+
+        exigir(
+            $a['vacantes']->contains($vacanteId),
+            'Vacante fuera del alcance'
+        );
+
+        $vacante = DB::table('empleos')
+            ->where('id', $vacanteId)
+            ->lockForUpdate()
+            ->first();
+
+        exigir($vacante !== null, 'Vacante inexistente');
+
+        exigir(
+            str_starts_with(
+                $vacante->titulo,
+                'QA16 '.$runId.' '
+            ),
+            'Titulo fuera del alcance QA'
+        );
+
+        exigir(
+            $vacante->estado_empleo === 'activa'
+            && $vacante->deleted_at === null,
+            'Se requiere vacante activa'
+        );
+
+        exigir(
+            ! DB::table('postulaciones')
+                ->where('empleo_id', $vacanteId)
+                ->exists(),
+            'La vacante debe estar sin postulaciones'
+        );
+
+        $hoy = now('America/Lima');
+
+        switch ($condicion) {
+
+            case 'pago_fallido':
+
+                $pagos = DB::table('pagos_vacante')
+                    ->where('empleo_id', $vacanteId);
+
+                exigir(
+                    $pagos->count() === 1
+                    && $pagos->where('resultado', 'exitoso')->exists(),
+                    'Se requiere un pago exitoso sintetico'
+                );
+
+                DB::table('pagos_vacante')
+                    ->where('empleo_id', $vacanteId)
+                    ->update(['resultado' => 'fallido']);
+
+                break;
+
+            case 'vencida':
+
+                DB::table('empleos')
+                    ->where('id', $vacanteId)
+                    ->update([
+                        'fecha_inicio_vigencia' =>
+                            $hoy->copy()->subDays(30)->toDateString(),
+                        'fecha_fin_vigencia' =>
+                            $hoy->copy()->subDay()->toDateString(),
+                    ]);
+
+                break;
+
+            case 'futura':
+
+                DB::table('empleos')
+                    ->where('id', $vacanteId)
+                    ->update([
+                        'fecha_inicio_vigencia' =>
+                            $hoy->copy()->addDays(2)->toDateString(),
+                        'fecha_fin_vigencia' =>
+                            $hoy->copy()->addDays(30)->toDateString(),
+                    ]);
+
+                break;
+
+            case 'completa':
+
+                exigir(
+                    count($candidatos) ===
+                        (int) $vacante->numero_vacantes,
+                    'Cantidad de candidatos incorrecta'
+                );
+
+                exigir(
+                    count(array_unique($candidatos))
+                        === count($candidatos),
+                    'Candidatos duplicados'
+                );
+
+                $estado = DB::table('estados_postulacion')
+                    ->where('nombre', 'Contratado')
+                    ->value('id');
+
+                exigir(
+                    $estado !== null,
+                    'Estado Contratado inexistente'
+                );
+
+                foreach ($candidatos as $candidatoId) {
+
+                    exigir(
+                        is_int($candidatoId)
+                        && $a['candidatos']->contains($candidatoId),
+                        'Candidato fuera del alcance'
+                    );
+
+                    DB::table('postulaciones')->insert([
+                        'candidato_id' => $candidatoId,
+                        'empleo_id' => $vacanteId,
+                        'estado_postulacion_id' => $estado,
+                        'fecha_postulacion' => now(),
+                        'retirada_en' => null,
+                    ]);
+                }
+
+                break;
+
+            case 'empresa_suspendida':
+
+                $usuarioId = DB::table('empresas')
+                    ->where('id', $vacante->empresa_id)
+                    ->value('usuario_id');
+
+                exigir(
+                    $a['ids']->contains($usuarioId),
+                    'Usuario empresa fuera del alcance'
+                );
+
+                DB::table('usuarios')
+                    ->where('id', $usuarioId)
+                    ->update([
+                        'estado_cuenta' => 'suspendido'
+                    ]);
+
+                break;
+
+            default:
+
+                throw new RuntimeException(
+                    'Condicion QA no autorizada'
+                );
+        }
+
+        return consultarVacante($runId, $vacanteId);
+
+    }, 3);
+}
+
+function consultarCandidato(string $runId, int $id): array
+{
+    $a = alcance($runId);
+
+    exigir(
+        $a['candidatos']->contains($id),
+        'Candidato fuera del alcance'
+    );
+
+    $candidato = DB::table('candidatos')
+        ->where('id', $id)
+        ->first();
+
+    exigir($candidato !== null, 'Candidato inexistente');
+
+    $usuario = DB::table('usuarios')
+        ->where('id', $candidato->usuario_id)
+        ->first(['id', 'correo', 'rol_id', 'estado_cuenta']);
+
+    return [
+        'success' => true,
+        'perfil' => (array) $candidato,
+        'usuario' => (array) $usuario,
+        'estudios' => DB::table('candidato_estudios')
+            ->where('candidato_id', $id)->orderBy('id')->get(),
+        'idiomas' => DB::table('candidato_idiomas')
+            ->where('candidato_id', $id)->orderBy('id')->get(),
+        'habilidades' => DB::table('candidato_habilidades')
+            ->where('candidato_id', $id)
+            ->orderBy('habilidad_id')->get(),
+    ];
+}
+
 function consultarPostulacion(
     string $runId,
     int $id
@@ -649,6 +850,26 @@ try {
             'tarifa' => (float) config('pago_vacantes.tarifa_por_puesto'),
             'unidad' => config('pago_vacantes.unidad_cobro'),
             'moneda' => config('pago_vacantes.moneda'),
+        ];
+
+    } elseif ($accion === 'preparar_indisponibilidad') {
+        $resultado = prepararIndisponibilidad(
+            $runId,
+            (int) ($entrada['vacante_id'] ?? 0),
+            (string) ($entrada['condicion'] ?? ''),
+            $entrada['candidatos'] ?? []
+        );
+
+    } elseif ($accion === 'consultar_candidato') {
+        $resultado = consultarCandidato(
+            $runId,
+            (int) ($entrada['candidato_id'] ?? 0)
+        );
+
+    } elseif ($accion === 'postulacion_inexistente') {
+        $resultado = [
+            'success' => true,
+            'id' => (int) DB::table('postulaciones')->max('id') + 1000,
         ];
 
     } elseif ($accion === 'consultar_postulacion') {

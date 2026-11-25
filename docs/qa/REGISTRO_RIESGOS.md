@@ -246,3 +246,18 @@ No se eliminan riesgos canonicos ni se modifican
 sus puntuaciones sin una evaluacion especifica.
 
 Evidencia: [QA-16](../evidencias/QA-16/RESULTADOS.md).
+
+<!-- QA17-CIERRE -->
+
+## Seguimiento QA-17
+
+Autorización, duplicidad secuencial y transiciones
+inválidas verificadas mediante Karate.
+
+Dos regresiones completas y dos demos aprobadas.
+Limpieza y escaneo preventivo aprobados.
+
+Persisten los riesgos asociados a concurrencia,
+rendimiento, Android y automatización web.
+
+Evidencia: [QA-17](../evidencias/QA-17/RESULTADOS.md).
