@@ -398,4 +398,25 @@ class Qa05PropiedadMySqlTest extends TestCase
 
         $this->assertSame($antes, $this->fila('empleos', $this->vacante->id));
     }
+
+    public function test_cp15_02_candidato_no_consulta_vacantes_de_empresa(): void
+    {
+        $antes = $this->fila('empleos', $this->vacante->id);
+
+        $this->api(
+            'GET',
+            '/api/v1/empresas/me/vacantes',
+            [],
+            $this->token($this->candidatoUno)
+        )
+            ->assertForbidden()
+            ->assertJsonPath('error_code', 'FORBIDDEN')
+            ->assertJsonMissingPath('data');
+
+        $this->assertSame(
+            $antes,
+            $this->fila('empleos', $this->vacante->id)
+        );
+    }
+
 }

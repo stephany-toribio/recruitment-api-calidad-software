@@ -175,3 +175,80 @@ cambio directo de estado en la base de prueba sin eliminar ese token.
   integrar los PR y sincronizar issue/Project/Jira según las reglas vigentes.
 - Este informe no declara QA-05 cerrada ni sustituye la revisión contractual de
   los escenarios de QA-04 que estaban pendientes.
+
+
+## Regresión complementaria en WSL2
+
+Fecha: 24/11/2026 (America/Lima).
+
+Base de implementación: 15592dc.
+Rama: feature/QA-05-autenticacion-permisos.
+
+Se recuperó la implementación original de QA-05 y se
+incorporó la variante GET del escenario CP-15-02.
+
+### Aislamiento comprobado
+
+- API QA: HTTP 200 en localhost:8002/up.
+- MySQL saludable.
+- Base funcional: portal_empleos_calidad_qa.
+- Base de integración: portalempleoshu04testing.
+- Migraciones de integración ejecutadas.
+
+### Resultados
+
+| Suite | Pruebas | Aserciones | Tiempo | Estado |
+|---|---:|---:|---:|---|
+| CP-15-02 GET | 1 | 9 | 0.479 s | PASS |
+| Propiedad MySQL | 20 | 166 | 2.689 s | PASS |
+| Autenticación | 55 | 573 | 1.484 s | PASS |
+| Unit/Feature | 259 | 1635 | 4.626 s | PASS |
+
+Total sin duplicar ejecuciones: 279 pruebas y 1801
+aserciones aprobadas.
+
+Auth está incluida dentro de Unit/Feature.
+La prueba GET está incluida dentro de Propiedad MySQL.
+
+No se declara ejecutada toda la suite MySQL.
+
+### Ampliación CP-15-02
+
+Se comprobaron dos operaciones reservadas al rol empresa:
+
+- GET /api/v1/empresas/me/vacantes.
+- PATCH /api/v1/empresas/me/vacantes/{id}/pausar.
+
+Ambas responden 403 FORBIDDEN cuando el solicitante
+es un candidato autenticado.
+
+La prueba GET adicional verifica también la ausencia
+de datos de respuesta y que la vacante no se modifica.
+
+### Contratos QA-04
+
+Se actualizaron los contratos de CP-04-01, CP-04-02,
+CP-06-03, CP-06-04 y CP-15-04 en el catálogo oficial.
+
+Los escenarios mantienen su estado pendiente para las
+suites académicas de automatización.
+
+### Evidencias reproducibles
+
+- [CP-15-02 GET](regresion-wsl/cp15-02-get.txt)
+- [Propiedad MySQL](regresion-wsl/mysql-propiedad.txt)
+- [Autenticación](regresion-wsl/auth-regresion.txt)
+- [Unit/Feature](regresion-wsl/unit-feature.txt)
+- [SHA256 de evidencias](regresion-wsl/SHA256SUMS.txt)
+
+### Condición de integración
+
+No se exige revisión cruzada formal entre integrantes.
+Se mantienen la validación técnica, el registro de
+evidencias, la trazabilidad y la integración en develop.
+
+La parte frontend de QA-05 se valida de forma
+coordinada mediante su PR correspondiente.
+
+Los defectos y resultados deben incorporarse a Jira
+mediante QA-29 cuando esté disponible su estructura.

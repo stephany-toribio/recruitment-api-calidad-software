@@ -4,7 +4,7 @@
 - **Responsable**: R3 (@luisvalenzuela25).
 - **Revisor asignado**: R1 (@stephany-toribio).
 - **Hito**: M0 (Alcance y línea base).
-- **Versión**: 1.3.0 (Corrección documental; revisión de R1 pendiente).
+- **Versión**: 1.4.0 (Contratos de autenticación confirmados en QA-05).
 - **Fecha**: 24/11/2026.
 - **Rama**: `feature/QA-04-matriz-pruebas`.
 
@@ -23,21 +23,28 @@ Cada caso de prueba se desglosa desde las 34 familias base (`CP-01` a `CP-34`) u
 
 ---
 
-### 1.1 Decisiones contractuales pendientes de confirmación
+### 1.1 Contratos confirmados mediante QA-05
 
-La revisión de estos documentos no ha incluido el código fuente actual de rutas, Requests, controladores y servicios. Los códigos, payloads y nombres de campos detallados son expectativas de diseño que R1 debe contrastar con el commit de API que se automatice. No se consideran resultados observados.
+Los siguientes contratos fueron comprobados mediante las
+regresiones PHPUnit de QA-05, sobre la implementación
+del commit 15592dc y su ampliación en el PR #33.
 
-Los siguientes escenarios tienen una decisión explícita pendiente. No deben automatizarse aceptando cualquiera de varias respuestas: R1 debe fijar una respuesta única por combinación de datos y registrar el archivo/commit de referencia antes de aprobar su ejecución.
+| Escenario | Contrato confirmado | Herramienta pendiente |
+|---|---|---|
+| CP-04-01 | 401; contador incrementado; sin token | Karate / Selenium |
+| CP-04-02 | 429; cinco fallos; bloqueo de quince minutos | Karate |
+| CP-06-03 | 404 inexistente; 403 propiedad ajena | Karate |
+| CP-06-04 | 200 sobre perfil propio; IDs ajenos ignorados | Karate |
+| CP-15-04 | 422 VALIDATION_ERROR; sin inserciones | Karate |
 
-| Escenario | Decisión pendiente | Responsable | Tarea de confirmación |
-|---|---|---|---|
-| CP-04-01 | Código y cuerpo para credenciales incorrectas; efecto en contador de intentos. | R1 | QA-05 / QA-15 |
-| CP-04-02 | Código y cuerpo para bloqueo temporal; efectos persistentes permitidos. | R1 | QA-05 / QA-15 |
-| CP-06-03 | Diferenciar recurso inexistente de recurso de otra empresa y fijar respuesta para cada variante. | R1 | QA-05 / QA-17 |
-| CP-06-04 | Tratamiento del identificador ajeno en edición de perfil y código/cuerpo correspondiente. | R1 | QA-05 / QA-17 |
-| CP-15-04 | Rechazo del campo candidato_id o creación usando exclusivamente la identidad del token; fijar una política antes de ejecutar. | R1 | QA-05 / QA-08 / QA-17 |
+Evidencia: [Resultados QA-05](../evidencias/QA-05/RESULTADOS.md).
 
-Todos conservan estado de ejecución `PENDIENTE` y preparación contractual pendiente. Esta lista no certifica como verificados los contratos de los demás escenarios.
+Estos contratos quedan definidos como referencia para la
+automatización posterior. La comprobación con PHPUnit no
+sustituye la ejecución de Karate, Selenium, Appium o JMeter.
+
+Los estados de ejecución de las suites académicas permanecen
+PENDIENTE hasta contar con sus propias evidencias.
 
 ---
 
@@ -158,8 +165,8 @@ Todos conservan estado de ejecución `PENDIENTE` y preparación contractual pend
   - **Precondiciones**: `USR-CND-01` activo con `intentos_fallidos = 0`.
   - **Datos**: `candidato1@qa.example.test`, contraseña `PasswordIncorrecta123!`.
   - **Pasos**: `POST /api/v1/auth/login`.
-  - **Resultado esperado**: Acceso denegado y ningún token emitido. Código HTTP y cuerpo pendientes de confirmación por R1 en QA-05/QA-15 (sección 1.1).
-  - **Comprobación de persistencia**: Campo `intentos_fallidos` se incrementa en tabla `usuarios`.
+  - **Resultado esperado**: HTTP 401. success=false; mensaje de credenciales incorrectas; errors.intentos_fallidos=1 e errors.intentos_restantes=4 cuando el contador inicial es cero. No se emite token.
+  - **Comprobación de persistencia**: Incremento del contador de intentos fallidos. No se crea ningún token.
   - **Dependencias**: QA-05, QA-15. | **Estado inicial**: `PENDIENTE`.
 
 - **CP-04-02 (Negativo - Cuenta Bloqueada Temporalmente)**
@@ -169,8 +176,8 @@ Todos conservan estado de ejecución `PENDIENTE` y preparación contractual pend
   - **Precondiciones**: Usuario con `bloqueado_hasta > NOW()`.
   - **Datos**: Credenciales correctas de usuario bloqueado.
   - **Pasos**: `POST /api/v1/auth/login`.
-  - **Resultado esperado**: Acceso denegado por bloqueo temporal y ningún token emitido. Código HTTP y cuerpo pendientes de confirmación por R1 en QA-05/QA-15 (sección 1.1).
-  - **Comprobación de persistencia**: Sin cambios en BD; no se emite token.
+  - **Resultado esperado**: HTTP 429 durante el bloqueo temporal, incluso con contraseña correcta. El quinto fallo activa un bloqueo de quince minutos. No se emite token.
+  - **Comprobación de persistencia**: El quinto fallo establece bloqueado_hasta. Durante el bloqueo no se incrementan los intentos ni se generan tokens. Al vencer el plazo se permite un nuevo login válido.
   - **Dependencias**: QA-05, QA-15. | **Estado inicial**: `PENDIENTE`.
 
 - **CP-04-03 (Negativo - Cuenta Suspendida Administrativamente)**
@@ -246,8 +253,8 @@ Todos conservan estado de ejecución `PENDIENTE` y preparación contractual pend
   - **Actor**: `USR-EMP-01`.
   - **Precondiciones**: Postulación inexistente o perteneciente a otra empresa.
   - **Pasos**: `GET /api/v1/empresas/me/postulaciones/{postulacion}/perfil`.
-  - **Resultado esperado**: No se expone el perfil. R1 debe separar y confirmar las respuestas de recurso inexistente y propiedad ajena en QA-05/QA-17 (sección 1.1).
-  - **Comprobación de persistencia**: Ninguna mutación.
+  - **Resultado esperado**: HTTP 404 RESOURCE_NOT_FOUND para una postulación inexistente; HTTP 403 FORBIDDEN para una postulación de otra empresa. No se expone el perfil.
+  - **Comprobación de persistencia**: Ninguna mutación de la postulación.
   - **Dependencias**: QA-05, QA-17. | **Estado inicial**: `PENDIENTE`.
 
 - **CP-06-04 (Negativo - Candidato Modifica Perfil Ajeno)**
@@ -255,8 +262,8 @@ Todos conservan estado de ejecución `PENDIENTE` y preparación contractual pend
   - **Tipo**: Seguridad / Negativa (Karate).
   - **Actor**: `USR-CND-01`.
   - **Pasos**: Intentar modificar datos enviando identificadores ajenos en el cuerpo.
-  - **Resultado esperado**: Ningún perfil ajeno se modifica; la identidad procede del token. Política de rechazo del campo o ignorado y respuesta HTTP pendientes de confirmación por R1 en QA-05/QA-17 (sección 1.1).
-  - **Comprobación de persistencia**: Perfil de otros candidatos intacto.
+  - **Resultado esperado**: HTTP 200 sobre el perfil propio. Los identificadores ajenos y campos de rol no validados se ignoran. La identidad se obtiene exclusivamente del token.
+  - **Comprobación de persistencia**: Solo se modifica el perfil autenticado. El usuario y perfil ajenos permanecen intactos; no se eleva el rol del solicitante.
   - **Dependencias**: QA-05, QA-17. | **Estado inicial**: `PENDIENTE`.
 
 ---
@@ -656,8 +663,8 @@ Todos conservan estado de ejecución `PENDIENTE` y preparación contractual pend
   - **Precondiciones**: Token activo de `USR-CND-01`; vacante disponible; ambos candidatos identificados dinámicamente; ninguno tiene postulación previa a esa vacante.
   - **Datos**: Body `{ "vacante_id": <id_vacante_disponible>, "candidato_id": <id_USR-CND-02> }`; resolver ambos IDs dinámicamente.
   - **Pasos**: `POST /api/v1/candidatos/me/postulaciones`.
-  - **Resultado esperado**: Nunca se crea una postulación para el candidato inyectado. **Contrato pendiente de confirmación por R1 en QA-05/QA-08/QA-17**: fijar si se rechaza el campo (p. ej. 422 si así lo define la validación vigente) o se crea usando exclusivamente el token (p. ej. 201 si así lo define el contrato). Estas alternativas son decisiones pendientes, no respuestas intercambiables aceptables durante una ejecución.
-  - **Comprobación de persistencia**: Según la política que confirme R1: **si se rechaza**, el recuento de postulaciones permanece igual; **si se crea**, existe exactamente una nueva fila para `USR-CND-01` y la vacante preparada, y ninguna para `USR-CND-02`.
+  - **Resultado esperado**: HTTP 422 VALIDATION_ERROR con error de validación para candidato_id. No se crea una postulación.
+  - **Comprobación de persistencia**: El recuento de postulaciones permanece igual. Una petición válida sin candidato_id crea la postulación exclusivamente para el candidato del token.
   - **Dependencias**: QA-05, QA-17. | **Estado inicial**: `PENDIENTE`.
 
 ---

@@ -1,0 +1,75 @@
+PHPUnit 11.5.56 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.3.37
+Configuration: /var/www/html/phpunit.xml
+
+.......................................................           55 / 55 (100%)
+
+Time: 00:01.484, Memory: 42.50 MB
+
+Qa05Autenticacion (Tests\Feature\Auth\Qa05Autenticacion)
+ ✔ Login emite token real e identidad del servidor with data set "CP-03-01 candidato"
+ ✔ Login emite token real e identidad del servidor with data set "CP-03-02 empresa"
+ ✔ Login emite token real e identidad del servidor with data set "CP-03-03 administrador"
+ ✔ Entrada invalida no emite token ni suma intentos with data set "campos ausentes"
+ ✔ Entrada invalida no emite token ni suma intentos with data set "correo invalido"
+ ✔ Entrada invalida no emite token ni suma intentos with data set "password ausente"
+ ✔ Entrada invalida no emite token ni suma intentos with data set "password no es texto"
+ ✔ Correo inexistente no emite token
+ ✔ Cp04 01 password incorrecto suma un intento
+ ✔ Cp04 02 quinto fallo bloquea por quince minutos
+ ✔ Login se recupera despues del bloqueo
+ ✔ Login correcto reinicia intentos previos
+ ✔ Cp04 03 cuenta suspendida no obtiene token with data set "candidato suspendido"
+ ✔ Cp04 03 cuenta suspendida no obtiene token with data set "empresa suspendida"
+ ✔ Identidad sin token responde 401
+ ✔ Cp05 03 token falso responde 401
+ ✔ Cp05 01 y 02 logout revoca solo token actual
+ ✔ Rol enviado por cliente no eleva permisos
+
+Qa05Password (Tests\Feature\Auth\Qa05Password)
+ ✔ Cambio valido revoca todas las sesiones solo del usuario with data set "candidato"
+ ✔ Cambio valido revoca todas las sesiones solo del usuario with data set "empresa"
+ ✔ Cambio valido revoca todas las sesiones solo del usuario with data set "admin"
+ ✔ Password actual incorrecto no modifica ni revoca
+ ✔ Confirmacion invalida no modifica ni revoca
+ ✔ Cuenta suspendida con token existente no cambia password with data set "candidato"
+ ✔ Cuenta suspendida con token existente no cambia password with data set "empresa"
+ ✔ Logout sigue disponible para token de cuenta suspendida
+
+Qa05Suspension (Tests\Feature\Auth\Qa05Suspension)
+ ✔ Admin suspende revoca y reactiva sin restaurar tokens with data set "candidato"
+ ✔ Admin suspende revoca y reactiva sin restaurar tokens with data set "empresa"
+ ✔ Otro rol no administra cuentas ni revoca tokens with data set "candidato suspende"
+ ✔ Otro rol no administra cuentas ni revoca tokens with data set "empresa suspende"
+ ✔ Otro rol no administra cuentas ni revoca tokens with data set "candidato reactiva"
+ ✔ Otro rol no administra cuentas ni revoca tokens with data set "empresa reactiva"
+ ✔ Admin no puede suspender o reactivar una cuenta admin with data set "suspender admin"
+ ✔ Admin no puede suspender o reactivar una cuenta admin with data set "reactivar admin"
+ ✔ Motivo invalido no suspende ni revoca
+ ✔ Usuario inexistente no muta ni revoca
+ ✔ Estado suspendido en bd bloquea identidad con token existente with data set "candidato auth me"
+ ✔ Estado suspendido en bd bloquea identidad con token existente with data set "empresa auth me"
+ ✔ Estado suspendido en bd bloquea identidad con token existente with data set "candidato perfil usuario"
+ ✔ Estado suspendido en bd bloquea identidad con token existente with data set "empresa perfil usuario"
+
+Rol Middleware (Tests\Feature\Auth\RolMiddleware)
+ ✔ Aplica rol y estado actual with data set "candidato activo"
+ ✔ Aplica rol y estado actual with data set "candidato suspendido"
+ ✔ Aplica rol y estado actual with data set "estado desconocido"
+ ✔ Aplica rol y estado actual with data set "estado ausente"
+ ✔ Aplica rol y estado actual with data set "empresa activa"
+ ✔ Aplica rol y estado actual with data set "administrador activo"
+ ✔ Aplica rol y estado actual with data set "sin usuario"
+
+Sanctum Acceso Candidato (Tests\Feature\Auth\SanctumAccesoCandidato)
+ ✔ Sin token responde 401
+ ✔ Token alterado responde 401
+ ✔ Candidato activo con token real puede acceder
+ ✔ Otro rol con token valido recibe 403 with data set "empresa"
+ ✔ Otro rol con token valido recibe 403 with data set "administrador"
+ ✔ Suspension directa en bd bloquea token existente
+ ✔ Token revocado responde 401
+ ✔ Token expirado responde 401
+
+OK (55 tests, 573 assertions)
