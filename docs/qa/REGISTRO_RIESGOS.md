@@ -2,11 +2,11 @@
 
 - **Proyecto**: Portal de Empleos CREO+ (Web, PWA, APK Android y API REST) — Calidad de Software.
 - **Responsable**: R3 (@luisvalenzuela25).
-- **Revisor asignado**: R1 (@stephany-toribio).
+- **Validación**: Verificación técnica y evidencia.
 - **Hito**: M0 (Alcance y línea base).
-- **Versión**: 1.1.0 (Corregida tras revisión cruzada).
-- **Fecha**: 24/11/2026.
-- **Rama**: `feature/QA-04-matriz-pruebas`.
+- **Versión**: 1.2.0 (Seguimiento posterior a QA-05).
+- **Fecha de versión**: 25/11/2026.
+- **Rama de actualización**: docs/QA-04-trazabilidad-post-QA-05.
 
 ---
 
@@ -82,3 +82,38 @@ $$\text{Severidad} = \text{Probabilidad (P)} \times \text{Impacto (I)}$$
 
 Las probabilidades e impactos de los riesgos adicionales
 son estimaciones iniciales que deberán revisarse en equipo.
+
+
+<!-- QA04-POST-QA05 -->
+
+## 4. Seguimiento posterior a QA-05
+
+| Riesgo | Mitigación comprobada | Estado | Seguimiento |
+|---|---|---|---|
+| RSK-01 | Autorización, propiedad y estado de cuenta | Parcialmente mitigado | QA-17 |
+| RSK-02 | Bases QA aisladas y entorno verificado | Controles aplicados | QA-13, QA-14, QA-24 |
+| RSK-04 | Limpieza de sesión web y revocación | Caché PWA pendiente | QA-11, QA-23 |
+| RSK-08 | No abordado en QA-05 | Abierto | QA-07 |
+| RSK-10 | Tres compilaciones Angular aprobadas | Parcialmente mitigado | QA-27, QA-28 |
+| RSK-15 | Evidencias versionadas | Jira pendiente | QA-29, QA-31 |
+
+### Riesgos residuales de QA-05
+
+| Referencia | Riesgo | Seguimiento pendiente |
+|---|---|---|
+| QA05-R01 | Respuesta tardía de logout | Prueba específica de concurrencia |
+| QA05-R02 | Interferencia entre cuentas compartidas | Fixtures exclusivos |
+| QA05-R03 | Tokens de ejecuciones interrumpidas | Auditoría de sesiones QA |
+| QA05-R04 | Vulnerabilidades npm | Evaluación antes de release |
+| QA05-R05 | Versiones backend/frontend incompatibles | Despliegue coordinado |
+
+Se mantienen los 15 riesgos canónicos y sus
+puntuaciones originales.
+
+Las referencias residuales no reemplazan
+los identificadores RSK existentes.
+
+QA-05 está cerrado dentro del alcance verificado.
+Los riesgos pendientes conservan su seguimiento.
+
+Evidencia: ../evidencias/QA-05/RESULTADOS.md.

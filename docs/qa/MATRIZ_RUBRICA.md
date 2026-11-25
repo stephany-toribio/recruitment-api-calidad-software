@@ -65,3 +65,41 @@ Los 24 identificadores RUB son controles internos.
 No constituyen una distribución oficial de puntuaciones.
 
 La calificación definitiva corresponde al docente.
+
+
+<!-- QA04-POST-QA05 -->
+
+## Seguimiento complementario QA-05
+
+| Herramienta auxiliar | Resultado | Utilidad |
+|---|---|---|
+| PHPUnit | 279 pruebas, 1811 aserciones PASS | Contratos API |
+| Node Test | 12/12 PASS | Política de sesiones |
+| Python HTTP | 24/24 PASS | Integración HTTP |
+| Playwright | 12/12 PASS | Regresión funcional |
+| Angular | 3/3 PASS | Compilación |
+
+### Preparación de controles académicos
+
+| Control relacionado | Aporte de QA-05 | Evidencia formal pendiente |
+|---|---|---|
+| K01 | Contratos JSON | Esquemas Karate |
+| K02 | Estados HTTP | Assertions Karate |
+| K04 | Tokens e IDs dinámicos | Variables Karate |
+| S01 | Identificación de elementos | Selectores Selenium |
+| S03 | Esperas auxiliares | Esperas Selenium |
+| S04 | Flujos de autenticación | Flujos E2E Selenium |
+| T01-T04 | Resultados versionados | Vinculación Jira |
+
+Los códigos abreviados anteriores corresponden a
+los controles RUB existentes.
+
+Los 24 controles académicos permanecen pendientes.
+Ninguna prueba auxiliar sustituye Karate, Selenium,
+JMeter o Appium.
+
+La compilación Angular Android no acredita
+la generación ni instalación de un APK.
+
+Consultar MATRIZ_TRAZABILIDAD.md para conocer
+la correspondencia de las regresiones QA-05.
