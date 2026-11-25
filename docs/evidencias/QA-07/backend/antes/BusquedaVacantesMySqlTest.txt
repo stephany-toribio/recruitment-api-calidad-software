@@ -1,0 +1,101 @@
+PHPUnit 11.5.56 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.3.37
+Configuration: /var/www/html/phpunit.mysql.xml
+
+...................................FFFFFFFF....FFFFFFFF.......... 65 / 90 ( 72%)
+.............F...........                                         90 / 90 (100%)
+
+Time: 00:17.380, Memory: 46.50 MB
+
+There were 17 failures:
+
+1) Tests\MySql\BusquedaVacantesMySqlTest::test_cuenta_postulaciones_reales_y_obtiene_el_rango with data set "nueve" (9, 'Menos de 10 postulantes')
+Failed asserting that null is not null.
+
+/var/www/html/tests/MySql/BusquedaVacantesMySqlTest.php:795
+
+2) Tests\MySql\BusquedaVacantesMySqlTest::test_cuenta_postulaciones_reales_y_obtiene_el_rango with data set "diez" (10, 'Entre 10 y 24 postulantes')
+Failed asserting that null is not null.
+
+/var/www/html/tests/MySql/BusquedaVacantesMySqlTest.php:795
+
+3) Tests\MySql\BusquedaVacantesMySqlTest::test_cuenta_postulaciones_reales_y_obtiene_el_rango with data set "veinticuatro" (24, 'Entre 10 y 24 postulantes')
+Failed asserting that null is not null.
+
+/var/www/html/tests/MySql/BusquedaVacantesMySqlTest.php:795
+
+4) Tests\MySql\BusquedaVacantesMySqlTest::test_cuenta_postulaciones_reales_y_obtiene_el_rango with data set "veinticinco" (25, 'Entre 25 y 49 postulantes')
+Failed asserting that null is not null.
+
+/var/www/html/tests/MySql/BusquedaVacantesMySqlTest.php:795
+
+5) Tests\MySql\BusquedaVacantesMySqlTest::test_cuenta_postulaciones_reales_y_obtiene_el_rango with data set "cuarenta y nueve" (49, 'Entre 25 y 49 postulantes')
+Failed asserting that null is not null.
+
+/var/www/html/tests/MySql/BusquedaVacantesMySqlTest.php:795
+
+6) Tests\MySql\BusquedaVacantesMySqlTest::test_cuenta_postulaciones_reales_y_obtiene_el_rango with data set "cincuenta" (50, 'Entre 50 y 99 postulantes')
+Failed asserting that null is not null.
+
+/var/www/html/tests/MySql/BusquedaVacantesMySqlTest.php:795
+
+7) Tests\MySql\BusquedaVacantesMySqlTest::test_cuenta_postulaciones_reales_y_obtiene_el_rango with data set "noventa y nueve" (99, 'Entre 50 y 99 postulantes')
+Failed asserting that null is not null.
+
+/var/www/html/tests/MySql/BusquedaVacantesMySqlTest.php:795
+
+8) Tests\MySql\BusquedaVacantesMySqlTest::test_cuenta_postulaciones_reales_y_obtiene_el_rango with data set "cien" (100, '100 o más postulantes')
+Failed asserting that null is not null.
+
+/var/www/html/tests/MySql/BusquedaVacantesMySqlTest.php:795
+
+9) Tests\MySql\BusquedaVacantesMySqlTest::test_recurso_publico_entrega_la_aproximacion with data set "nueve" (9, 'Menos de 10 postulantes')
+Failed asserting that null is not null.
+
+/var/www/html/tests/MySql/BusquedaVacantesMySqlTest.php:928
+
+10) Tests\MySql\BusquedaVacantesMySqlTest::test_recurso_publico_entrega_la_aproximacion with data set "diez" (10, 'Entre 10 y 24 postulantes')
+Failed asserting that null is not null.
+
+/var/www/html/tests/MySql/BusquedaVacantesMySqlTest.php:928
+
+11) Tests\MySql\BusquedaVacantesMySqlTest::test_recurso_publico_entrega_la_aproximacion with data set "veinticuatro" (24, 'Entre 10 y 24 postulantes')
+Failed asserting that null is not null.
+
+/var/www/html/tests/MySql/BusquedaVacantesMySqlTest.php:928
+
+12) Tests\MySql\BusquedaVacantesMySqlTest::test_recurso_publico_entrega_la_aproximacion with data set "veinticinco" (25, 'Entre 25 y 49 postulantes')
+Failed asserting that null is not null.
+
+/var/www/html/tests/MySql/BusquedaVacantesMySqlTest.php:928
+
+13) Tests\MySql\BusquedaVacantesMySqlTest::test_recurso_publico_entrega_la_aproximacion with data set "cuarenta y nueve" (49, 'Entre 25 y 49 postulantes')
+Failed asserting that null is not null.
+
+/var/www/html/tests/MySql/BusquedaVacantesMySqlTest.php:928
+
+14) Tests\MySql\BusquedaVacantesMySqlTest::test_recurso_publico_entrega_la_aproximacion with data set "cincuenta" (50, 'Entre 50 y 99 postulantes')
+Failed asserting that null is not null.
+
+/var/www/html/tests/MySql/BusquedaVacantesMySqlTest.php:928
+
+15) Tests\MySql\BusquedaVacantesMySqlTest::test_recurso_publico_entrega_la_aproximacion with data set "noventa y nueve" (99, 'Entre 50 y 99 postulantes')
+Failed asserting that null is not null.
+
+/var/www/html/tests/MySql/BusquedaVacantesMySqlTest.php:928
+
+16) Tests\MySql\BusquedaVacantesMySqlTest::test_recurso_publico_entrega_la_aproximacion with data set "cien" (100, '100 o más postulantes')
+Failed asserting that null is not null.
+
+/var/www/html/tests/MySql/BusquedaVacantesMySqlTest.php:928
+
+17) Tests\MySql\BusquedaVacantesMySqlTest::test_http_no_expone_conteos_ni_datos_privados
+Failed asserting that 2 is identical to 3.
+
+/var/www/html/vendor/laravel/framework/src/Illuminate/Testing/AssertableJsonString.php:243
+/var/www/html/vendor/laravel/framework/src/Illuminate/Testing/TestResponse.php:880
+/var/www/html/tests/MySql/BusquedaVacantesMySqlTest.php:1391
+
+FAILURES!
+Tests: 90, Assertions: 831, Failures: 17.

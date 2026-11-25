@@ -362,7 +362,7 @@ Consultar MATRIZ_TRAZABILIDAD.md y las evidencias QA-05.
   - **Objetivo**: Registrar vacante propia con campos obligatorios, vigencia y puestos válidos.
   - **Tipo**: Funcional / Positiva (Karate, Selenium).
   - **Actor**: `USR-EMP-01`.
-  - **Datos**: Título `Desarrollador Full Stack QA`, `numero_vacantes = 2`, `salario_min = 3000`, `salario_max = 4500`, fechas vigentes.
+  - **Datos**: Título `Desarrollador Full Stack QA`, `max_contrataciones = 2`, `salario_min = 3000`, `salario_max = 4500`, fechas vigentes.
   - **Pasos**: `POST /api/v1/empresas/me/vacantes`.
   - **Resultado esperado**: HTTP 201 Created; vacante creada con `estado_empleo = 'activa'` (para la empresa), sin moderación ni pago (no pública).
   - **Comprobación de persistencia**: Fila en tabla `empleos` con `empresa_id` de `USR-EMP-01`.
@@ -392,7 +392,7 @@ Consultar MATRIZ_TRAZABILIDAD.md y las evidencias QA-05.
   - **Objetivo**: Validar regla de cupos positivos (`chk_empleos_numero_vacantes`).
   - **Tipo**: Validación / Negativa (Karate).
   - **Actor**: `USR-EMP-01`.
-  - **Datos**: `numero_vacantes = 0`.
+  - **Datos**: `max_contrataciones = 0`.
   - **Pasos**: `POST /api/v1/empresas/me/vacantes`.
   - **Resultado esperado**: HTTP 422 Unprocessable Entity.
   - **Comprobación de persistencia**: Sin cambios en BD.
@@ -461,7 +461,7 @@ Consultar MATRIZ_TRAZABILIDAD.md y las evidencias QA-05.
   - **Actor**: `USR-EMP-01`.
   - **Precondiciones**: Vacante en condición `VAC-BORRADOR` o `VAC-RECHAZADA`.
   - **Pasos**: `POST /api/v1/empresas/me/vacantes/{vacante}/pago`.
-  - **Resultado esperado**: HTTP 409 Conflict; `code = 'VACANCY_NOT_APPROVED'`.
+  - **Resultado esperado**: HTTP 409 Conflict; `error_code = 'VACANCY_NOT_APPROVED'`.
   - **Comprobación de persistencia**: No se genera pago exitoso en BD.
   - **Dependencias**: QA-07, QA-17. | **Estado inicial**: `PENDIENTE`.
 
@@ -491,7 +491,7 @@ Consultar MATRIZ_TRAZABILIDAD.md y las evidencias QA-05.
   - **Actor**: `USR-EMP-01`.
   - **Precondiciones**: Vacante ya en condición `VAC-DISPONIBLE` con pago previo exitoso (CP-09-01 ejecutado).
   - **Pasos**: Enviar un segundo request `POST /api/v1/empresas/me/vacantes/{vacante}/pago` con datos de tarjeta válidos.
-  - **Resultado esperado**: HTTP 409 Conflict contractual; `code = 'VACANCY_ALREADY_PAID'`; mensaje 'La vacante ya tiene un pago exitoso.'.
+  - **Resultado esperado**: HTTP 409 Conflict contractual; `error_code = 'VACANCY_ALREADY_PAID'`; mensaje 'La vacante ya tiene un pago exitoso.'.
   - **Comprobación de persistencia**: El recuento de filas en `pagos_vacante` con `resultado = 'exitoso'` para dicha vacante se mantiene exactamente en 1; no se duplica la publicación.
   - **Dependencias**: QA-07, QA-17. | **Estado inicial**: `PENDIENTE`.
 
@@ -617,7 +617,7 @@ Consultar MATRIZ_TRAZABILIDAD.md y las evidencias QA-05.
   - **Objetivo**: Filtrar vacantes disponibles por área y modalidad devolviendo solo las que cumplen las 7 condiciones de disponibilidad.
   - **Tipo**: Funcional / Positiva (Karate, Selenium, Appium).
   - **Actor**: Candidato autenticado.
-  - **Pasos**: `GET /api/v1/vacantes?modalidad=remoto`.
+  - **Pasos**: `GET /api/v1/vacantes?solo_remoto=1`.
   - **Resultado esperado**: HTTP 200 OK; listado con vacantes activas y disponibles.
   - **Comprobación de persistencia**: Solo lectura.
   - **Dependencias**: QA-07, QA-19. | **Estado inicial**: `PENDIENTE`.
@@ -636,7 +636,7 @@ Consultar MATRIZ_TRAZABILIDAD.md y las evidencias QA-05.
   - **Objetivo**: Verificar que un criterio de búsqueda que no coincida retorne arreglo vacío sin fallas de servidor.
   - **Tipo**: Funcional / Positiva (Karate).
   - **Actor**: Candidato autenticado.
-  - **Pasos**: `GET /api/v1/vacantes?q=termino_inexistente_xyz123`.
+  - **Pasos**: `GET /api/v1/vacantes?titulo=termino_inexistente_xyz123`.
   - **Resultado esperado**: HTTP 200 OK; arreglo `data: []`.
   - **Comprobación de persistencia**: Solo lectura.
   - **Dependencias**: QA-07. | **Estado inicial**: `PENDIENTE`.
@@ -1494,3 +1494,49 @@ Consultar MATRIZ_TRAZABILIDAD.md y las evidencias QA-05.
 **Resultado esperado**: Trazabilidad completa y verificable de las cuatro suites.
 
 **Evidencia requerida**: Matriz, tickets Jira y enlaces a reportes reales.
+
+## Anexo - Contratos verificados durante QA-07
+
+<!-- QA07-CONTRATOS -->
+
+### Registro de vacantes
+- El payload utiliza max_contrataciones.
+- La columna persistida es numero_vacantes.
+- Una vacante registrada queda pendiente de revision.
+
+### Moderacion
+- Aprobacion correcta: HTTP 200.
+- No aprobacion con motivo: HTTP 200.
+- Motivo ausente o vacio: HTTP 422.
+- Empresa sin permiso administrativo: HTTP 403.
+- Revision duplicada: HTTP 409, VACANCY_ALREADY_REVIEWED.
+- Editar una vacante aprobada sin pago invalida su revision.
+
+### Pago simulado
+- Pago exitoso: HTTP 201.
+- Pago sin aprobacion: HTTP 409, VACANCY_NOT_APPROVED.
+- Pago duplicado: HTTP 409, VACANCY_ALREADY_PAID.
+- Pago de vacante ajena: HTTP 403, FORBIDDEN.
+- Datos invalidos: HTTP 422.
+- El campo de error de negocio es error_code.
+- El monto y la moneda son determinados por el servidor.
+- El numero completo de tarjeta y CVV no se almacenan
+  en la tabla de pagos.
+- Se valida Luhn, formato, vencimiento y campos obligatorios.
+- Solo se utilizan datos ficticios.
+
+### Busqueda y detalle
+- Filtros: titulo, solo_remoto y area_estudio_id.
+- El detalle contiene 22 campos publicos.
+- requisitos y beneficios son arrays de strings.
+- ubicacion admite null para vacantes remotas.
+- Los conteos exactos y campos privados no deben exponerse.
+- La consulta historica no implica disponibilidad para postular.
+
+### Evidencias
+- docs/evidencias/QA-07/RESULTADOS.md
+- docs/evidencias/QA-07/DEFECTOS.md
+- docs/evidencias/QA-07/MATRIZ_ESTADOS_VACANTE.md
+
+La cobertura auxiliar no sustituye los casos Karate,
+Selenium, Appium ni sus evidencias formales.

@@ -1,0 +1,64 @@
+PHPUnit 11.5.56 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.3.37
+Configuration: /var/www/html/phpunit.mysql.xml
+
+....F............................                                 33 / 33 (100%)
+
+Time: 00:03.577, Memory: 44.50 MB
+
+There was 1 failure:
+
+1) Tests\MySql\DetalleVacanteMySqlTest::test_recurso_entrega_solo_los_campos_publicos_acordados
+Failed asserting that two arrays are identical.
+--- Expected
++++ Actual
+@@ @@
+ Array &0 [
+     0 => 'area_profesional',
+-    1 => 'descripcion',
+-    2 => 'empresa',
+-    3 => 'estado',
+-    4 => 'fecha_fin_vigencia',
+-    5 => 'fecha_inicio_vigencia',
+-    6 => 'habilidades',
+-    7 => 'id',
+-    8 => 'modo_consulta',
+-    9 => 'motivo_no_postulable',
+-    10 => 'nivel_puesto',
+-    11 => 'postulacion',
+-    12 => 'postulantes_aprox',
+-    13 => 'publicada_en',
+-    14 => 'puede_postular',
+-    15 => 'salario_max',
+-    16 => 'salario_min',
+-    17 => 'tipo_empleo',
+-    18 => 'titulo',
+-    19 => 'ubicacion',
++    1 => 'beneficios',
++    2 => 'descripcion',
++    3 => 'empresa',
++    4 => 'estado',
++    5 => 'fecha_fin_vigencia',
++    6 => 'fecha_inicio_vigencia',
++    7 => 'habilidades',
++    8 => 'id',
++    9 => 'modo_consulta',
++    10 => 'motivo_no_postulable',
++    11 => 'nivel_puesto',
++    12 => 'postulacion',
++    13 => 'postulantes_aprox',
++    14 => 'publicada_en',
++    15 => 'puede_postular',
++    16 => 'requisitos',
++    17 => 'salario_max',
++    18 => 'salario_min',
++    19 => 'tipo_empleo',
++    20 => 'titulo',
++    21 => 'ubicacion',
+ ]
+
+/var/www/html/tests/MySql/DetalleVacanteMySqlTest.php:186
+
+FAILURES!
+Tests: 33, Assertions: 144, Failures: 1.

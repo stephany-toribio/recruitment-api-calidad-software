@@ -214,3 +214,30 @@ Karate, Selenium, JMeter, Appium y vinculación real
 en Jira mantienen sus propios estados de ejecución.
 
 Las pruebas auxiliares no sustituyen la rúbrica.
+
+## Anexo - Cobertura auxiliar QA-07
+
+<!-- QA07-TRAZABILIDAD -->
+
+| Familia | Evidencia auxiliar | Resultado |
+|---|---|---|
+| CP-07 | RegistrarVacanteHttpMySqlTest y validaciones | PASS |
+| CP-08 | Registro y moderacion HTTP | PASS |
+| CP-09 | Pago simulado y validaciones HTTP | PASS |
+| CP-10 | DisponibilidadVacanteMySqlTest y VacanteCompletaMySqlTest | PASS |
+| CP-11 | BusquedaVacantesMySqlTest y DetalleVacanteMySqlTest | PASS |
+
+Resultados de regresion backend: 643/643 pruebas,
+4793 aserciones, cero fallos.
+
+Resultados auxiliares frontend: 26/26 pruebas,
+incluyendo 14 pruebas nuevas de QA-07.
+
+Referencia: docs/evidencias/QA-07/RESULTADOS.md.
+
+Los resultados corresponden a cobertura auxiliar
+de las familias, no a una certificacion individual
+de todos los casos canonicos mediante cada herramienta.
+
+Se conservan los estados de ejecucion formal de Karate,
+Selenium, Appium y JMeter.

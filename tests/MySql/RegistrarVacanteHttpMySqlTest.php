@@ -667,4 +667,689 @@ class RegistrarVacanteHttpMySqlTest extends TestCase
                 ->count()
         );
     }
+
+    private function registrarVacanteQa07(): int
+    {
+        $this->prepararToken($this->token);
+
+        $respuesta = $this->postJson(
+            self::RUTA,
+            $this->datosValidos()
+        );
+
+        $respuesta->assertCreated();
+
+        $id = $respuesta->json('data.id');
+
+        $this->assertIsInt($id);
+
+        return $id;
+    }
+
+    private function aprobarVacanteQa07(int $id): void
+    {
+        $admin = $this->crearUsuario('admin');
+
+        $this->prepararToken(
+            $admin->createToken('qa07-admin')->plainTextToken
+        );
+
+        $this->patchJson(
+            '/api/v1/admin/vacantes/'.$id.'/aprobar'
+        )
+            ->assertOk()
+            ->assertJsonPath('data.revision.estado', 'aprobada');
+    }
+
+    private function datosPagoQa07(): array
+    {
+        return [
+            'titular' => 'Empresa ficticia QA',
+            'numero_tarjeta' => '4111111111111111',
+            'vencimiento' => now()->addYears(2)->format('m/y'),
+            'cvv' => '123',
+        ];
+    }
+
+    public function test_qa07_tarjeta_luhn_invalida(): void
+    {
+        $id = $this->registrarVacanteQa07();
+
+        $this->aprobarVacanteQa07($id);
+
+        $this->prepararToken($this->token);
+
+        $datos = $this->datosPagoQa07();
+
+        $datos['numero_tarjeta'] = '4111111111111112';
+
+        $this->postJson(self::RUTA.'/'.$id.'/pago', $datos)
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('numero_tarjeta');
+
+        $this->assertDatabaseMissing('pagos_vacante', [
+            'empleo_id' => $id,
+        ]);
+    }
+
+    public function test_qa07_pago_duplicado_no_genera_otro_registro(): void
+    {
+        $id = $this->registrarVacanteQa07();
+
+        $this->aprobarVacanteQa07($id);
+
+        $this->prepararToken($this->token);
+
+        $ruta = self::RUTA.'/'.$id.'/pago';
+
+        $this->postJson($ruta, $this->datosPagoQa07())
+            ->assertCreated();
+
+        $this->prepararToken($this->token);
+
+        $this->postJson($ruta, $this->datosPagoQa07())
+            ->assertConflict()
+            ->assertJsonPath(
+                'error_code',
+                'VACANCY_ALREADY_PAID'
+            );
+
+        $this->assertSame(
+            1,
+            DB::table('pagos_vacante')
+                ->where('empleo_id', $id)
+                ->count()
+        );
+
+        $this->assertDatabaseHas('pagos_vacante', [
+            'empleo_id' => $id,
+            'resultado' => 'exitoso',
+            'tarjeta_ultimos4' => '1111',
+        ]);
+    }
+
+    public function test_qa07_admin_no_aprueba_con_motivo(): void
+    {
+        $id = $this->registrarVacanteQa07();
+
+        $admin = $this->crearUsuario('admin');
+
+        $this->prepararToken(
+            $admin->createToken('qa07-admin')->plainTextToken
+        );
+
+        $motivo = 'Descripcion insuficiente del puesto';
+
+        $this->patchJson(
+            '/api/v1/admin/vacantes/'.$id.'/no-aprobar',
+            ['motivo' => $motivo]
+        )
+            ->assertOk()
+            ->assertJsonPath(
+                'data.revision.estado',
+                'no_aprobada'
+            );
+
+        $this->assertDatabaseHas('revisiones_vacante', [
+            'empleo_id' => $id,
+            'admin_id' => $admin->id,
+            'decision' => 'no_aprobada',
+            'motivo' => $motivo,
+        ]);
+
+        $this->prepararToken($this->token);
+
+        $this->postJson(
+            self::RUTA.'/'.$id.'/pago',
+            $this->datosPagoQa07()
+        )
+            ->assertConflict()
+            ->assertJsonPath(
+                'error_code',
+                'VACANCY_NOT_APPROVED'
+            );
+
+        $this->assertDatabaseMissing('pagos_vacante', [
+            'empleo_id' => $id,
+        ]);
+    }
+
+    public function test_qa07_no_aprobar_sin_motivo(): void
+    {
+        $id = $this->registrarVacanteQa07();
+
+        $admin = $this->crearUsuario('admin');
+
+        $token = $admin
+            ->createToken('qa07-admin')
+            ->plainTextToken;
+
+        foreach ([[], ['motivo' => '   ']] as $datos) {
+            $this->prepararToken($token);
+
+            $this->patchJson(
+                '/api/v1/admin/vacantes/'.$id.'/no-aprobar',
+                $datos
+            )
+                ->assertUnprocessable()
+                ->assertJsonValidationErrors('motivo');
+
+            $this->assertDatabaseMissing('revisiones_vacante', [
+                'empleo_id' => $id,
+            ]);
+        }
+    }
+
+    public function test_qa07_empresa_no_puede_aprobar(): void
+    {
+        $id = $this->registrarVacanteQa07();
+
+        $this->prepararToken($this->token);
+
+        $this->patchJson(
+            '/api/v1/admin/vacantes/'.$id.'/aprobar'
+        )
+            ->assertForbidden()
+            ->assertJsonPath('error_code', 'FORBIDDEN');
+
+        $this->assertDatabaseMissing('revisiones_vacante', [
+            'empleo_id' => $id,
+        ]);
+    }
+
+    public function test_qa07_revision_duplicada_es_rechazada(): void
+    {
+        $id = $this->registrarVacanteQa07();
+
+        $this->aprobarVacanteQa07($id);
+
+        $admin = $this->crearUsuario('admin');
+
+        $this->prepararToken(
+            $admin->createToken('qa07-admin')->plainTextToken
+        );
+
+        $this->patchJson(
+            '/api/v1/admin/vacantes/'.$id.'/aprobar'
+        )
+            ->assertConflict()
+            ->assertJsonPath(
+                'error_code',
+                'VACANCY_ALREADY_REVIEWED'
+            );
+
+        $this->assertSame(
+            1,
+            DB::table('revisiones_vacante')
+                ->where('empleo_id', $id)
+                ->count()
+        );
+    }
+
+    public function test_qa07_pago_con_datos_invalidos(): void
+    {
+        $id = $this->registrarVacanteQa07();
+
+        $this->aprobarVacanteQa07($id);
+
+        $casos = [
+            ['titular', '   '],
+            ['numero_tarjeta', '123'],
+            ['vencimiento', '13/99'],
+            ['vencimiento', now()->subYears(2)->format('m/y')],
+            ['cvv', '12'],
+        ];
+
+        foreach ($casos as [$campo, $valor]) {
+            $this->prepararToken($this->token);
+
+            $datos = $this->datosPagoQa07();
+            $datos[$campo] = $valor;
+
+            $this->postJson(
+                self::RUTA.'/'.$id.'/pago',
+                $datos
+            )
+                ->assertUnprocessable()
+                ->assertJsonValidationErrors($campo);
+
+            $this->assertDatabaseMissing('pagos_vacante', [
+                'empleo_id' => $id,
+            ]);
+        }
+    }
+
+
+    private function crearOtraEmpresaQa07(): Usuario
+    {
+        $usuario = $this->crearUsuario('empresa');
+
+        DB::table('empresas')->insert([
+            'usuario_id' => $usuario->id,
+            'encargado_empresa' => 'Responsable QA',
+            'razon_social' => 'Empresa QA '.bin2hex(random_bytes(6)),
+            'sector' => 'Tecnologia e Informatica',
+            'ruc' => '20'.random_int(100000000, 999999999),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return $usuario;
+    }
+
+    private function publicarVacanteQa07(): int
+    {
+        $id = $this->registrarVacanteQa07();
+
+        $this->aprobarVacanteQa07($id);
+
+        $this->prepararToken($this->token);
+
+        $this->postJson(
+            self::RUTA.'/'.$id.'/pago',
+            $this->datosPagoQa07()
+        )->assertCreated();
+
+        return $id;
+    }
+
+    public function test_qa07_empresa_ajena_no_puede_pagar(): void
+    {
+        $id = $this->registrarVacanteQa07();
+
+        $this->aprobarVacanteQa07($id);
+
+        $otraEmpresa = $this->crearOtraEmpresaQa07();
+
+        $token = $otraEmpresa
+            ->createToken('qa07-empresa-ajena')
+            ->plainTextToken;
+
+        $this->prepararToken($token);
+
+        $this->getJson(self::RUTA.'/'.$id.'/pago')
+            ->assertForbidden()
+            ->assertJsonPath('error_code', 'FORBIDDEN');
+
+        $this->prepararToken($token);
+
+        $this->postJson(
+            self::RUTA.'/'.$id.'/pago',
+            $this->datosPagoQa07()
+        )
+            ->assertForbidden()
+            ->assertJsonPath('error_code', 'FORBIDDEN');
+
+        $this->assertDatabaseMissing('pagos_vacante', [
+            'empleo_id' => $id,
+        ]);
+    }
+
+    public function test_qa07_monto_calculado_por_servidor(): void
+    {
+        foreach ([
+            ['vacante', 100.00],
+            ['puesto', 200.00],
+        ] as [$unidad, $esperado]) {
+
+            config([
+                'pago_vacantes.tarifa_por_puesto' => 100,
+                'pago_vacantes.unidad_cobro' => $unidad,
+                'pago_vacantes.moneda' => 'PEN',
+            ]);
+
+            $id = $this->registrarVacanteQa07();
+
+            $this->aprobarVacanteQa07($id);
+
+            $this->prepararToken($this->token);
+
+            $resumen = $this->getJson(
+                self::RUTA.'/'.$id.'/pago'
+            )->assertOk();
+
+            $this->assertEquals(
+                $esperado,
+                $resumen->json('data.monto')
+            );
+
+            $this->prepararToken($this->token);
+
+            $datos = $this->datosPagoQa07();
+
+            // El cliente no debe controlar el monto.
+            $datos['monto'] = 1;
+            $datos['moneda'] = 'USD';
+
+            $respuesta = $this->postJson(
+                self::RUTA.'/'.$id.'/pago',
+                $datos
+            )->assertCreated();
+
+            $this->assertEquals(
+                $esperado,
+                $respuesta->json('data.pago.monto')
+            );
+
+            $this->assertDatabaseHas('pagos_vacante', [
+                'empleo_id' => $id,
+                'resultado' => 'exitoso',
+                'monto' => $esperado,
+                'moneda' => 'PEN',
+            ]);
+        }
+    }
+
+    public function test_qa07_pago_protege_datos_de_tarjeta(): void
+    {
+        $id = $this->registrarVacanteQa07();
+
+        $this->aprobarVacanteQa07($id);
+
+        $this->prepararToken($this->token);
+
+        $datos = $this->datosPagoQa07();
+
+        $respuesta = $this->postJson(
+            self::RUTA.'/'.$id.'/pago',
+            $datos
+        )
+            ->assertCreated()
+            ->assertJsonPath('data.pago.tarjeta', '**** 1111');
+
+        $pago = $respuesta->json('data.pago');
+
+        $esperadas = [
+            'id',
+            'resultado',
+            'monto',
+            'tarjeta',
+            'fecha',
+        ];
+
+        $actuales = array_keys($pago);
+
+        sort($esperadas);
+        sort($actuales);
+
+        $this->assertSame($esperadas, $actuales);
+
+        $this->assertStringNotContainsString(
+            $datos['numero_tarjeta'],
+            $respuesta->getContent()
+        );
+
+        $registro = (array) DB::table('pagos_vacante')
+            ->where('empleo_id', $id)
+            ->first();
+
+        $this->assertSame(
+            '1111',
+            $registro['tarjeta_ultimos4']
+        );
+
+        foreach ([
+            'numero_tarjeta',
+            'cvv',
+            'titular',
+            'vencimiento',
+        ] as $campo) {
+
+            $this->assertArrayNotHasKey($campo, $registro);
+            $this->assertArrayNotHasKey($campo, $pago);
+        }
+
+        $this->prepararToken($this->token);
+
+        $this->getJson(self::RUTA.'/'.$id.'/pago')
+            ->assertOk()
+            ->assertJsonPath(
+                'data.intentos.0.tarjeta',
+                '**** 1111'
+            )
+            ->assertJsonMissingPath('data.intentos.0.cvv')
+            ->assertJsonMissingPath(
+                'data.intentos.0.numero_tarjeta'
+            );
+    }
+
+    public function test_qa07_editar_invalida_aprobacion_vigente(): void
+    {
+        $id = $this->registrarVacanteQa07();
+
+        $this->aprobarVacanteQa07($id);
+
+        $datos = $this->datosValidos();
+
+        $datos['titulo'] = 'Vacante actualizada QA07';
+
+        $this->prepararToken($this->token);
+
+        $this->putJson(self::RUTA.'/'.$id, $datos)
+            ->assertOk()
+            ->assertJsonPath(
+                'data.estado.general',
+                'pendiente_revision'
+            );
+
+        $this->assertDatabaseHas('empleos', [
+            'id' => $id,
+            'titulo' => $datos['titulo'],
+        ]);
+
+        $revision = DB::table('revisiones_vacante')
+            ->where('empleo_id', $id)
+            ->first();
+
+        $this->assertNotNull($revision);
+        $this->assertNotNull($revision->invalidada_en);
+
+        $this->prepararToken($this->token);
+
+        $this->postJson(
+            self::RUTA.'/'.$id.'/pago',
+            $this->datosPagoQa07()
+        )
+            ->assertConflict()
+            ->assertJsonPath(
+                'error_code',
+                'VACANCY_NOT_APPROVED'
+            );
+
+        $this->assertDatabaseMissing('pagos_vacante', [
+            'empleo_id' => $id,
+        ]);
+
+        // Una nueva aprobacion debe volver a ser posible.
+        $this->aprobarVacanteQa07($id);
+    }
+
+    public function test_qa07_vacante_pagada_no_se_edita(): void
+    {
+        $id = $this->publicarVacanteQa07();
+
+        $anterior = (array) DB::table('empleos')
+            ->where('id', $id)
+            ->first();
+
+        $datos = $this->datosValidos();
+
+        $datos['titulo'] = 'Modificacion no permitida QA';
+
+        $this->prepararToken($this->token);
+
+        $this->putJson(self::RUTA.'/'.$id, $datos)
+            ->assertConflict()
+            ->assertJsonPath(
+                'error_code',
+                'VACANCY_ALREADY_PAID'
+            );
+
+        $this->assertSame(
+            $anterior,
+            (array) DB::table('empleos')
+                ->where('id', $id)
+                ->first()
+        );
+    }
+
+    public function test_qa07_no_aprobada_no_se_edita(): void
+    {
+        $id = $this->registrarVacanteQa07();
+
+        $admin = $this->crearUsuario('admin');
+
+        $this->prepararToken(
+            $admin->createToken('qa07-admin')->plainTextToken
+        );
+
+        $this->patchJson(
+            '/api/v1/admin/vacantes/'.$id.'/no-aprobar',
+            ['motivo' => 'Descripcion insuficiente']
+        )->assertOk();
+
+        $anterior = (array) DB::table('empleos')
+            ->where('id', $id)
+            ->first();
+
+        $datos = $this->datosValidos();
+
+        $datos['titulo'] = 'Modificacion rechazada QA';
+
+        $this->prepararToken($this->token);
+
+        $this->putJson(self::RUTA.'/'.$id, $datos)
+            ->assertConflict()
+            ->assertJsonPath(
+                'error_code',
+                'VACANCY_NOT_EDITABLE'
+            );
+
+        $this->assertSame(
+            $anterior,
+            (array) DB::table('empleos')
+                ->where('id', $id)
+                ->first()
+        );
+    }
+
+    public function test_qa07_transiciones_de_vacante_publicada(): void
+    {
+        $id = $this->publicarVacanteQa07();
+
+        $ruta = self::RUTA.'/'.$id;
+
+        foreach ([
+            ['pausar', 'pausada'],
+            ['reanudar', 'activa'],
+            ['finalizar', 'finalizada'],
+        ] as [$accion, $estado]) {
+
+            $this->prepararToken($this->token);
+
+            $this->patchJson($ruta.'/'.$accion)
+                ->assertOk();
+
+            $this->assertDatabaseHas('empleos', [
+                'id' => $id,
+                'estado_empleo' => $estado,
+            ]);
+        }
+
+        $this->prepararToken($this->token);
+
+        $this->patchJson($ruta.'/reanudar')
+            ->assertConflict()
+            ->assertJsonPath(
+                'error_code',
+                'VACANCY_FINALIZED'
+            );
+
+        $this->assertDatabaseHas('empleos', [
+            'id' => $id,
+            'estado_empleo' => 'finalizada',
+        ]);
+    }
+
+    public function test_qa07_no_pausa_vacante_sin_publicar(): void
+    {
+        $id = $this->registrarVacanteQa07();
+
+        $this->prepararToken($this->token);
+
+        $this->patchJson(self::RUTA.'/'.$id.'/pausar')
+            ->assertConflict()
+            ->assertJsonPath(
+                'error_code',
+                'VACANCY_NOT_PUBLISHED'
+            );
+
+        $this->assertDatabaseHas('empleos', [
+            'id' => $id,
+            'estado_empleo' => 'activa',
+        ]);
+    }
+
+    public function test_qa07_no_reanuda_vacante_vencida(): void
+    {
+        $id = $this->publicarVacanteQa07();
+
+        $ruta = self::RUTA.'/'.$id;
+
+        $this->prepararToken($this->token);
+
+        $this->patchJson($ruta.'/pausar')
+            ->assertOk();
+
+        DB::table('empleos')
+            ->where('id', $id)
+            ->update([
+                'fecha_inicio_vigencia' =>
+                    now('America/Lima')->subDays(7)->toDateString(),
+                'fecha_fin_vigencia' =>
+                    now('America/Lima')->subDay()->toDateString(),
+            ]);
+
+        $this->prepararToken($this->token);
+
+        $this->patchJson($ruta.'/reanudar')
+            ->assertConflict()
+            ->assertJsonPath(
+                'error_code',
+                'VACANCY_EXPIRED'
+            );
+
+        $this->assertDatabaseHas('empleos', [
+            'id' => $id,
+            'estado_empleo' => 'pausada',
+        ]);
+    }
+
+    public function test_qa07_eliminacion_logica_conserva_historial(): void
+    {
+        $id = $this->publicarVacanteQa07();
+
+        $this->prepararToken($this->token);
+
+        $this->deleteJson(self::RUTA.'/'.$id)
+            ->assertOk();
+
+        $registro = DB::table('empleos')
+            ->where('id', $id)
+            ->first();
+
+        $this->assertNotNull($registro);
+        $this->assertNotNull($registro->deleted_at);
+
+        $this->assertDatabaseHas('pagos_vacante', [
+            'empleo_id' => $id,
+            'resultado' => 'exitoso',
+        ]);
+
+        $this->assertDatabaseHas('revisiones_vacante', [
+            'empleo_id' => $id,
+            'decision' => 'aprobada',
+        ]);
+    }
+
 }

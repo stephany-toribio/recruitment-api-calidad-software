@@ -110,6 +110,28 @@ class PagarVacanteRequest extends FormRequest
     // Dígito verificador de las tarjetas: desde la derecha se duplica uno de cada dos dígitos y la suma debe ser múltiplo de 10
     private function cumpleLuhn(string $numero): bool
     {
-        return true;
+        if (! preg_match('/^[0-9]{16}$/D', $numero)) {
+            return false;
+        }
+
+        $suma = 0;
+        $duplicar = false;
+
+        for ($i = strlen($numero) - 1; $i >= 0; $i--) {
+            $digito = (int) $numero[$i];
+
+            if ($duplicar) {
+                $digito *= 2;
+
+                if ($digito > 9) {
+                    $digito -= 9;
+                }
+            }
+
+            $suma += $digito;
+            $duplicar = ! $duplicar;
+        }
+
+        return $suma % 10 === 0;
     }
 }

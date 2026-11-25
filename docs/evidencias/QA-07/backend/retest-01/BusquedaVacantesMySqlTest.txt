@@ -1,0 +1,11 @@
+PHPUnit 11.5.56 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.3.37
+Configuration: /var/www/html/phpunit.mysql.xml
+
+................................................................. 65 / 90 ( 72%)
+.........................                                         90 / 90 (100%)
+
+Time: 00:15.748, Memory: 46.50 MB
+
+OK (90 tests, 920 assertions)
