@@ -1,0 +1,53 @@
+areas_estudio
+candidato_estudios
+candidato_habilidades
+candidato_idiomas
+candidatos
+carreras
+empleo_habilidades
+empleos
+empresas
+estados_postulacion
+experiencias_laborales
+habilidades
+historial_postulaciones
+idiomas
+instituciones
+migrations
+motivos_rechazo
+niveles_puesto
+notificaciones_postulacion
+organizaciones
+pagos_vacante
+paises
+password_reset_tokens
+personal_access_tokens
+postulaciones
+puestos
+revisiones_vacante
+roles
+tipos_estudio
+usuarios
+vacantes_guardadas
+
+===== COLUMNAS EMPLEOS =====
+id | bigint unsigned | NULL: NO
+empresa_id | bigint unsigned | NULL: NO
+titulo | varchar(100) | NULL: NO
+descripcion | text | NULL: NO
+requisitos | json | NULL: YES
+beneficios | json | NULL: YES
+salario_min | decimal(10,2) | NULL: YES
+salario_max | decimal(10,2) | NULL: YES
+fecha_inicio_vigencia | date | NULL: NO
+fecha_fin_vigencia | date | NULL: NO
+estado_empleo | enum('activa','pausada','finalizada') | NULL: NO
+tipo_empleo | enum('presencial','remoto','hibrido') | NULL: YES
+numero_vacantes | smallint unsigned | NULL: NO
+created_at | timestamp | NULL: YES
+updated_at | timestamp | NULL: YES
+deleted_at | timestamp | NULL: YES
+nivel_puesto_id | bigint unsigned | NULL: NO
+area_estudio_id | bigint unsigned | NULL: YES
+ubicacion | varchar(255) | NULL: YES
+nivel_puesto_dueno_id | bigint unsigned | NULL: YES

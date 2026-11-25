@@ -1,0 +1,35 @@
+===== PREFLIGHT QA-16 =====
+No syntax errors detected in qa/karate/scripts/fixture-qa16.php
+No syntax errors detected in qa/karate/scripts/fixture-qa15.php
+PASS: Preflight QA-16
+===== QA-16 =====
+Modo: demo
+Run ID: 0ab61841-500d-4174-97c1-a9bbd4a8e028
+===== EJECUCION KARATE =====
+feature: classpath:features/business/flujo-integral.feature
+scenarios:  1 | passed:  1 | failed:  0 | time: 14.1919
+feature: classpath:features/business/pagos.feature
+scenarios:  1 | passed:  1 | failed:  0 | time: 6.2594
+feature: classpath:features/business/postulaciones.feature
+scenarios:  1 | passed:  1 | failed:  0 | time: 7.1074
+feature: classpath:features/business/vacantes.feature
+scenarios:  1 | passed:  1 | failed:  0 | time: 2.3138
+scenarios:    4 | passed:     4 | failed: 0
+[INFO] BUILD SUCCESS
+Exit code Maven: 0
+PASS: Escaneo preventivo de secretos
+scenarios:  1 | passed:  1 | failed:  0 | time: 14.1919
+scenarios:  1 | passed:  1 | failed:  0 | time: 6.2594
+scenarios:  1 | passed:  1 | failed:  0 | time: 7.1074
+scenarios:  1 | passed:  1 | failed:  0 | time: 2.3138
+scenarios:    4 | passed:     4 | failed: 0
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 33.80 s -- in creo.BusinessTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+PASS: Ejecucion funcional QA-16
+Entidades eliminadas: {'historial_postulaciones': 3, 'notificaciones_postulacion': 1, 'postulaciones': 1, 'vacantes_guardadas': 0, 'pagos_vacante': 3, 'revisiones_vacante': 3, 'empleo_habilidades': 15, 'empleos': 3, 'candidato_estudios': 2, 'candidato_habilidades': 2, 'candidato_idiomas': 2, 'personal_access_tokens': 9, 'password_reset_tokens': 0, 'candidatos': 2, 'empresas': 4, 'usuarios': 9}
+PASS: Sin residuos funcionales
+Fixtures eliminados: 9
+Fixtures restantes: 0
+PASS: Limpieza QA-16
+Reportes privados: /tmp/tmp.xvlKlyDi9i

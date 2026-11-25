@@ -1,0 +1,23 @@
+===== PREFLIGHT QA-16 =====
+No syntax errors detected in qa/karate/scripts/fixture-qa16.php
+No syntax errors detected in qa/karate/scripts/fixture-qa15.php
+PASS: Preflight QA-16
+===== QA-16 =====
+Modo: full
+Run ID: 5fc11d20-0ae1-4e8b-be75-5f91d509c9c5
+===== EJECUCION KARATE =====
+feature: classpath:features/business/historial.feature
+scenarios:  3 | passed:  3 | failed:  0 | time: 59.5423
+feature: classpath:features/business/seguimiento.feature
+scenarios:  3 | passed:  0 | failed:  3 | time: 38.2771
+scenarios:    6 | passed:     3 | failed: 3
+[INFO] BUILD FAILURE
+Exit code Maven: 1
+ERROR: Posibles secretos en reportes
+karate-reports/features.business.historial.karate-json.txt
+Entidades eliminadas: {'historial_postulaciones': 7, 'notificaciones_postulacion': 1, 'postulaciones': 7, 'vacantes_guardadas': 0, 'pagos_vacante': 6, 'revisiones_vacante': 6, 'empleo_habilidades': 35, 'empleos': 7, 'candidato_estudios': 7, 'candidato_habilidades': 7, 'candidato_idiomas': 7, 'personal_access_tokens': 21, 'password_reset_tokens': 0, 'candidatos': 7, 'empresas': 7, 'usuarios': 21}
+PASS: Sin residuos funcionales
+Fixtures eliminados: 21
+Fixtures restantes: 0
+PASS: Limpieza QA-16
+Reportes privados: /tmp/tmp.5D8kQooErs

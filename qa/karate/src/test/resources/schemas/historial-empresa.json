@@ -1,0 +1,15 @@
+{
+  "success": true,
+  "message": "Historial de postulantes",
+  "data": {
+    "vacante": {
+      "id": "#number",
+      "titulo": "#string",
+      "solo_lectura": "#boolean",
+      "max_contrataciones": "#number",
+      "contratados": "#number",
+      "cupos_disponibles": "#number"
+    },
+    "postulaciones": "#[] postulacionSchema"
+  }
+}

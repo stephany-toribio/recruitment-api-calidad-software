@@ -1,0 +1,55 @@
+===== BASE DE DATOS =====
+portal_empleos_calidad_qa
+===== CLAVES FORANEAS =====
+candidato_estudios.area_estudio_id -> areas_estudio.id | DELETE: RESTRICT | UPDATE: NO ACTION
+empleos.area_estudio_id -> areas_estudio.id | DELETE: RESTRICT | UPDATE: NO ACTION
+habilidades.area_estudio_id -> areas_estudio.id | DELETE: RESTRICT | UPDATE: NO ACTION
+candidato_estudios.candidato_id -> candidatos.id | DELETE: CASCADE | UPDATE: NO ACTION
+candidato_habilidades.candidato_id -> candidatos.id | DELETE: CASCADE | UPDATE: NO ACTION
+candidato_idiomas.candidato_id -> candidatos.id | DELETE: CASCADE | UPDATE: NO ACTION
+experiencias_laborales.candidato_id -> candidatos.id | DELETE: CASCADE | UPDATE: NO ACTION
+niveles_puesto.candidato_id -> candidatos.id | DELETE: RESTRICT | UPDATE: NO ACTION
+organizaciones.candidato_id -> candidatos.id | DELETE: RESTRICT | UPDATE: NO ACTION
+postulaciones.candidato_id -> candidatos.id | DELETE: CASCADE | UPDATE: NO ACTION
+puestos.candidato_id -> candidatos.id | DELETE: RESTRICT | UPDATE: NO ACTION
+vacantes_guardadas.candidato_id -> candidatos.id | DELETE: CASCADE | UPDATE: NO ACTION
+candidato_estudios.carrera_id -> carreras.id | DELETE: NO ACTION | UPDATE: NO ACTION
+candidato_estudios.carrera_id -> carreras.id | DELETE: NO ACTION | UPDATE: NO ACTION
+candidato_estudios.tipo_estudio_id -> carreras.tipo_estudio_id | DELETE: NO ACTION | UPDATE: NO ACTION
+empleo_habilidades.empleo_id -> empleos.id | DELETE: CASCADE | UPDATE: NO ACTION
+pagos_vacante.empleo_id -> empleos.id | DELETE: RESTRICT | UPDATE: NO ACTION
+postulaciones.empleo_id -> empleos.id | DELETE: RESTRICT | UPDATE: NO ACTION
+revisiones_vacante.empleo_id -> empleos.id | DELETE: RESTRICT | UPDATE: NO ACTION
+vacantes_guardadas.empleo_id -> empleos.id | DELETE: RESTRICT | UPDATE: NO ACTION
+empleos.empresa_id -> empresas.id | DELETE: CASCADE | UPDATE: NO ACTION
+historial_postulaciones.estado_postulacion_id -> estados_postulacion.id | DELETE: RESTRICT | UPDATE: NO ACTION
+postulaciones.estado_postulacion_id -> estados_postulacion.id | DELETE: RESTRICT | UPDATE: NO ACTION
+candidato_habilidades.habilidad_id -> habilidades.id | DELETE: RESTRICT | UPDATE: NO ACTION
+empleo_habilidades.habilidad_id -> habilidades.id | DELETE: RESTRICT | UPDATE: NO ACTION
+candidato_idiomas.idioma_id -> idiomas.id | DELETE: RESTRICT | UPDATE: NO ACTION
+candidato_estudios.institucion_id -> instituciones.id | DELETE: RESTRICT | UPDATE: NO ACTION
+candidato_estudios.institucion_id -> instituciones.id | DELETE: NO ACTION | UPDATE: NO ACTION
+candidato_estudios.pais_id -> instituciones.pais_id | DELETE: NO ACTION | UPDATE: NO ACTION
+historial_postulaciones.motivo_rechazo_id -> motivos_rechazo.id | DELETE: SET NULL | UPDATE: NO ACTION
+empleos.nivel_puesto_dueno_id -> niveles_puesto.dueno_id | DELETE: RESTRICT | UPDATE: RESTRICT
+empleos.nivel_puesto_id -> niveles_puesto.id | DELETE: RESTRICT | UPDATE: NO ACTION
+empleos.nivel_puesto_id -> niveles_puesto.id | DELETE: RESTRICT | UPDATE: RESTRICT
+experiencias_laborales.nivel_puesto_id -> niveles_puesto.id | DELETE: RESTRICT | UPDATE: NO ACTION
+experiencias_laborales.organizacion_id -> organizaciones.id | DELETE: NO ACTION | UPDATE: NO ACTION
+experiencias_laborales.organizacion_id -> organizaciones.id | DELETE: RESTRICT | UPDATE: NO ACTION
+experiencias_laborales.pais_id -> organizaciones.pais_id | DELETE: NO ACTION | UPDATE: NO ACTION
+candidato_estudios.pais_id -> paises.id | DELETE: RESTRICT | UPDATE: NO ACTION
+experiencias_laborales.pais_id -> paises.id | DELETE: RESTRICT | UPDATE: NO ACTION
+instituciones.pais_id -> paises.id | DELETE: RESTRICT | UPDATE: NO ACTION
+organizaciones.pais_id -> paises.id | DELETE: RESTRICT | UPDATE: NO ACTION
+historial_postulaciones.postulacion_id -> postulaciones.id | DELETE: CASCADE | UPDATE: NO ACTION
+notificaciones_postulacion.postulacion_id -> postulaciones.id | DELETE: CASCADE | UPDATE: NO ACTION
+experiencias_laborales.puesto_id -> puestos.id | DELETE: RESTRICT | UPDATE: NO ACTION
+usuarios.rol_id -> roles.id | DELETE: RESTRICT | UPDATE: NO ACTION
+candidato_estudios.tipo_estudio_id -> tipos_estudio.id | DELETE: RESTRICT | UPDATE: NO ACTION
+carreras.tipo_estudio_id -> tipos_estudio.id | DELETE: RESTRICT | UPDATE: NO ACTION
+candidatos.usuario_id -> usuarios.id | DELETE: CASCADE | UPDATE: NO ACTION
+empresas.usuario_id -> usuarios.id | DELETE: CASCADE | UPDATE: NO ACTION
+password_reset_tokens.usuario_id -> usuarios.id | DELETE: CASCADE | UPDATE: NO ACTION
+revisiones_vacante.admin_id -> usuarios.id | DELETE: RESTRICT | UPDATE: NO ACTION
+TOTAL RELACIONES: 51

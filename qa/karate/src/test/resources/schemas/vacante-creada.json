@@ -1,0 +1,38 @@
+{
+  "success": true,
+  "message": "Vacante registrada. Quedó pendiente de revisión.",
+  "data": {
+    "id": "#number",
+    "titulo": "#string",
+    "descripcion": "#string",
+    "requisitos": "#[] #string",
+    "beneficios": "#[] #string",
+    "nivel_puesto": {
+      "id": "#number",
+      "nombre": "#string"
+    },
+    "area_profesional": {
+      "id": "#number",
+      "nombre": "#string"
+    },
+    "tipo_empleo": "remoto",
+    "ubicacion": null,
+    "salario_min": "#number",
+    "salario_max": "#number",
+    "fecha_inicio_vigencia": "#string",
+    "fecha_fin_vigencia": "#string",
+    "max_contrataciones": "#number",
+    "habilidades": "#[5] habilidadSchema",
+    "estado": {
+      "general": "pendiente_revision",
+      "revision": "pendiente",
+      "motivo_no_aprobacion": null,
+      "pago": "sin_pago",
+      "disponibilidad": "activa",
+      "vigente": true,
+      "publicada_en": null
+    },
+    "creado_en": "#string",
+    "eliminado_en": null
+  }
+}

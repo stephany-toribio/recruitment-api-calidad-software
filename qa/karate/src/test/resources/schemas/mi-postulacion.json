@@ -1,0 +1,21 @@
+{
+  "id": "#number",
+  "estado": {
+    "codigo": "#string",
+    "nombre": "#string"
+  },
+  "retirada": "#boolean",
+  "retirada_en": "##string",
+  "puede_retirar": "#boolean",
+  "fecha_postulacion": "#string",
+  "vacante": {
+    "id": "#number",
+    "titulo": "#string",
+    "empresa": {
+      "razon_social": "#string"
+    },
+    "estado": "#string",
+    "vigente": "#boolean"
+  },
+  "ver_vacante": "##string"
+}

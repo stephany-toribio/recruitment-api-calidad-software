@@ -209,3 +209,32 @@ de Karate hasta ejecutar QA-15, QA-16 y QA-17.
 - Evidencia: [QA-15](../evidencias/QA-15/RESULTADOS.md).
 
 La cobertura integral de Karate requiere QA-16 y QA-17.
+
+## Evidencia funcional QA-16
+
+<!-- QA16-RUBRICA -->
+
+| Control | Evidencia verificada | Alcance QA-16 |
+| --- | --- | --- |
+| RUB-K01 | Esquemas JSON y validaciones estructurales | PASS |
+| RUB-K02 | HTTP 200, 201, 403, 409 y 422 | PASS |
+| RUB-K03 | Aserciones de tiempo de respuesta | PASS |
+| RUB-K04 | UUID, tokens, identificadores y catalogos dinamicos | PASS |
+| RUB-K05 | Helpers reutilizables mediante call | PASS |
+
+- Suite completa: 34/34 escenarios.
+- Cobertura: 26 casos canonicos.
+- Tres regresiones completas independientes.
+- Dos ensayos demo: 4/4 escenarios cada uno.
+- Regresiones QA-14 y QA-15 aprobadas.
+- Seis incidencias de automatizacion resueltas.
+- Escaneo preventivo de secretos aprobado.
+- Limpieza transaccional aprobada.
+
+Evidencia: [Resultados QA-16](../evidencias/QA-16/RESULTADOS.md).
+
+El cierre del alcance integral de Karate requiere
+completar QA-17.
+
+La acreditacion de la rubrica completa requiere
+JMeter, Selenium, Appium y trazabilidad Jira.

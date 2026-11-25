@@ -1,0 +1,295 @@
+- **CP-07-01 (Positivo - Creación de Vacante)**
+  - **Objetivo**: Registrar vacante propia con campos obligatorios, vigencia y puestos válidos.
+  - **Tipo**: Funcional / Positiva (Karate, Selenium).
+  - **Actor**: `USR-EMP-01`.
+  - **Datos**: Título `Desarrollador Full Stack QA`, `max_contrataciones = 2`, `salario_min = 3000`, `salario_max = 4500`, fechas vigentes.
+  - **Pasos**: `POST /api/v1/empresas/me/vacantes`.
+  - **Resultado esperado**: HTTP 201 Created; vacante creada con `estado_empleo = 'activa'` (para la empresa), sin moderación ni pago (no pública).
+  - **Comprobación de persistencia**: Fila en tabla `empleos` con `empresa_id` de `USR-EMP-01`.
+  - **Dependencias**: QA-07, QA-16, QA-20. | **Estado inicial**: `PENDIENTE`.
+
+- **CP-07-02 (Negativo - Salario Mínimo Mayor a Máximo)**
+  - **Objetivo**: Validar regla de integridad de rango salarial (`chk_empleos_salarios`).
+  - **Tipo**: Validación / Negativa (Karate).
+  - **Actor**: `USR-EMP-01`.
+  - **Datos**: `salario_min = 5000`, `salario_max = 3000`.
+  - **Pasos**: `POST /api/v1/empresas/me/vacantes`.
+  - **Resultado esperado**: HTTP 422 Unprocessable Entity.
+  - **Comprobación de persistencia**: No se crea vacante.
+  - **Dependencias**: QA-07, QA-16. | **Estado inicial**: `PENDIENTE`.
+
+- **CP-07-03 (Negativo - Fecha Fin Anterior a Fecha Inicio)**
+  - **Objetivo**: Validar regla de vigencia temporal (`chk_empleos_vigencia`).
+  - **Tipo**: Validación / Negativa (Karate).
+  - **Actor**: `USR-EMP-01`.
+  - **Datos**: `fecha_inicio_vigencia = 2026-12-01`, `fecha_fin_vigencia = 2026-11-01`.
+  - **Pasos**: `POST /api/v1/empresas/me/vacantes`.
+  - **Resultado esperado**: HTTP 422 Unprocessable Entity.
+  - **Comprobación de persistencia**: Sin cambios en BD.
+  - **Dependencias**: QA-07, QA-16. | **Estado inicial**: `PENDIENTE`.
+
+- **CP-07-04 (Negativo - Número de Vacantes Menor o Igual a Cero)**
+  - **Objetivo**: Validar regla de cupos positivos (`chk_empleos_numero_vacantes`).
+  - **Tipo**: Validación / Negativa (Karate).
+  - **Actor**: `USR-EMP-01`.
+  - **Datos**: `max_contrataciones = 0`.
+  - **Pasos**: `POST /api/v1/empresas/me/vacantes`.
+  - **Resultado esperado**: HTTP 422 Unprocessable Entity.
+  - **Comprobación de persistencia**: Sin cambios en BD.
+  - **Dependencias**: QA-07, QA-16. | **Estado inicial**: `PENDIENTE`.
+
+---
+
+### CP-08: Aprobación y Moderación Administrativa
+
+- **CP-08-01 (Positivo - Administrador Aprueba Vacante)**
+  - **Objetivo**: Aprobar vacante registrada habilitando la etapa de pago simulado.
+  - **Tipo**: Funcional / Positiva (Karate, Selenium).
+  - **Actor**: `USR-ADM-01`.
+  - **Precondiciones**: Vacante registrada pendiente de revisión (`VAC-BORRADOR`).
+  - **Pasos**: `PATCH /api/v1/admin/vacantes/{vacante}/aprobar`.
+  - **Resultado esperado**: HTTP 200 OK; decisión `aprobada`.
+  - **Comprobación de persistencia**: Registro en `revisiones_vacante` con `decision = 'aprobada'` y `admin_id`.
+  - **Dependencias**: QA-07, QA-16, QA-20. | **Estado inicial**: `PENDIENTE`.
+
+- **CP-08-02 (Positivo - Administrador No Aprueba con Motivo)**
+  - **Objetivo**: Registrar rechazo administrativo con motivo explícito.
+  - **Tipo**: Funcional / Positiva (Karate, Selenium).
+  - **Actor**: `USR-ADM-01`.
+  - **Precondiciones**: Vacante pendiente de revisión (`VAC-BORRADOR`).
+  - **Datos**: Body `{ "motivo": "Descripción insuficiente de funciones del puesto" }`.
+  - **Pasos**: `PATCH /api/v1/admin/vacantes/{vacante}/no-aprobar`.
+  - **Resultado esperado**: HTTP 200 OK; decisión `no_aprobada`.
+  - **Comprobación de persistencia**: Fila en `revisiones_vacante` con `decision = 'no_aprobada'` y motivo persistente.
+  - **Dependencias**: QA-07, QA-16. | **Estado inicial**: `PENDIENTE`.
+
+- **CP-08-03 (Negativo - No Aprobar sin Motivo)**
+  - **Objetivo**: Verificar check de base de datos que exige motivo al no aprobar (`chk_revisiones_vacante_motivo`).
+  - **Tipo**: Validación / Negativa (Karate).
+  - **Actor**: `USR-ADM-01`.
+  - **Datos**: Body vacío o con espacios en blanco.
+  - **Pasos**: `PATCH /api/v1/admin/vacantes/{vacante}/no-aprobar`.
+  - **Resultado esperado**: HTTP 422 Unprocessable Entity.
+  - **Comprobación de persistencia**: No se inserta registro en `revisiones_vacante`.
+  - **Dependencias**: QA-07, QA-16. | **Estado inicial**: `PENDIENTE`.
+
+- **CP-08-04 (Negativo - Empresa Intenta Aprobar Vacante)**
+  - **Objetivo**: Bloquear acceso de rol empresa a rutas de moderación administrativa.
+  - **Tipo**: Seguridad / Negativa (Karate).
+  - **Actor**: `USR-EMP-01`.
+  - **Pasos**: Enviar PATCH a `/api/v1/admin/vacantes/{vacante}/aprobar` con token de empresa.
+  - **Resultado esperado**: HTTP 403 Forbidden (`FORBIDDEN`).
+  - **Comprobación de persistencia**: Sin cambios en BD.
+  - **Dependencias**: QA-05, QA-17. | **Estado inicial**: `PENDIENTE`.
+
+---
+
+### CP-09: Pago Simulado de Vacante Aprobada
+
+- **CP-09-01 (Positivo - Pago Exitoso)**
+  - **Objetivo**: Completar pago simulado con tarjeta de prueba publicando la vacante.
+  - **Tipo**: Funcional / Positiva (Karate, Selenium).
+  - **Actor**: Empresa propietaria (`USR-EMP-01`).
+  - **Precondiciones**: Vacante en condición `VAC-APROB-SIN-PAGO`.
+  - **Datos**: Tarjeta de prueba válida (últimos 4 dígitos `4242`), monto acorde al tarifario.
+  - **Pasos**: `POST /api/v1/empresas/me/vacantes/{vacante}/pago`.
+  - **Resultado esperado**: HTTP 201 Created contractual; mensaje 'Pago simulado aprobado. La vacante ya está publicada.'; resultado `exitoso`.
+  - **Comprobación de persistencia**: Fila en `pagos_vacante` con `resultado = 'exitoso'`, `monto` y `tarjeta_ultimos4`.
+  - **Dependencias**: QA-07, QA-16, QA-20. | **Estado inicial**: `PENDIENTE`.
+
+- **CP-09-02 (Negativo - Pago de Vacante No Aprobada)**
+  - **Objetivo**: Impedir el pago de una vacante pendiente o rechazada.
+  - **Tipo**: Lógica de Negocio / Negativa (Karate).
+  - **Actor**: `USR-EMP-01`.
+  - **Precondiciones**: Vacante en condición `VAC-BORRADOR` o `VAC-RECHAZADA`.
+  - **Pasos**: `POST /api/v1/empresas/me/vacantes/{vacante}/pago`.
+  - **Resultado esperado**: HTTP 409 Conflict; `error_code = 'VACANCY_NOT_APPROVED'`.
+  - **Comprobación de persistencia**: No se genera pago exitoso en BD.
+  - **Dependencias**: QA-07, QA-17. | **Estado inicial**: `PENDIENTE`.
+
+- **CP-09-03 (Negativo - Pago con Datos de Tarjeta Inválidos)**
+  - **Objetivo**: Rechazar pago con número de tarjeta o fecha de expiración inválidos.
+  - **Tipo**: Validación / Negativa (Karate).
+  - **Actor**: `USR-EMP-01`.
+  - **Datos**: Tarjeta con formato erróneo o incompleto.
+  - **Pasos**: `POST /api/v1/empresas/me/vacantes/{vacante}/pago`.
+  - **Resultado esperado**: HTTP 422 Unprocessable Entity.
+  - **Comprobación de persistencia**: Sin registro en `pagos_vacante`.
+  - **Dependencias**: QA-07, QA-16. | **Estado inicial**: `PENDIENTE`.
+
+- **CP-09-04 (Negativo - Empresa B Intenta Pagar Vacante de Empresa A)**
+  - **Objetivo**: Bloquear intento de una empresa de pagar una vacante ajena.
+  - **Tipo**: Seguridad / Negativa (Karate).
+  - **Actor**: `USR-EMP-02`.
+  - **Precondiciones**: Vacante perteneciente a `USR-EMP-01`.
+  - **Pasos**: Enviar POST a `/api/v1/empresas/me/vacantes/{vacante_empresa1}/pago` con token de empresa 2.
+  - **Resultado esperado**: HTTP 403 Forbidden (`FORBIDDEN`).
+  - **Comprobación de persistencia**: Sin cambios.
+  - **Dependencias**: QA-05, QA-17. | **Estado inicial**: `PENDIENTE`.
+
+- **CP-09-05 (Negativo - Pago Duplicado sobre Vacante ya Pagada)**
+  - **Objetivo**: Rechazar cualquier intento de volver a pagar una vacante que ya cuenta con un pago exitoso previo.
+  - **Tipo**: Integridad / Negativa (Karate).
+  - **Actor**: `USR-EMP-01`.
+  - **Precondiciones**: Vacante ya en condición `VAC-DISPONIBLE` con pago previo exitoso (CP-09-01 ejecutado).
+  - **Pasos**: Enviar un segundo request `POST /api/v1/empresas/me/vacantes/{vacante}/pago` con datos de tarjeta válidos.
+  - **Resultado esperado**: HTTP 409 Conflict contractual; `error_code = 'VACANCY_ALREADY_PAID'`; mensaje 'La vacante ya tiene un pago exitoso.'.
+  - **Comprobación de persistencia**: El recuento de filas en `pagos_vacante` con `resultado = 'exitoso'` para dicha vacante se mantiene exactamente en 1; no se duplica la publicación.
+  - **Dependencias**: QA-07, QA-17. | **Estado inicial**: `PENDIENTE`.
+
+---
+
+## 4. Bloque 3: Búsqueda, Disponibilidad y Postulación (RF-06, RF-07, RNF-02)
+
+### CP-10: Reglas de Disponibilidad de Vacantes (11 Condiciones de Indisponibilidad)
+
+- **CP-12-01 (Positivo - Creación Exitosa en Recibido)**
+  - **Objetivo**: Registrar la primera postulación de un candidato en etapa `Recibido`.
+  - **Tipo**: Funcional / Positiva (Karate, Selenium, Appium).
+  - **Actor**: `USR-CND-01`.
+  - **Precondiciones**: Vacante en condición `VAC-DISPONIBLE`; candidato sin postulación previa.
+  - **Datos**: Body `{ "vacante_id": <id_disponible> }`.
+  - **Pasos**: `POST /api/v1/candidatos/me/postulaciones`.
+  - **Resultado esperado**: HTTP 201 Created; postulación registrada con `estado_postulacion_id = 1` (`Recibido`).
+  - **Comprobación de persistencia**: Fila en tabla `postulaciones` con `candidato_id` de `USR-CND-01`, `empleo_id` y `retirada_en = NULL`.
+  - **Dependencias**: QA-08, QA-16, QA-19, QA-22. | **Estado inicial**: `PENDIENTE`.
+
+- **CP-12-02 (Negativo - Candidato con Cuenta Suspendida Postula)**
+  - **Objetivo**: Impedir que un candidato suspendido postule a una vacante.
+  - **Tipo**: Seguridad / Negativa (Karate).
+  - **Actor**: `USR-CND-03` (Suspendido).
+  - **Procedimiento de preparación ejecutable**:
+    1. Se emite un token de prueba previo para el candidato (mientras estaba activo o mediante helper de pruebas).
+    2. Se ejecuta la suspensión administrativa en la base de datos: `UPDATE usuarios SET estado_cuenta = 'suspendido', fecha_suspension = NOW() WHERE correo = 'suspendido@qa.example.test'`.
+    3. Con el token previamente obtenido, se envía la petición de postulación.
+    4. Al finalizar la prueba, se restaura la cuenta con `QaSeeder`.
+  - **Pasos**: `POST /api/v1/candidatos/me/postulaciones` con el token del candidato suspendido.
+  - **Resultado esperado**: HTTP 403 Forbidden (`FORBIDDEN`); `PostulacionService` comprueba en BD `$usuarioCandidato->estado_cuenta !== 'activo'` y bloquea la operación.
+  - **Comprobación de persistencia**: Ninguna fila creada en `postulaciones`.
+  - **Dependencias**: QA-08, QA-17. | **Estado inicial**: `PENDIENTE`.
+
+---
+
+### CP-13: Postulación Duplicada Secuencial y Carrera Concurrente
+
+- **CP-16-01 (Positivo - Recibido a En Revisión)**
+  - **Objetivo**: Avanzar postulación de `Recibido` a `En Revisión`.
+  - **Tipo**: Funcional / Positiva (Karate, Selenium).
+  - **Actor**: Empresa propietaria (`USR-EMP-01`).
+  - **Precondiciones**: Postulación en condición `POS-RECIBIDO`.
+  - **Pasos**: `PATCH /api/v1/empresas/me/vacantes/{vacante}/postulaciones/{postulacion}/avanzar`.
+  - **Resultado esperado**: HTTP 200 OK; estado resultante `En Revisión` (`id = 2`).
+  - **Comprobación de persistencia**: `postulaciones.estado_postulacion_id = 2`; registro en `historial_postulaciones`.
+  - **Dependencias**: QA-09, QA-16, QA-20. | **Estado inicial**: `PENDIENTE`.
+
+- **CP-16-02 (Positivo - En Revisión a Entrevista)**
+  - **Objetivo**: Avanzar postulación de `En Revisión` a `Entrevista`.
+  - **Tipo**: Funcional / Positiva (Karate, Selenium).
+  - **Actor**: `USR-EMP-01`.
+  - **Precondiciones**: Postulación en `POS-REVISION`.
+  - **Pasos**: `PATCH .../avanzar`.
+  - **Resultado esperado**: HTTP 200 OK; estado `Entrevista` (`id = 3`).
+  - **Comprobación de persistencia**: `estado_postulacion_id = 3`; nuevo movimiento en `historial_postulaciones`.
+  - **Dependencias**: QA-09, QA-16. | **Estado inicial**: `PENDIENTE`.
+
+- **CP-16-03 (Positivo - Entrevista a Contratado con Cupo)**
+  - **Objetivo**: Contratar postulante en entrevista existiendo vacantes disponibles (`contratados < numero_vacantes`).
+  - **Tipo**: Funcional / Positiva (Karate, Selenium).
+  - **Actor**: `USR-EMP-01`.
+  - **Precondiciones**: Postulación en `POS-ENTREVISTA`; cupo disponible.
+  - **Pasos**: `PATCH .../contratar`.
+  - **Resultado esperado**: HTTP 200 OK; estado final `Contratado` (`id = 4`).
+  - **Comprobación de persistencia**: `estado_postulacion_id = 4`; historial registrado.
+  - **Dependencias**: QA-09, QA-16, QA-20. | **Estado inicial**: `PENDIENTE`.
+
+---
+
+### CP-17: Rechazo con Motivo Válido
+
+- **CP-17-01 (Positivo - Rechazo desde En Revisión)**
+  - **Objetivo**: Rechazar postulante indicando motivo del catálogo (`motivo_rechazo_id = 1`: 'Perfil no se ajusta').
+  - **Tipo**: Funcional / Positiva (Karate, Selenium).
+  - **Actor**: `USR-EMP-01`.
+  - **Precondiciones**: Postulación en `POS-REVISION`.
+  - **Pasos**: `PATCH .../rechazar` con body `{ "motivo_rechazo_id": 1 }`.
+  - **Resultado esperado**: HTTP 200 OK; estado final `Rechazado` (`id = 5`).
+  - **Comprobación de persistencia**: `postulaciones.estado_postulacion_id = 5`; en `historial_postulaciones` se guarda `motivo_rechazo_id = 1`.
+  - **Dependencias**: QA-09, QA-16. | **Estado inicial**: `PENDIENTE`.
+
+- **CP-17-02 (Positivo - Rechazo desde Entrevista)**
+  - **Objetivo**: Rechazar postulante desde etapa `Entrevista` con motivo del catálogo (`motivo_rechazo_id = 2`).
+  - **Tipo**: Funcional / Positiva (Karate, Selenium).
+  - **Actor**: `USR-EMP-01`.
+  - **Precondiciones**: Postulación en `POS-ENTREVISTA`.
+  - **Pasos**: `PATCH .../rechazar` con body `{ "motivo_rechazo_id": 2 }`.
+  - **Resultado esperado**: HTTP 200 OK; estado final `Rechazado`.
+  - **Comprobación de persistencia**: Estado e historial registrados en BD.
+  - **Dependencias**: QA-09, QA-16. | **Estado inicial**: `PENDIENTE`.
+
+- **CP-17-03 (Negativo - Rechazo sin Motivo)**
+  - **Objetivo**: Impedir rechazo sin motivo o con ID de motivo inexistente.
+  - **Tipo**: Validación / Negativa (Karate).
+  - **Actor**: `USR-EMP-01`.
+  - **Datos**: Body `{}` o `{ "motivo_rechazo_id": 999 }`.
+  - **Pasos**: `PATCH .../rechazar`.
+  - **Resultado esperado**: HTTP 422 Unprocessable Entity.
+  - **Comprobación de persistencia**: Estado anterior intacto; sin cambios en historial.
+  - **Dependencias**: QA-09, QA-16. | **Estado inicial**: `PENDIENTE`.
+
+---
+
+### CP-18: Saltos de Estado Inválidos y Operaciones Bloqueadas
+
+- **CP-21-01 (Positivo - Mis Postulaciones)**
+  - **Objetivo**: Candidato consulta el estado y seguimiento de todas sus postulaciones activas e históricas.
+  - **Tipo**: Funcional / Positiva (Karate, Selenium).
+  - **Actor**: `USR-CND-01`.
+  - **Pasos**: `GET /api/v1/candidatos/me/postulaciones`.
+  - **Resultado esperado**: HTTP 200 OK; listado con títulos, estados, si está retirada y fechas.
+  - **Comprobación de persistencia**: Solo lectura.
+  - **Dependencias**: QA-08, QA-09, QA-16. | **Estado inicial**: `PENDIENTE`.
+
+- **CP-21-02 (Positivo - Consulta de Vacante Histórica Pausada o Eliminada)**
+  - **Objetivo**: Candidato con postulación previa puede consultar el detalle de su vacante aunque la empresa la haya pausado o eliminado.
+  - **Tipo**: Funcional / Positiva (Karate, Selenium).
+  - **Actor**: Candidato con postulación previa.
+  - **Precondiciones**: Vacante pausada o eliminada (`VAC-PAUSADA` o `VAC-ELIMINADA`) con postulación existente.
+  - **Pasos**: `GET /api/v1/candidatos/me/postulaciones/{postulacion}/vacante`.
+  - **Resultado esperado**: HTTP 200 OK; datos de la vacante histórica devueltos (`withTrashed()`).
+  - **Comprobación de persistencia**: Solo lectura.
+  - **Dependencias**: QA-08, QA-16. | **Estado inicial**: `PENDIENTE`.
+
+---
+
+### CP-22: Historial de Postulaciones y Kanban
+
+- **CP-22-01 (Positivo - Consulta de Historial Completo por la Empresa)**
+  - **Objetivo**: Verificar que la empresa puede auditar toda la cronología de movimientos, fechas y motivos en su vacante.
+  - **Tipo**: Auditoría / Positiva (Karate, Selenium).
+  - **Actor**: `USR-EMP-01`.
+  - **Pasos**: `GET /api/v1/empresas/me/vacantes/{vacante}/postulaciones/historial`.
+  - **Resultado esperado**: HTTP 200 OK; listado incluye activas y retiradas con sub-arreglo `movimientos`.
+  - **Comprobación de persistencia**: Consistente con `historial_postulaciones`.
+  - **Dependencias**: QA-09, QA-16, QA-20. | **Estado inicial**: `PENDIENTE`.
+
+- **CP-22-02 (Positivo - Conservación de Motivo en Historial tras Múltiples Cambios)**
+  - **Objetivo**: Verificar que el motivo de rechazo queda fijado en el registro histórico correspondiente.
+  - **Tipo**: Integridad / Positiva (Karate).
+  - **Actor**: `USR-EMP-01`.
+  - **Pasos**: Consultar historial de postulación rechazada.
+  - **Resultado esperado**: Objeto `motivo_rechazo` presente con ID y texto descriptivo.
+  - **Comprobación de persistencia**: Relación persistente con `motivos_rechazo`.
+  - **Dependencias**: QA-09, QA-16. | **Estado inicial**: `PENDIENTE`.
+
+- **CP-22-03 (Positivo - Historial Mantiene Registros de Postulaciones Retiradas)**
+  - **Objetivo**: Garantizar que el retiro no purga las transiciones previas de la postulación en la auditoría.
+  - **Tipo**: Integridad / Positiva (Karate).
+  - **Actor**: `USR-EMP-01`.
+  - **Pasos**: Consultar historial tras ejecución de CP-20-01.
+  - **Resultado esperado**: `retirada = true`, `retirada_en` visible, y todos los movimientos previos conservados.
+  - **Comprobación de persistencia**: Sin registros borrados en `historial_postulaciones`.
+  - **Dependencias**: QA-09, QA-16. | **Estado inicial**: `PENDIENTE`.
+
+---
+
+### CP-23: Recorrido E2E Integrado Web

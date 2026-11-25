@@ -1,0 +1,26 @@
+===== PRUEBAS MYSQL =====
+tests/MySql/VacanteCompletaMySqlTest.php
+tests/MySql/PostularVacanteConcurrenciaMySqlTest.php
+tests/MySql/RetirarPostulacionConcurrenciaMySqlTest.php
+tests/MySql/PostularVacanteMySqlTest.php
+tests/MySql/BusquedaVacantesMySqlTest.php
+tests/MySql/RetirarPostulacionMySqlTest.php
+tests/MySql/SalarioVacanteMySqlTest.php
+tests/MySql/DisponibilidadVacanteMySqlTest.php
+tests/MySql/RegistrarVacanteHttpMySqlTest.php
+tests/MySql/DetalleVacanteMySqlTest.php
+tests/MySql/VacantesGuardadasMySqlTest.php
+===== PRUEBAS FEATURE =====
+tests/Feature/Postulaciones/KanbanTest.php
+tests/Feature/Postulaciones/RetirarPostulacionRequestTest.php
+tests/Feature/Postulaciones/PostularVacanteRequestTest.php
+tests/Feature/Vacantes/ListadoModeracionTest.php
+tests/Feature/Vacantes/RequisitosBeneficiosVacanteRequestTest.php
+tests/Feature/Vacantes/FiltrarVacantesRequestTest.php
+===== GENERADORES DE PAYLOADS =====
+tests/Feature/Vacantes/ListadoModeracionTest.php:145:    private function crearVacante(?string $decision = null): Empleo
+tests/Feature/Vacantes/RequisitosBeneficiosVacanteRequestTest.php:65:    private function vacanteValida(array $extra = []): array
+tests/MySql/BusquedaVacantesMySqlTest.php:219:    private function crearVacante(array $atributos): Empleo
+tests/MySql/Qa06RegistroPerfilesMySqlTest.php:595:    private function payloadEmpresaPerfil(array $datos): array
+tests/MySql/SalarioVacanteMySqlTest.php:111:    private function datosVacante(): array
+tests/MySql/VacantesGuardadasMySqlTest.php:253:    private function crearVacante(bool $publicada = true): Empleo

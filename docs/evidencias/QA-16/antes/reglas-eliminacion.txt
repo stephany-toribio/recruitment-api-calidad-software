@@ -1,0 +1,47 @@
+candidato_estudios -> areas_estudio | DELETE: RESTRICT
+candidato_estudios -> candidatos | DELETE: CASCADE
+candidato_estudios -> carreras | DELETE: NO ACTION
+candidato_estudios -> carreras | DELETE: NO ACTION
+candidato_estudios -> instituciones | DELETE: RESTRICT
+candidato_estudios -> instituciones | DELETE: NO ACTION
+candidato_estudios -> paises | DELETE: RESTRICT
+candidato_estudios -> tipos_estudio | DELETE: RESTRICT
+candidato_habilidades -> candidatos | DELETE: CASCADE
+candidato_habilidades -> habilidades | DELETE: RESTRICT
+candidato_idiomas -> candidatos | DELETE: CASCADE
+candidato_idiomas -> idiomas | DELETE: RESTRICT
+candidatos -> usuarios | DELETE: CASCADE
+carreras -> tipos_estudio | DELETE: RESTRICT
+empleo_habilidades -> empleos | DELETE: CASCADE
+empleo_habilidades -> habilidades | DELETE: RESTRICT
+empleos -> areas_estudio | DELETE: RESTRICT
+empleos -> empresas | DELETE: CASCADE
+empleos -> niveles_puesto | DELETE: RESTRICT
+empleos -> niveles_puesto | DELETE: RESTRICT
+empresas -> usuarios | DELETE: CASCADE
+experiencias_laborales -> candidatos | DELETE: CASCADE
+experiencias_laborales -> niveles_puesto | DELETE: RESTRICT
+experiencias_laborales -> organizaciones | DELETE: RESTRICT
+experiencias_laborales -> organizaciones | DELETE: NO ACTION
+experiencias_laborales -> paises | DELETE: RESTRICT
+experiencias_laborales -> puestos | DELETE: RESTRICT
+habilidades -> areas_estudio | DELETE: RESTRICT
+historial_postulaciones -> estados_postulacion | DELETE: RESTRICT
+historial_postulaciones -> motivos_rechazo | DELETE: SET NULL
+historial_postulaciones -> postulaciones | DELETE: CASCADE
+instituciones -> paises | DELETE: RESTRICT
+niveles_puesto -> candidatos | DELETE: RESTRICT
+notificaciones_postulacion -> postulaciones | DELETE: CASCADE
+organizaciones -> candidatos | DELETE: RESTRICT
+organizaciones -> paises | DELETE: RESTRICT
+pagos_vacante -> empleos | DELETE: RESTRICT
+password_reset_tokens -> usuarios | DELETE: CASCADE
+postulaciones -> candidatos | DELETE: CASCADE
+postulaciones -> empleos | DELETE: RESTRICT
+postulaciones -> estados_postulacion | DELETE: RESTRICT
+puestos -> candidatos | DELETE: RESTRICT
+revisiones_vacante -> empleos | DELETE: RESTRICT
+revisiones_vacante -> usuarios | DELETE: RESTRICT
+usuarios -> roles | DELETE: RESTRICT
+vacantes_guardadas -> candidatos | DELETE: CASCADE
+vacantes_guardadas -> empleos | DELETE: RESTRICT
