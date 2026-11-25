@@ -304,3 +304,21 @@ Base aislada: portalempleoshu04testing.
 - Limpieza de fixtures, movimientos y tokens.
 
 Base aislada: portalempleoshu04testing.
+
+## Anexo QA-14 - Fixtures Karate
+
+<!-- QA14-DATOS -->
+
+- UUID dinamico de ejecucion.
+- Usuario temporal sintetico.
+- Correo karate-{uuid}@qa.example.test.
+- Password aleatoria no versionada.
+- Token Sanctum obtenido mediante login.
+- Identificadores obtenidos desde la API.
+
+Preparacion y limpieza:
+qa/karate/scripts/run-local.sh.
+
+Las seis cuentas QA compartidas no se eliminan.
+
+Base autorizada: portal_empleos_calidad_qa.

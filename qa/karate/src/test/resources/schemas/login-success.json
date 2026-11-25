@@ -1,0 +1,10 @@
+{
+  "success": true,
+  "message": "#string",
+  "data": {
+    "usuario_id": "#number",
+    "correo": "#string",
+    "rol": "#string",
+    "token": "#string"
+  }
+}

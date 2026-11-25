@@ -170,3 +170,25 @@ Evidencia incorporada:
 Esta evidencia prepara las pruebas obligatorias,
 pero no sustituye Karate, JMeter, Selenium,
 Appium ni la trazabilidad en Jira.
+
+## Seguimiento QA-14 - Infraestructura Karate
+
+<!-- QA14-RUBRICA -->
+
+| Control | Evidencia actual | Cobertura pendiente |
+| --- | --- | --- |
+| RUB-K01 | Esquemas completos de smoke | Contratos de negocio |
+| RUB-K02 | HTTP 200, 401, 422 | Resto de estados previstos |
+| RUB-K03 | Aserciones de tiempo | Flujos funcionales completos |
+| RUB-K04 | Ambiente, UUID, token e ID | Datos dinamicos de negocio |
+| RUB-K05 | Helpers health, login y logout | Reutilizacion en flujos completos |
+
+Resultado: cuatro escenarios Karate aprobados
+y seis pruebas unitarias Java aprobadas.
+
+Fallo controlado del runner: verificado.
+
+Evidencias: docs/evidencias/QA-14/.
+
+No se considera acreditado el puntaje completo
+de Karate hasta ejecutar QA-15, QA-16 y QA-17.

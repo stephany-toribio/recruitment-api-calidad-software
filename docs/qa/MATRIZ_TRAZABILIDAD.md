@@ -317,3 +317,23 @@ Resultado de regresion: 843 pruebas aprobadas.
 
 Las pruebas formales de Karate, Selenium, Appium
 y JMeter continuan pendientes.
+
+## Anexo QA-14 - Infraestructura Karate
+
+<!-- QA14-TRAZABILIDAD -->
+
+| Identificador | Evidencia | Resultado |
+| --- | --- | --- |
+| QA14-S01 | Health y call | PASS |
+| QA14-S02 | Recurso protegido sin token | PASS |
+| QA14-S03 | Validacion de login | PASS |
+| QA14-S04 | Login, consulta, logout y revocacion | PASS |
+
+Estos identificadores son comprobaciones de
+infraestructura y no reemplazan los casos
+canonicos del catalogo QA-04.
+
+RUB-K01, RUB-K02, RUB-K03, RUB-K04 y RUB-K05
+cuentan con evidencia inicial.
+
+Evidencias: docs/evidencias/QA-14/RESULTADOS.md.

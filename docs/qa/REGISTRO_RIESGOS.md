@@ -191,3 +191,19 @@ por aprobar pruebas auxiliares.
 
 Los riesgos no se consideran eliminados
 unicamente por aprobar pruebas auxiliares.
+
+## Seguimiento QA-14 - Riesgos de automatizacion
+
+<!-- QA14-RIESGOS -->
+
+| Riesgo | Control | Estado |
+| --- | --- | --- |
+| Secretos en logs HTTP | HttpLogModifier | Verificado |
+| Token en argumentos call | Eliminacion del argumento y escaneo | Retest PASS |
+| Usuarios temporales residuales | Limpieza por UUID | Verificado |
+| Runner que oculta fallos | Fallo controlado | Verificado |
+| Interferencia con cuentas QA | Fixture independiente | Control implementado |
+| Destino remoto incorrecto | Validacion de URL y entorno | QA-13 pendiente |
+
+La revision de secretos debe mantenerse en
+todas las suites y futuros pipelines CI.
