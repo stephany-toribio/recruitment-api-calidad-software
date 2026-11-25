@@ -159,3 +159,18 @@ Consultar docs/evidencias/QA-07/DEFECTOS.md.
 
 Estos riesgos no se consideran eliminados por aprobar
 las pruebas auxiliares.
+
+## Seguimiento QA-08
+
+<!-- QA08-RIESGOS -->
+
+| Riesgo | Control | Verificacion pendiente |
+| --- | --- | --- |
+| Duplicidad concurrente | Bloqueos, UNIQUE y HTTP Kernel | JMeter por red |
+| Respuestas desactualizadas | Versionado de consultas | Selenium E2E |
+| Dobles confirmaciones | Guardas de procesamiento | Selenium y Appium |
+| Resultado incierto por desconexion | Mensajes y reconciliacion | Pruebas de red |
+| Regresion del flujo empresarial | Suites de postulacion y retiro | QA-09 |
+
+No se consideran eliminados todos los riesgos
+por aprobar pruebas auxiliares.

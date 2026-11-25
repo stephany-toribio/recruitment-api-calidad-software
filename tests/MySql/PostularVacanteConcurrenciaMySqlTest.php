@@ -22,6 +22,8 @@ class PostularVacanteConcurrenciaMySqlTest extends TestCase
 
     private ?int $candidatoId = null;
 
+    private array $candidatosAdicionales = [];
+
     private ?int $empresaId = null;
 
     private ?int $areaId = null;
@@ -306,14 +308,33 @@ class PostularVacanteConcurrenciaMySqlTest extends TestCase
         ];
     }
 
-    private function iniciarWorker(bool $detener): array
-    {
+    private function iniciarWorker(
+        bool $detener,
+        ?int $candidatoId = null,
+        string $modo = 'servicio'
+    ): array {
+        $candidatoId ??= $this->candidatoId;
+
+        $token = null;
+
+        if ($modo === 'http') {
+            $usuarioId = DB::table('candidatos')
+                ->where('id', $candidatoId)
+                ->value('usuario_id');
+
+            $token = \App\Models\Usuario::findOrFail($usuarioId)
+                ->createToken('qa08-concurrencia')
+                ->plainTextToken;
+        }
+
         $entrada = new InputStream;
 
         $entrada->write(json_encode([
-            'candidato_id' => $this->candidatoId,
+            'candidato_id' => $candidatoId,
             'vacante_id' => $this->vacanteId,
             'detener_tras_bloqueo' => $detener,
+            'modo' => $modo,
+            'token' => $token,
         ], JSON_THROW_ON_ERROR).PHP_EOL);
 
         $configuracion = DB::connection()->getConfig();
@@ -622,8 +643,16 @@ class PostularVacanteConcurrenciaMySqlTest extends TestCase
                 ->where('id', $this->areaId)
                 ->delete();
 
+            DB::table('personal_access_tokens')
+                ->where('tokenable_type', (new \App\Models\Usuario)->getMorphClass())
+                ->whereIn('tokenable_id', $this->usuariosCreados)
+                ->delete();
+
             DB::table('candidatos')
-                ->where('id', $this->candidatoId)
+                ->whereIn('id', array_merge(
+                    [$this->candidatoId],
+                    $this->candidatosAdicionales
+                ))
                 ->delete();
 
             DB::table('usuarios')
@@ -639,4 +668,203 @@ class PostularVacanteConcurrenciaMySqlTest extends TestCase
                 ->delete();
         });
     }
+
+    private function crearCandidatoAdicional(): int
+    {
+        $usuarioId = $this->crearUsuario('candidato');
+
+        $id = (int) DB::table('candidatos')->insertGetId([
+            'usuario_id' => $usuarioId,
+            'nombre' => 'Candidato adicional QA08',
+            'apellidos' => 'Integracion',
+            'dni' => null,
+            'fecha_nacimiento' => '2000-01-01',
+            'genero' => null,
+            'busca_primer_empleo' => true,
+            'celular' => '9'.str_pad(
+                (string) $usuarioId,
+                8,
+                '0',
+                STR_PAD_LEFT
+            ),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->candidatosAdicionales[] = $id;
+
+        return $id;
+    }
+
+    private function carreraHttp(int $segundoCandidato): array
+    {
+        $primero = $this->iniciarWorker(
+            true,
+            $this->candidatoId,
+            'http'
+        );
+
+        $listoPrimero = $this->esperarEvento(
+            $primero,
+            'LISTO'
+        );
+
+        $primero['entrada']->write("INICIAR\n");
+
+        $this->esperarEvento(
+            $primero,
+            'BLOQUEO_OBTENIDO'
+        );
+
+        $segundo = $this->iniciarWorker(
+            false,
+            $segundoCandidato,
+            'http'
+        );
+
+        $listoSegundo = $this->esperarEvento(
+            $segundo,
+            'LISTO'
+        );
+
+        $this->assertNotSame(
+            $listoPrimero['conexion_id'],
+            $listoSegundo['conexion_id']
+        );
+
+        $segundo['entrada']->write("INICIAR\n");
+
+        $intento = $this->esperarEvento(
+            $segundo,
+            'INTENTO_BLOQUEO'
+        );
+
+        $this->assertGreaterThan(
+            0,
+            $intento['nivel_transaccion']
+        );
+
+        $this->assertNull(
+            $this->buscarEvento(
+                $segundo['proceso'],
+                'BLOQUEO_OBTENIDO'
+            )
+        );
+
+        $primero['entrada']->write("LIBERAR\n");
+
+        return [
+            $this->terminarWorker($primero),
+            $this->terminarWorker($segundo),
+        ];
+    }
+
+    public function test_cp13_02_concurrencia_http_mismo_candidato(): void
+    {
+        [$primero, $segundo] = $this->carreraHttp(
+            $this->candidatoId
+        );
+
+        $this->assertSame('http', $primero['modo']);
+        $this->assertSame('http', $segundo['modo']);
+
+        $this->assertSame(201, $primero['status']);
+        $this->assertSame(409, $segundo['status']);
+
+        $this->assertTrue($primero['success']);
+        $this->assertFalse($segundo['success']);
+
+        $this->assertSame(
+            'DUPLICATE_APPLICATION',
+            $segundo['error_code']
+        );
+
+        $this->assertSame('recibido', $primero['estado']);
+
+        $this->assertSame(
+            1,
+            DB::table('postulaciones')
+                ->where('empleo_id', $this->vacanteId)
+                ->where('candidato_id', $this->candidatoId)
+                ->count()
+        );
+
+        $this->assertDatabaseHas('postulaciones', [
+            'id' => $primero['postulacion_id'],
+            'empleo_id' => $this->vacanteId,
+            'candidato_id' => $this->candidatoId,
+            'estado_postulacion_id' => $this->estadoId(),
+            'retirada_en' => null,
+        ]);
+
+        fwrite(STDOUT, PHP_EOL.json_encode([
+            'caso' => 'CP-13-02',
+            'status' => [
+                $primero['status'],
+                $segundo['status'],
+            ],
+            'error_code' => $segundo['error_code'],
+            'registros' => 1,
+        ], JSON_THROW_ON_ERROR).PHP_EOL);
+    }
+
+    public function test_cp14_01_concurrencia_http_candidatos_distintos(): void
+    {
+        $otro = $this->crearCandidatoAdicional();
+
+        $this->assertDatabaseHas('empleos', [
+            'id' => $this->vacanteId,
+            'numero_vacantes' => 1,
+        ]);
+
+        [$primero, $segundo] = $this->carreraHttp($otro);
+
+        $this->assertSame('http', $primero['modo']);
+        $this->assertSame('http', $segundo['modo']);
+
+        $this->assertSame(201, $primero['status']);
+        $this->assertSame(201, $segundo['status']);
+
+        $this->assertTrue($primero['success']);
+        $this->assertTrue($segundo['success']);
+
+        $this->assertSame('recibido', $primero['estado']);
+        $this->assertSame('recibido', $segundo['estado']);
+
+        $this->assertNotSame(
+            $primero['postulacion_id'],
+            $segundo['postulacion_id']
+        );
+
+        $this->assertSame(
+            2,
+            DB::table('postulaciones')
+                ->where('empleo_id', $this->vacanteId)
+                ->count()
+        );
+
+        foreach ([
+            [$primero, $this->candidatoId],
+            [$segundo, $otro],
+        ] as [$respuesta, $candidato]) {
+            $this->assertDatabaseHas('postulaciones', [
+                'id' => $respuesta['postulacion_id'],
+                'empleo_id' => $this->vacanteId,
+                'candidato_id' => $candidato,
+                'estado_postulacion_id' => $this->estadoId(),
+                'retirada_en' => null,
+            ]);
+        }
+
+        fwrite(STDOUT, PHP_EOL.json_encode([
+            'caso' => 'CP-14-01',
+            'status' => [
+                $primero['status'],
+                $segundo['status'],
+            ],
+            'numero_vacantes' => 1,
+            'registros' => 2,
+        ], JSON_THROW_ON_ERROR).PHP_EOL);
+    }
+
 }

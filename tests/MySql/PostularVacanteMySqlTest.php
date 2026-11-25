@@ -1176,4 +1176,224 @@ class PostularVacanteMySqlTest extends TestCase
             'retirada_en' => $retirada ? now() : null,
         ]);
     }
+
+    private function listarPostulacionesQa08(
+        ?string $token = null
+    ): TestResponse {
+        $this->reiniciarAutenticacionHttp();
+
+        return $this->getJson(
+            '/api/v1/candidatos/me/postulaciones',
+            $token === null
+                ? []
+                : ['Authorization' => 'Bearer '.$token]
+        );
+    }
+
+    public function test_cp21_01_listado_vacio(): void
+    {
+        $this->listarPostulacionesQa08(
+            $this->tokenHttp()
+        )
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonCount(0, 'data');
+    }
+
+    public function test_cp21_01_listado_solo_contiene_postulaciones_propias(): void
+    {
+        $propia = $this->postular();
+
+        $otro = $this->crearCandidato();
+
+        $ajena = app(PostulacionService::class)->postular(
+            $otro,
+            (int) $this->vacante->getKey()
+        );
+
+        $respuesta = $this->listarPostulacionesQa08(
+            $this->tokenHttp()
+        );
+
+        $respuesta
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.id', $propia->getKey())
+            ->assertJsonPath('data.0.estado.codigo', 'recibido')
+            ->assertJsonPath('data.0.retirada', false)
+            ->assertJsonPath('data.0.puede_retirar', true)
+            ->assertJsonPath('data.0.ver_vacante', 'disponible')
+            ->assertJsonMissingPath('data.0.candidato_id')
+            ->assertJsonMissingPath('data.0.usuario_id');
+
+        $this->assertNotSame(
+            $ajena->getKey(),
+            $respuesta->json('data.0.id')
+        );
+
+        $this->listarPostulacionesQa08(
+            $this->tokenHttp($otro->usuario_id)
+        )
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.id', $ajena->getKey());
+    }
+
+    public function test_cp21_01_listado_conserva_postulacion_retirada(): void
+    {
+        $postulacion = $this->crearPostulacionPrevia(
+            EstadoPostulacion::ENTREVISTA,
+            true
+        );
+
+        $this->listarPostulacionesQa08(
+            $this->tokenHttp()
+        )
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath(
+                'data.0.id',
+                $postulacion->getKey()
+            )
+            ->assertJsonPath('data.0.estado.codigo', 'entrevista')
+            ->assertJsonPath('data.0.retirada', true)
+            ->assertJsonPath('data.0.puede_retirar', false);
+
+        $this->assertNotNull(
+            $postulacion->fresh()->retirada_en
+        );
+    }
+
+    public function test_cp21_02_listado_conserva_vacante_pausada(): void
+    {
+        $postulacion = $this->postular();
+
+        $this->vacante->update([
+            'estado_empleo' => 'pausada',
+        ]);
+
+        $this->listarPostulacionesQa08(
+            $this->tokenHttp()
+        )
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath(
+                'data.0.id',
+                $postulacion->getKey()
+            )
+            ->assertJsonPath(
+                'data.0.vacante.estado',
+                'pausada'
+            )
+            ->assertJsonPath(
+                'data.0.ver_vacante',
+                'historico'
+            );
+    }
+
+    public function test_cp21_02_listado_conserva_vacante_eliminada(): void
+    {
+        $postulacion = $this->postular();
+
+        $this->vacante->delete();
+
+        $this->listarPostulacionesQa08(
+            $this->tokenHttp()
+        )
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath(
+                'data.0.id',
+                $postulacion->getKey()
+            )
+            ->assertJsonPath(
+                'data.0.vacante.estado',
+                'eliminada'
+            )
+            ->assertJsonPath(
+                'data.0.ver_vacante',
+                'historico'
+            );
+    }
+
+    public function test_cp21_listado_requiere_autenticacion_y_rol_candidato(): void
+    {
+        $this->listarPostulacionesQa08()
+            ->assertUnauthorized()
+            ->assertJsonPath(
+                'error_code',
+                'UNAUTHENTICATED'
+            );
+
+        $this->listarPostulacionesQa08(
+            $this->tokenHttp($this->empresaUsuarioId)
+        )
+            ->assertForbidden()
+            ->assertJsonPath(
+                'error_code',
+                'FORBIDDEN'
+            );
+    }
+
+
+    public function test_cp14_02_multiples_postulantes_no_consumen_cupos(): void
+    {
+        $this->vacante->update([
+            'numero_vacantes' => 1,
+        ]);
+
+        $anteriores = [];
+
+        for ($i = 0; $i < 5; $i++) {
+            $otro = $this->crearCandidato();
+
+            $postulacion = app(PostulacionService::class)
+                ->postular(
+                    $otro,
+                    (int) $this->vacante->getKey()
+                );
+
+            $anteriores[] = $postulacion->getKey();
+        }
+
+        $respuesta = $this->postularHttp([
+            'vacante_id' => $this->vacante->getKey(),
+        ], $this->tokenHttp());
+
+        $respuesta
+            ->assertCreated()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.estado.codigo', 'recibido')
+            ->assertJsonPath('data.retirada', false);
+
+        $this->assertSame(
+            6,
+            DB::table('postulaciones')
+                ->where('empleo_id', $this->vacante->getKey())
+                ->count()
+        );
+
+        foreach ($anteriores as $id) {
+            $this->assertDatabaseHas('postulaciones', [
+                'id' => $id,
+                'empleo_id' => $this->vacante->getKey(),
+                'retirada_en' => null,
+                'estado_postulacion_id' => $this->estadoId(
+                    EstadoPostulacion::RECIBIDO
+                ),
+            ]);
+        }
+
+        $this->assertDatabaseHas('postulaciones', [
+            'id' => $respuesta->json('data.id'),
+            'candidato_id' => $this->candidato->getKey(),
+            'empleo_id' => $this->vacante->getKey(),
+        ]);
+
+        $this->assertDatabaseHas('empleos', [
+            'id' => $this->vacante->getKey(),
+            'numero_vacantes' => 1,
+        ]);
+    }
+
 }

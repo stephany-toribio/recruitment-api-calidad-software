@@ -1,0 +1,3 @@
+PostularVacanteMySqlTest: exit=0
+PostularVacanteConcurrenciaMySqlTest: exit=0
+RetirarPostulacionMySqlTest: exit=0

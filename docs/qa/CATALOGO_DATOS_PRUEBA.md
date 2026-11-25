@@ -273,3 +273,18 @@ procedimiento de preparación y restauración de datos.
 Base de integracion: portalempleoshu04testing.
 
 No utilizar datos personales ni credenciales reales.
+
+## Anexo QA-08 - Datos de postulacion
+
+<!-- QA08-DATOS -->
+
+- Candidatos sinteticos con correos example.test.
+- Vacante aprobada y pagada mediante simulacion.
+- Vacante con un puesto para pruebas concurrentes.
+- Tokens Sanctum temporales.
+- Estados iniciales, intermedios y terminales.
+- Vacantes pausadas y eliminadas.
+- Conexiones MySQL independientes.
+- Limpieza de fixtures y tokens al finalizar.
+
+Base aislada: portalempleoshu04testing.

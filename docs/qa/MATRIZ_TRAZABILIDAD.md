@@ -259,3 +259,30 @@ Se conserva la evidencia de propiedad obtenida en QA-05.
 
 La validacion E2E, visual y de accesibilidad permanece
 pendiente en las tareas correspondientes.
+
+## Anexo QA-08 - Evidencia de implementacion
+
+<!-- QA08-TRAZABILIDAD -->
+
+| Caso | Evidencia de integracion |
+| --- | --- |
+| CP-12-01 | Creacion en recibido y persistencia |
+| CP-12-02 | Candidato suspendido |
+| CP-13-01 | Duplicado secuencial |
+| CP-13-02 | HTTP Kernel concurrente: 201 y 409 |
+| CP-14-01 | HTTP Kernel concurrente: 201 y 201 |
+| CP-14-02 | Seis postulantes y un puesto |
+| CP-20-01 | Retiro propio y conservacion de etapa |
+| CP-20-02 | Retiro ajeno rechazado |
+| CP-20-03 | Repostulacion rechazada |
+| CP-20-04 | Retiro desde etapa terminal rechazado |
+| CP-21-01 | Listado propio, privacidad y retiro |
+| CP-21-02 | Vacantes pausadas y eliminadas |
+
+Resultado de integracion: PASS para los escenarios
+evaluados.
+
+Evidencia: docs/evidencias/QA-08/RESULTADOS.md.
+
+Las ejecuciones formales Karate, JMeter, Selenium
+y Appium permanecen pendientes.
