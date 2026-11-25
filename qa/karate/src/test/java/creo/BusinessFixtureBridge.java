@@ -81,6 +81,44 @@ public final class BusinessFixtureBridge {
         ));
     }
 
+
+    public static Map<?, ?> consultarCandidato(
+        String runId,
+        int candidatoId
+    ) throws Exception {
+        return ejecutar(Map.of(
+            "accion", "consultar_candidato",
+            "run_id", runId,
+            "candidato_id", candidatoId
+        ));
+    }
+
+    public static Map<?, ?> postulacionInexistente(
+        String runId
+    ) throws Exception {
+        return ejecutar(Map.of(
+            "accion", "postulacion_inexistente",
+            "run_id", runId
+        ));
+    }
+
+
+    public static Map<?, ?> prepararIndisponibilidad(
+        String runId,
+        int vacanteId,
+        String condicion,
+        java.util.List<Integer> candidatos
+    ) throws Exception {
+
+        return ejecutar(Map.of(
+            "accion", "preparar_indisponibilidad",
+            "run_id", runId,
+            "vacante_id", vacanteId,
+            "condicion", condicion,
+            "candidatos", candidatos
+        ));
+    }
+
     private static Map<?, ?> ejecutar(
         Map<String, ?> entrada
     ) throws Exception {

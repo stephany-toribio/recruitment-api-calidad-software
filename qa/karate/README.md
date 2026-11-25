@@ -355,3 +355,28 @@ Las evidencias revisadas se encuentran en:
 
 QA-17 completa la cobertura de autorizacion,
 conflictos y restricciones adicionales.
+
+<!-- QA17-CIERRE -->
+
+## QA-17 - Autorización y conflictos
+
+Suite completa: 32 escenarios.
+
+    unset QA17_TAGS
+    qa/karate/scripts/run-qa17.sh full
+
+Demostración: cinco escenarios.
+
+    unset QA17_TAGS
+    qa/karate/scripts/run-qa17.sh demo
+
+Diagnóstico:
+
+    QA17_TAGS="@disponibilidad" \
+      qa/karate/scripts/run-qa17.sh full
+
+Evidencias: docs/evidencias/QA-17/.
+
+Total Karate QA-14 a QA-17: 109 escenarios.
+
+Ejecutar los runners secuencialmente.

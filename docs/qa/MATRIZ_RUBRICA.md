@@ -238,3 +238,21 @@ completar QA-17.
 
 La acreditacion de la rubrica completa requiere
 JMeter, Selenium, Appium y trazabilidad Jira.
+
+<!-- QA17-CIERRE -->
+
+## Evidencia final Karate QA-17
+
+| Control | Resultado |
+| --- | --- |
+| RUB-K01 - Esquemas JSON | PASS |
+| RUB-K02 - Estados HTTP | PASS |
+| RUB-K03 - Tiempo de respuesta | PASS |
+| RUB-K04 - Variables dinámicas | PASS |
+| RUB-K05 - Reutilización call | PASS |
+
+109 escenarios diferentes aprobados en QA-14 a QA-17.
+
+Evidencia: [QA-17](../evidencias/QA-17/RESULTADOS.md).
+
+La calificación corresponde al docente.
