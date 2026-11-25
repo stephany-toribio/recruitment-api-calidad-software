@@ -78,6 +78,29 @@ class RetirarPostulacionConcurrenciaMySqlTest extends TestCase
                 }
 
                 DB::transaction(function (): void {
+                    // Limpiar exclusivamente datos generados por esta prueba.
+                    foreach ($this->registrosCreados as [$tabla, $id]) {
+                        if ($tabla === 'postulaciones') {
+                            DB::table('historial_postulaciones')
+                                ->where('postulacion_id', $id)
+                                ->delete();
+
+                            DB::table('notificaciones_postulacion')
+                                ->where('postulacion_id', $id)
+                                ->delete();
+                        }
+
+                        if ($tabla === 'usuarios') {
+                            DB::table('personal_access_tokens')
+                                ->where('tokenable_id', $id)
+                                ->where(
+                                    'tokenable_type',
+                                    (new \App\Models\Usuario)->getMorphClass()
+                                )
+                                ->delete();
+                        }
+                    }
+
                     $registros = array_reverse($this->registrosCreados);
 
                     foreach ($registros as [$tabla, $id]) {
@@ -746,4 +769,663 @@ class RetirarPostulacionConcurrenciaMySqlTest extends TestCase
                 ->count()
         );
     }
+
+    private function crearPostulacionQa09(): int
+    {
+        $usuario = $this->crearUsuario('candidato');
+
+        $candidato = $this->insertar('candidatos', [
+            'usuario_id' => $usuario,
+            'nombre' => 'Candidato QA09',
+            'apellidos' => 'Concurrencia',
+            'dni' => null,
+            'fecha_nacimiento' => '2000-01-01',
+            'genero' => null,
+            'busca_primer_empleo' => true,
+            'celular' => '9'.str_pad(
+                (string) $usuario,
+                8,
+                '0',
+                STR_PAD_LEFT
+            ),
+        ]);
+
+        return $this->insertar('postulaciones', [
+            'candidato_id' => $candidato,
+            'empleo_id' => $this->vacanteId,
+            'estado_postulacion_id' => $this->catalogoId(
+                'estados_postulacion',
+                EstadoPostulacion::ENTREVISTA
+            ),
+            'porcentaje_match' => null,
+            'fecha_postulacion' => now(),
+            'retirada_en' => null,
+        ]);
+    }
+
+    private function iniciarContratacionHttpQa09(
+        int $postulacionId
+    ): array {
+        $empresa = Empresa::findOrFail(
+            DB::table('empleos')
+                ->where('id', $this->vacanteId)
+                ->value('empresa_id')
+        );
+
+        $token = \App\Models\Usuario::findOrFail(
+            $empresa->usuario_id
+        )->createToken('qa09-concurrencia')->plainTextToken;
+
+        $entrada = new InputStream;
+
+        $entrada->write(json_encode([
+            'empresa_id' => (int) $empresa->id,
+            'vacante_id' => $this->vacanteId,
+            'postulacion_id' => $postulacionId,
+            'modo' => 'http',
+            'token' => $token,
+        ], JSON_THROW_ON_ERROR).PHP_EOL);
+
+        $config = DB::connection()->getConfig();
+
+        $proceso = new Process(
+            [
+                PHP_BINARY,
+                base_path('tests/Support/hu16_kanban_worker.php'),
+            ],
+            base_path(),
+            [
+                'APP_ENV' => 'testing',
+                'DB_CONNECTION' => 'mysql',
+                'DB_HOST' => (string) $config['host'],
+                'DB_PORT' => (string) $config['port'],
+                'DB_USERNAME' => (string) $config['username'],
+                'DB_PASSWORD' => (string) $config['password'],
+                'DB_DATABASE' => 'portalempleoshu04testing',
+                'DB_URL' => '',
+                'CACHE_STORE' => 'array',
+                'SESSION_DRIVER' => 'array',
+                'QUEUE_CONNECTION' => 'sync',
+                'MAIL_MAILER' => 'array',
+            ],
+            $entrada,
+            30
+        );
+
+        $worker = [
+            'proceso' => $proceso,
+            'entrada' => $entrada,
+        ];
+
+        $this->procesos[] = $worker;
+
+        $proceso->start();
+
+        return $worker;
+    }
+
+    private function carreraContratacionQa09(
+        int $puestos,
+        bool $mismoCandidato = false
+    ): array {
+        DB::table('empleos')
+            ->where('id', $this->vacanteId)
+            ->update(['numero_vacantes' => $puestos]);
+
+        DB::table('postulaciones')
+            ->where('id', $this->postulacionId)
+            ->update([
+                'estado_postulacion_id' => $this->catalogoId(
+                    'estados_postulacion',
+                    EstadoPostulacion::ENTREVISTA
+                ),
+            ]);
+
+        $segundaId = $mismoCandidato
+            ? $this->postulacionId
+            : $this->crearPostulacionQa09();
+
+        $primero = $this->iniciarContratacionHttpQa09(
+            $this->postulacionId
+        );
+
+        $segundo = $this->iniciarContratacionHttpQa09(
+            $segundaId
+        );
+
+        $listoA = $this->esperarEvento($primero, 'LISTO');
+        $listoB = $this->esperarEvento($segundo, 'LISTO');
+
+        $this->assertConexionIndependiente($listoA);
+        $this->assertConexionIndependiente($listoB);
+
+        $this->assertNotSame(
+            $listoA['conexion_id'],
+            $listoB['conexion_id']
+        );
+
+        DB::beginTransaction();
+
+        try {
+            DB::table('empleos')
+                ->where('id', $this->vacanteId)
+                ->lockForUpdate()
+                ->first();
+
+            $primero['entrada']->write("INICIAR\n");
+            $segundo['entrada']->write("INICIAR\n");
+
+            foreach ([$primero, $segundo] as $worker) {
+                $intento = $this->esperarEvento(
+                    $worker,
+                    'INTENTO_VACANTE'
+                );
+
+                $this->assertGreaterThan(
+                    0,
+                    $intento['nivel_transaccion']
+                );
+
+                $this->assertNull(
+                    $this->buscarEvento(
+                        $worker['proceso'],
+                        'RESULTADO'
+                    )
+                );
+            }
+
+            DB::commit();
+        } catch (\Throwable $error) {
+            if (DB::transactionLevel() > 0) {
+                DB::rollBack();
+            }
+
+            throw $error;
+        }
+
+        $resultados = [
+            $this->terminarWorker($primero),
+            $this->terminarWorker($segundo),
+        ];
+
+        usort(
+            $resultados,
+            fn ($a, $b) => $a['status'] <=> $b['status']
+        );
+
+        foreach ($resultados as $resultado) {
+            $this->assertSame(
+                'http',
+                $resultado['modo']
+            );
+        }
+
+        return $resultados;
+    }
+
+    private function comprobarContratadosQa09(
+        int $esperados
+    ): void {
+        $contratados = DB::table('postulaciones')
+            ->where('empleo_id', $this->vacanteId)
+            ->where(
+                'estado_postulacion_id',
+                $this->estadoContratadoId
+            )
+            ->pluck('id');
+
+        $this->assertCount($esperados, $contratados);
+
+        $movimientos = DB::table('historial_postulaciones')
+            ->whereIn('postulacion_id', $contratados)
+            ->where(
+                'estado_postulacion_id',
+                $this->estadoContratadoId
+            )
+            ->get();
+
+        $this->assertCount($esperados, $movimientos);
+
+        foreach ($contratados as $id) {
+            $this->assertCount(
+                1,
+                $movimientos->where('postulacion_id', $id)
+            );
+        }
+
+        foreach ($movimientos as $movimiento) {
+            $this->assertNotNull($movimiento->fecha_cambio);
+            $this->assertNull($movimiento->motivo_rechazo_id);
+        }
+    }
+
+    public function test_cp19_01_contrataciones_concurrentes_ultimo_cupo(): void
+    {
+        $resultados = $this->carreraContratacionQa09(1);
+
+        $this->assertSame(
+            [200, 409],
+            array_column($resultados, 'status')
+        );
+
+        $this->assertSame(
+            'contratado',
+            $resultados[0]['estado']
+        );
+
+        $this->assertSame(
+            'HIRING_LIMIT_REACHED',
+            $resultados[1]['error_code']
+        );
+
+        $this->comprobarContratadosQa09(1);
+
+        $this->assertSame(
+            1,
+            DB::table('postulaciones')
+                ->where('empleo_id', $this->vacanteId)
+                ->where(
+                    'estado_postulacion_id',
+                    EstadoPostulacion::idDe(
+                        EstadoPostulacion::ENTREVISTA
+                    )
+                )
+                ->count()
+        );
+
+        fwrite(STDOUT, PHP_EOL.json_encode([
+            'caso' => 'CP-19-01',
+            'status' => array_column($resultados, 'status'),
+            'error_code' => $resultados[1]['error_code'],
+            'contratados' => 1,
+            'puestos' => 1,
+        ], JSON_THROW_ON_ERROR).PHP_EOL);
+    }
+
+    public function test_cp19_02_contrataciones_concurrentes_dos_cupos(): void
+    {
+        $resultados = $this->carreraContratacionQa09(2);
+
+        $this->assertSame(
+            [200, 200],
+            array_column($resultados, 'status')
+        );
+
+        $this->assertNotSame(
+            $resultados[0]['postulacion_id'],
+            $resultados[1]['postulacion_id']
+        );
+
+        $this->comprobarContratadosQa09(2);
+
+        fwrite(STDOUT, PHP_EOL.json_encode([
+            'caso' => 'CP-19-02',
+            'status' => array_column($resultados, 'status'),
+            'contratados' => 2,
+            'puestos' => 2,
+        ], JSON_THROW_ON_ERROR).PHP_EOL);
+    }
+
+    public function test_qa09_contratacion_duplicada_del_mismo_candidato(): void
+    {
+        $resultados = $this->carreraContratacionQa09(
+            2,
+            true
+        );
+
+        $this->assertSame(
+            [200, 409],
+            array_column($resultados, 'status')
+        );
+
+        $this->assertSame(
+            'INVALID_TRANSITION',
+            $resultados[1]['error_code']
+        );
+
+        $this->comprobarContratadosQa09(1);
+
+        fwrite(STDOUT, PHP_EOL.json_encode([
+            'caso' => 'QA09-CONTRATACION-DUPLICADA',
+            'status' => array_column($resultados, 'status'),
+            'error_code' => $resultados[1]['error_code'],
+            'contratados' => 1,
+        ], JSON_THROW_ON_ERROR).PHP_EOL);
+    }
+
+
+    private function empresaQa09(): Empresa
+    {
+        return Empresa::findOrFail(
+            DB::table('empleos')
+                ->where('id', $this->vacanteId)
+                ->value('empresa_id')
+        );
+    }
+
+    private function kanbanQa09(): KanbanService
+    {
+        // Preparar todas las etapas requeridas por Kanban.
+        // catalogoId reutiliza registros existentes y registra
+        // los nuevos para eliminarlos durante tearDown.
+        foreach (EstadoPostulacion::ORDEN as $estado) {
+            $this->catalogoId(
+                'estados_postulacion',
+                $estado
+            );
+        }
+
+        $this->mock(
+            NotificacionPostulacionService::class,
+            function ($mock): void {
+                $mock->shouldReceive('notificarDecision')
+                    ->zeroOrMoreTimes()
+                    ->andReturnNull();
+            }
+        );
+
+        return app(KanbanService::class);
+    }
+
+    public function test_qa09_cp22_01_historial_cronologico_de_contratacion(): void
+    {
+        $empresa = $this->empresaQa09();
+        $kanban = $this->kanbanQa09();
+
+        $primero = $kanban->avanzar(
+            $empresa,
+            $this->vacanteId,
+            $this->postulacionId
+        );
+
+        $this->assertSame(
+            'en_revision',
+            $primero['estado']['codigo']
+        );
+
+        $segundo = $kanban->avanzar(
+            $empresa,
+            $this->vacanteId,
+            $this->postulacionId
+        );
+
+        $this->assertSame(
+            'entrevista',
+            $segundo['estado']['codigo']
+        );
+
+        $tercero = $kanban->contratar(
+            $empresa,
+            $this->vacanteId,
+            $this->postulacionId
+        );
+
+        $this->assertSame(
+            'contratado',
+            $tercero['estado']['codigo']
+        );
+
+        $historial = $kanban->historial(
+            $empresa,
+            $this->vacanteId
+        );
+
+        $this->assertCount(1, $historial['postulaciones']);
+
+        $registro = $historial['postulaciones'][0];
+
+        $this->assertSame(
+            $this->postulacionId,
+            (int) $registro['id']
+        );
+
+        $this->assertSame(
+            'contratado',
+            $registro['estado']['codigo']
+        );
+
+        $this->assertCount(3, $registro['movimientos']);
+
+        $this->assertSame(
+            ['en_revision', 'entrevista', 'contratado'],
+            array_column(
+                array_column($registro['movimientos'], 'estado'),
+                'codigo'
+            )
+        );
+
+        foreach ($registro['movimientos'] as $movimiento) {
+            $this->assertNotNull($movimiento['fecha_cambio']);
+            $this->assertNull($movimiento['motivo_rechazo']);
+        }
+
+        $this->assertSame(
+            3,
+            DB::table('historial_postulaciones')
+                ->where('postulacion_id', $this->postulacionId)
+                ->count()
+        );
+
+        $tablero = $kanban->tablero(
+            $empresa,
+            $this->vacanteId
+        );
+
+        $this->assertSame(
+            1,
+            $tablero['vacante']['contratados']
+        );
+
+        $this->assertSame(
+            0,
+            $tablero['vacante']['cupos_disponibles']
+        );
+
+        $this->assertDatabaseHas('postulaciones', [
+            'id' => $this->postulacionId,
+            'estado_postulacion_id' => $this->estadoContratadoId,
+            'retirada_en' => null,
+        ]);
+    }
+
+    public function test_qa09_cp22_02_conservacion_del_motivo_rechazo(): void
+    {
+        $empresa = $this->empresaQa09();
+        $kanban = $this->kanbanQa09();
+
+        $motivoId = $this->insertar('motivos_rechazo', [
+            'motivo' => 'Motivo sintetico QA09 '
+                .bin2hex(random_bytes(4)),
+        ]);
+
+        $motivo = DB::table('motivos_rechazo')
+            ->where('id', $motivoId)
+            ->value('motivo');
+
+        $kanban->avanzar(
+            $empresa,
+            $this->vacanteId,
+            $this->postulacionId
+        );
+
+        $kanban->avanzar(
+            $empresa,
+            $this->vacanteId,
+            $this->postulacionId
+        );
+
+        $resultado = $kanban->rechazar(
+            $empresa,
+            $this->vacanteId,
+            $this->postulacionId,
+            $motivoId
+        );
+
+        $this->assertSame(
+            'rechazado',
+            $resultado['estado']['codigo']
+        );
+
+        $this->assertSame(
+            $motivo,
+            $resultado['motivo_rechazo']
+        );
+
+        $historial = $kanban->historial(
+            $empresa,
+            $this->vacanteId
+        );
+
+        $movimientos =
+            $historial['postulaciones'][0]['movimientos'];
+
+        $this->assertCount(3, $movimientos);
+
+        $this->assertSame(
+            ['en_revision', 'entrevista', 'rechazado'],
+            array_column(
+                array_column($movimientos, 'estado'),
+                'codigo'
+            )
+        );
+
+        $this->assertNull($movimientos[0]['motivo_rechazo']);
+        $this->assertNull($movimientos[1]['motivo_rechazo']);
+
+        $this->assertSame(
+            $motivo,
+            $movimientos[2]['motivo_rechazo']
+        );
+
+        $this->assertDatabaseHas('historial_postulaciones', [
+            'postulacion_id' => $this->postulacionId,
+            'motivo_rechazo_id' => $motivoId,
+        ]);
+
+        $this->assertSame(
+            1,
+            DB::table('historial_postulaciones')
+                ->where('postulacion_id', $this->postulacionId)
+                ->whereNotNull('motivo_rechazo_id')
+                ->count()
+        );
+    }
+
+    public function test_qa09_cp22_03_retirada_conserva_movimientos(): void
+    {
+        $empresa = $this->empresaQa09();
+        $kanban = $this->kanbanQa09();
+
+        $kanban->avanzar(
+            $empresa,
+            $this->vacanteId,
+            $this->postulacionId
+        );
+
+        $kanban->avanzar(
+            $empresa,
+            $this->vacanteId,
+            $this->postulacionId
+        );
+
+        $antes = $kanban->historial(
+            $empresa,
+            $this->vacanteId
+        )['postulaciones'][0];
+
+        $retirada = app(
+            RetiroPostulacionService::class
+        )->retirar(
+            Candidato::findOrFail($this->candidatoId),
+            $this->postulacionId
+        );
+
+        $this->assertTrue($retirada->estaRetirada());
+
+        $despues = $kanban->historial(
+            $empresa,
+            $this->vacanteId
+        )['postulaciones'][0];
+
+        $this->assertTrue($despues['retirada']);
+        $this->assertNotNull($despues['retirada_en']);
+
+        $this->assertSame(
+            'entrevista',
+            $despues['estado']['codigo']
+        );
+
+        $this->assertSame(
+            $antes['movimientos'],
+            $despues['movimientos']
+        );
+
+        $tablero = $kanban->tablero(
+            $empresa,
+            $this->vacanteId
+        );
+
+        $tarjetas = collect($tablero['columnas'])
+            ->pluck('postulaciones')
+            ->flatten(1);
+
+        $this->assertNotContains(
+            $this->postulacionId,
+            $tarjetas->pluck('id')->all()
+        );
+
+        $this->assertSame(
+            2,
+            DB::table('historial_postulaciones')
+                ->where('postulacion_id', $this->postulacionId)
+                ->count()
+        );
+    }
+
+    public function test_qa09_decision_visible_en_seguimiento_candidato(): void
+    {
+        $empresa = $this->empresaQa09();
+        $kanban = $this->kanbanQa09();
+
+        $kanban->avanzar(
+            $empresa,
+            $this->vacanteId,
+            $this->postulacionId
+        );
+
+        $kanban->avanzar(
+            $empresa,
+            $this->vacanteId,
+            $this->postulacionId
+        );
+
+        $kanban->contratar(
+            $empresa,
+            $this->vacanteId,
+            $this->postulacionId
+        );
+
+        $token = \App\Models\Usuario::findOrFail(
+            $this->usuarioCandidatoId
+        )->createToken('qa09-seguimiento')->plainTextToken;
+
+        $this->getJson(
+            '/api/v1/candidatos/me/postulaciones',
+            ['Authorization' => 'Bearer '.$token]
+        )
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath(
+                'data.0.id',
+                $this->postulacionId
+            )
+            ->assertJsonPath(
+                'data.0.estado.codigo',
+                'contratado'
+            )
+            ->assertJsonPath('data.0.retirada', false)
+            ->assertJsonPath('data.0.puede_retirar', false);
+    }
+
 }

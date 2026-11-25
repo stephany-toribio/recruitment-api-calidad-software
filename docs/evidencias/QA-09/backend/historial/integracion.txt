@@ -1,0 +1,65 @@
+PHPUnit 11.5.56 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.3.37
+Configuration: /var/www/html/phpunit.mysql.xml
+
+EEEE                                                                4 / 4 (100%)
+
+Time: 00:00.663, Memory: 34.00 MB
+
+There were 4 errors:
+
+1) Tests\MySql\RetirarPostulacionConcurrenciaMySqlTest::test_qa09_cp22_01_historial_cronologico_de_contratacion
+Illuminate\Database\Eloquent\ModelNotFoundException: No query results for model [App\Models\EstadoPostulacion].
+
+/var/www/html/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:780
+/var/www/html/app/Models/EstadoPostulacion.php:61
+/var/www/html/app/Services/Postulaciones/KanbanService.php:304
+/var/www/html/vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php:35
+/var/www/html/vendor/laravel/framework/src/Illuminate/Database/DatabaseManager.php:491
+/var/www/html/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php:363
+/var/www/html/app/Services/Postulaciones/KanbanService.php:239
+/var/www/html/app/Services/Postulaciones/KanbanService.php:39
+/var/www/html/tests/MySql/RetirarPostulacionConcurrenciaMySqlTest.php:1125
+
+2) Tests\MySql\RetirarPostulacionConcurrenciaMySqlTest::test_qa09_cp22_02_conservacion_del_motivo_rechazo
+Illuminate\Database\Eloquent\ModelNotFoundException: No query results for model [App\Models\EstadoPostulacion].
+
+/var/www/html/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:780
+/var/www/html/app/Models/EstadoPostulacion.php:61
+/var/www/html/app/Services/Postulaciones/KanbanService.php:304
+/var/www/html/vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php:35
+/var/www/html/vendor/laravel/framework/src/Illuminate/Database/DatabaseManager.php:491
+/var/www/html/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php:363
+/var/www/html/app/Services/Postulaciones/KanbanService.php:239
+/var/www/html/app/Services/Postulaciones/KanbanService.php:39
+/var/www/html/tests/MySql/RetirarPostulacionConcurrenciaMySqlTest.php:1235
+
+3) Tests\MySql\RetirarPostulacionConcurrenciaMySqlTest::test_qa09_cp22_03_retirada_conserva_movimientos
+Illuminate\Database\Eloquent\ModelNotFoundException: No query results for model [App\Models\EstadoPostulacion].
+
+/var/www/html/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:780
+/var/www/html/app/Models/EstadoPostulacion.php:61
+/var/www/html/app/Services/Postulaciones/KanbanService.php:304
+/var/www/html/vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php:35
+/var/www/html/vendor/laravel/framework/src/Illuminate/Database/DatabaseManager.php:491
+/var/www/html/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php:363
+/var/www/html/app/Services/Postulaciones/KanbanService.php:239
+/var/www/html/app/Services/Postulaciones/KanbanService.php:39
+/var/www/html/tests/MySql/RetirarPostulacionConcurrenciaMySqlTest.php:1309
+
+4) Tests\MySql\RetirarPostulacionConcurrenciaMySqlTest::test_qa09_decision_visible_en_seguimiento_candidato
+Illuminate\Database\Eloquent\ModelNotFoundException: No query results for model [App\Models\EstadoPostulacion].
+
+/var/www/html/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:780
+/var/www/html/app/Models/EstadoPostulacion.php:61
+/var/www/html/app/Services/Postulaciones/KanbanService.php:304
+/var/www/html/vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php:35
+/var/www/html/vendor/laravel/framework/src/Illuminate/Database/DatabaseManager.php:491
+/var/www/html/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php:363
+/var/www/html/app/Services/Postulaciones/KanbanService.php:239
+/var/www/html/app/Services/Postulaciones/KanbanService.php:39
+/var/www/html/tests/MySql/RetirarPostulacionConcurrenciaMySqlTest.php:1380
+
+ERRORS!
+Tests: 4, Assertions: 4, Errors: 4.

@@ -152,3 +152,21 @@ Evidencia incorporada:
 
 Esta evidencia no acredita por si sola los controles
 obligatorios de Karate, JMeter, Selenium, Appium y Jira.
+
+## Seguimiento QA-09
+
+<!-- QA09-RUBRICA -->
+
+Evidencia incorporada:
+
+- Siete pruebas nuevas MySQL.
+- Treinta y dos pruebas auxiliares frontend.
+- Doce fallos iniciales superados mediante RED-GREEN.
+- Tres escenarios concurrentes de contratacion.
+- Historial empresarial conectado a la API.
+- Selectores estables para automatizacion.
+- Regresion completa: 843 pruebas aprobadas.
+
+Esta evidencia prepara las pruebas obligatorias,
+pero no sustituye Karate, JMeter, Selenium,
+Appium ni la trazabilidad en Jira.
