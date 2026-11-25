@@ -55,8 +55,8 @@ class PostulacionesPruebaSeeder extends Seeder
 
             $adminId = $this->adminId();
             $empresa = $this->empresa();
-            $candidatoUno = $this->candidato('candidato.uno.postulaciones@prueba.com', 'Ana', 'Torres Ríos', '90000001', '900000001');
-            $candidatoDos = $this->candidato('candidato.dos.postulaciones@prueba.com', 'Bruno', 'Salas Vega', '90000002', '900000002');
+            $candidatoUno = $this->candidato('candidato.uno.postulaciones@prueba.com', 'Ana', 'Torres Ríos', '90000001', '900091001');
+            $candidatoDos = $this->candidato('candidato.dos.postulaciones@prueba.com', 'Bruno', 'Salas Vega', '90000002', '900091002');
 
             [$tecnicaUno, $tecnicaDos, $blanda] = $this->habilidades();
 
