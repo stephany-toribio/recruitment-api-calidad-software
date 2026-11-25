@@ -1,0 +1,9 @@
+QA-13 - Restauracion con script versionado
+Fecha: 2026-11-25T09:57:26.0630790-05:00
+SHA256: 64A08A7922AFDD67FC72B3A869F4127E23BC71336279ADA8F902FCBE096DF09C
+Tamano: 78254 bytes
+Restauracion SQL: completada sin errores
+Destino: qa13_restore, contenedor temporal sin red ni puertos
+Conteos restaurados:
+tablas	migraciones	roles	usuarios	candidatos	empresas
+31	61	3	6	3	2

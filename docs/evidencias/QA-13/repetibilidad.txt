@@ -1,0 +1,22 @@
+{
+    "base": "portal_empleos_calidad_qa",
+    "conteos": {
+        "areas_estudio": 7,
+        "candidatos": 3,
+        "carreras": 59,
+        "empresas": 2,
+        "estados_postulacion": 5,
+        "habilidades": 153,
+        "idiomas": 6,
+        "instituciones": 22,
+        "motivos_rechazo": 3,
+        "organizaciones": 14,
+        "paises": 5,
+        "puestos": 20,
+        "roles": 3,
+        "tipos_estudio": 7,
+        "usuarios": 6
+    },
+    "fixtures_verificados": 6
+}
+PASS: conteos iguales antes y despues; seis fixtures verificados.
