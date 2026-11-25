@@ -37,7 +37,7 @@ variables = {
     "DB_USERNAME": "calidad_qa",
     "DB_PASSWORD": secrets.token_hex(24),
     "MYSQL_ROOT_PASSWORD": secrets.token_hex(24),
-    "QA_FIXTURE_PASSWORD": "Qa1#" + secrets.token_hex(16),
+    "QA_FIXTURE_PASSWORD": "Qa1!" + secrets.token_hex(24),
     "MYSQL_PORT": "3307",
     "BCRYPT_ROUNDS": "4",
     "MAIL_MAILER": "log",
@@ -89,6 +89,23 @@ docker compose run --rm --no-deps app \
 
 docker compose run --rm --no-deps app \
     php artisan db:seed --force
+
+echo "===== VERIFICAR CREDENCIAL QA ====="
+
+docker compose run --rm --no-deps app \
+    php artisan tinker --execute='
+        $password = (string) env("QA_FIXTURE_PASSWORD", "");
+
+        if (strlen($password) !== 52) {
+            throw new RuntimeException(
+                "Credencial QA incompleta o mal interpretada."
+            );
+        }
+
+        echo "PASS: Credencial QA interpretada correctamente.";
+    '
+
+echo
 
 docker compose run --rm --no-deps app \
     php artisan db:seed --class=QaSeeder --force
