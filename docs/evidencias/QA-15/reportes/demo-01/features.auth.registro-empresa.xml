@@ -1,0 +1,31 @@
+<testsuite failures="0" name="features/auth/registro-empresa.feature" skipped="0" tests="1" time="1.472268"><testcase classname="features.auth.registro-empresa" name="Registro valido y persistencia de empresa" time="1.472268"><system-out>* url apiUrl .............................................................. passed
+* def System = Java.type('java.lang.System') .............................. passed
+* def FixtureBridge = Java.type('creo.FixtureBridge') ..................... passed
+* def password = System.getenv('KARATE_FIXTURE_PASSWORD') ................. passed
+* assert password != null &amp;&amp; password.length &gt;= 16 ........................ passed
+* def fixture = FixtureBridge.datos(runId, 'empresa') ..................... passed
+* assert fixture.success == true .......................................... passed
+* def datos = fixture.datos ............................................... passed
+* set datos.password = password ........................................... passed
+Given path 'empresas' ..................................................... passed
+And request datos ......................................................... passed
+When method post .......................................................... passed
+* def camposError = responseStatus == 422 &amp;&amp; response.errors ? karate.keysOf(response.errors) : [] . passed
+* if (responseStatus != 201) karate.fail('HTTP inesperado: ' + responseStatus + '; campos de validacion: ' + camposError.join(', ')) . passed
+Then status 201 ........................................................... passed
+And assert responseTime &lt; responseTimeLimit ............................... passed
+* def schema = read('classpath:schemas/registro-empresa.json') ............ passed
+And match response == schema .............................................. passed
+And match response.data.correo == datos.correo ............................ passed
+And match response.data.ruc == datos.ruc .................................. passed
+And match response.data.razon_social == datos.razon_social ................ passed
+And match response.data.sector == datos.sector ............................ passed
+* def db = FixtureBridge.consultar(runId, datos.correo, password) ......... passed
+* match db.existe == true ................................................. passed
+* match db.rol == 'empresa' ............................................... passed
+* match db.password_hasheada == true ...................................... passed
+* match db.empresa_id == response.data.id ................................. passed
+* match db.ruc == datos.ruc ............................................... passed
+* match db.tokens == 0 .................................................... passed
+</system-out></testcase>
+</testsuite>

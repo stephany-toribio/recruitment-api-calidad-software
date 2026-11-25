@@ -337,3 +337,31 @@ RUB-K01, RUB-K02, RUB-K03, RUB-K04 y RUB-K05
 cuentan con evidencia inicial.
 
 Evidencias: docs/evidencias/QA-14/RESULTADOS.md.
+
+## Resultados Karate - QA-15
+
+| Caso | Feature | Escenarios | Karate |
+| --- | --- | ---: | --- |
+| CP-01-01 | registro-candidato.feature | 1 | PASS |
+| CP-01-02 | registro-candidato.feature | 3 | PASS |
+| CP-01-03 | registro-candidato.feature | 13 | PASS |
+| CP-02-01 | registro-empresa.feature | 1 | PASS |
+| CP-02-02 | registro-empresa.feature | 2 | PASS |
+| CP-02-03 | registro-empresa.feature | 9 | PASS |
+| CP-03-01 | login.feature | 1 | PASS |
+| CP-03-02 | login.feature | 1 | PASS |
+| CP-03-03 | login.feature | 1 | PASS |
+| CP-04-01 | bloqueo-suspension.feature | 1 | PASS |
+| CP-04-02 | bloqueo-suspension.feature | 1 | PASS |
+| CP-04-03 | bloqueo-suspension.feature | 1 | PASS |
+| CP-05-01 | sesiones.feature | 1 | PASS |
+| CP-05-02 | sesiones.feature | 1 | PASS |
+| CP-05-03 | sesiones.feature | 1 | PASS |
+| QA15-EXT-01 | sesiones.feature | 1 | PASS |
+
+Evidencia: [Resultados QA-15](../evidencias/QA-15/RESULTADOS.md).
+
+Issue: #19.
+
+Los estados corresponden exclusivamente a Karate.
+No sustituyen las validaciones mediante otras herramientas.

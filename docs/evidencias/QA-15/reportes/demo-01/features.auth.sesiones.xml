@@ -1,0 +1,20 @@
+<testsuite failures="0" name="features/auth/sesiones.feature" skipped="0" tests="1" time="1.720212"><testcase classname="features.auth.sesiones" name="Token revocado no permite acceso posterior" time="1.720212"><system-out>* def System = Java.type('java.lang.System') .............................. passed
+* def FixtureBridge = Java.type('creo.FixtureBridge') ..................... passed
+* def password = System.getenv('KARATE_FIXTURE_PASSWORD') ................. passed
+* def candidato = call read('classpath:helpers/registrar-candidato.feature') . passed
+* def correo = candidato.correo ........................................... passed
+* def sesion = call read('classpath:helpers/login.feature') { correo: '#(correo)', rol: 'candidato' } . passed
+* def token = sesion.token ................................................ passed
+* def cierre = call read('classpath:helpers/logout.feature') .............. passed
+Given url apiUrl .......................................................... passed
+And path 'auth', 'me' ..................................................... passed
+And header Authorization = 'Bearer ' + token .............................. passed
+When method get ........................................................... passed
+Then status 401 ........................................................... passed
+And assert responseTime &lt; responseTimeLimit ............................... passed
+* def schema = read('classpath:schemas/unauthenticated.json') ............. passed
+And match response == schema .............................................. passed
+* def db = FixtureBridge.consultar(runId, correo, password) ............... passed
+* match db.tokens == 0 .................................................... passed
+</system-out></testcase>
+</testsuite>

@@ -207,3 +207,20 @@ unicamente por aprobar pruebas auxiliares.
 
 La revision de secretos debe mantenerse en
 todas las suites y futuros pipelines CI.
+
+## Seguimiento tecnico QA-15
+
+- QA15-T01: incompatibilidad de password temporal.
+  Resuelto mediante ajuste del generador.
+- QA15-T02: asercion dinamica interpretada literalmente.
+  Resuelto mediante construccion del arreglo esperado.
+- Riesgo residual: las operaciones de fixtures requieren
+  un ambiente QA autorizado y catalogos disponibles.
+- Riesgo residual: el escaneo de secretos no garantiza
+  detectar todos los formatos posibles.
+- Riesgo residual: la limpieza depende del UUID y debe
+  ejecutarse sin dependencias funcionales inesperadas.
+- Riesgo residual: una interrupcion forzada del proceso
+  puede requerir recuperar la limpieza manualmente.
+
+Evidencia: [Incidencias QA-15](../evidencias/QA-15/INCIDENCIAS.md).

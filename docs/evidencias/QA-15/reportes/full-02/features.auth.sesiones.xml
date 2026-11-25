@@ -1,0 +1,85 @@
+<testsuite failures="0" name="features/auth/sesiones.feature" skipped="0" tests="4" time="8.793436"><testcase classname="features.auth.sesiones" name="Logout elimina el token activo" time="2.483624"><system-out>* def System = Java.type('java.lang.System') .............................. passed
+* def FixtureBridge = Java.type('creo.FixtureBridge') ..................... passed
+* def password = System.getenv('KARATE_FIXTURE_PASSWORD') ................. passed
+* def candidato = call read('classpath:helpers/registrar-candidato.feature') . passed
+* def correo = candidato.correo ........................................... passed
+* def sesion = call read('classpath:helpers/login.feature') { correo: '#(correo)', rol: 'candidato' } . passed
+* def antes = FixtureBridge.consultar(runId, correo, password) ............ passed
+* match antes.tokens == 1 ................................................. passed
+* def token = sesion.token ................................................ passed
+* def cierre = call read('classpath:helpers/logout.feature') .............. passed
+* def schema = read('classpath:schemas/logout-success.json') .............. passed
+* match cierre.response == schema ......................................... passed
+* def despues = FixtureBridge.consultar(runId, correo, password) .......... passed
+* match despues.tokens == 0 ............................................... passed
+</system-out></testcase>
+<testcase classname="features.auth.sesiones" name="Token revocado no permite acceso posterior" time="1.803934"><system-out>* def System = Java.type('java.lang.System') .............................. passed
+* def FixtureBridge = Java.type('creo.FixtureBridge') ..................... passed
+* def password = System.getenv('KARATE_FIXTURE_PASSWORD') ................. passed
+* def candidato = call read('classpath:helpers/registrar-candidato.feature') . passed
+* def correo = candidato.correo ........................................... passed
+* def sesion = call read('classpath:helpers/login.feature') { correo: '#(correo)', rol: 'candidato' } . passed
+* def token = sesion.token ................................................ passed
+* def cierre = call read('classpath:helpers/logout.feature') .............. passed
+Given url apiUrl .......................................................... passed
+And path 'auth', 'me' ..................................................... passed
+And header Authorization = 'Bearer ' + token .............................. passed
+When method get ........................................................... passed
+Then status 401 ........................................................... passed
+And assert responseTime &lt; responseTimeLimit ............................... passed
+* def schema = read('classpath:schemas/unauthenticated.json') ............. passed
+And match response == schema .............................................. passed
+* def db = FixtureBridge.consultar(runId, correo, password) ............... passed
+* match db.tokens == 0 .................................................... passed
+</system-out></testcase>
+<testcase classname="features.auth.sesiones" name="Token malformado es rechazado" time="0.838261"><system-out>* def System = Java.type('java.lang.System') .............................. passed
+* def FixtureBridge = Java.type('creo.FixtureBridge') ..................... passed
+* def password = System.getenv('KARATE_FIXTURE_PASSWORD') ................. passed
+* def antes = FixtureBridge.cantidades(runId) ............................. passed
+Given url apiUrl .......................................................... passed
+And path 'auth', 'me' ..................................................... passed
+And header Authorization = 'Bearer token_falso_invalido' .................. passed
+When method get ........................................................... passed
+Then status 401 ........................................................... passed
+And assert responseTime &lt; responseTimeLimit ............................... passed
+* def schema = read('classpath:schemas/unauthenticated.json') ............. passed
+And match response == schema .............................................. passed
+* def despues = FixtureBridge.cantidades(runId) ........................... passed
+* match despues == antes .................................................. passed
+</system-out></testcase>
+<testcase classname="features.auth.sesiones" name="Logout revoca solo la sesion utilizada" time="3.667616"><system-out>* def System = Java.type('java.lang.System') .............................. passed
+* def FixtureBridge = Java.type('creo.FixtureBridge') ..................... passed
+* def password = System.getenv('KARATE_FIXTURE_PASSWORD') ................. passed
+* def candidato = call read('classpath:helpers/registrar-candidato.feature') . passed
+* def correo = candidato.correo ........................................... passed
+* def sesion1 = call read('classpath:helpers/login.feature') { correo: '#(correo)', rol: 'candidato' } . passed
+* def sesion2 = call read('classpath:helpers/login.feature') { correo: '#(correo)', rol: 'candidato' } . passed
+* assert sesion1.token != sesion2.token ................................... passed
+* def antes = FixtureBridge.consultar(runId, correo, password) ............ passed
+* match antes.tokens == 2 ................................................. passed
+* def token = sesion1.token ............................................... passed
+* def cierre = call read('classpath:helpers/logout.feature') .............. passed
+Given url apiUrl .......................................................... passed
+And path 'auth', 'me' ..................................................... passed
+And header Authorization = 'Bearer ' + sesion1.token ...................... passed
+When method get ........................................................... passed
+Then status 401 ........................................................... passed
+And assert responseTime &lt; responseTimeLimit ............................... passed
+* def errorSchema = read('classpath:schemas/unauthenticated.json') ........ passed
+And match response == errorSchema ......................................... passed
+Given url apiUrl .......................................................... passed
+And path 'auth', 'me' ..................................................... passed
+And header Authorization = 'Bearer ' + sesion2.token ...................... passed
+When method get ........................................................... passed
+Then status 200 ........................................................... passed
+And assert responseTime &lt; responseTimeLimit ............................... passed
+* def schema = read('classpath:schemas/auth-me.json') ..................... passed
+And match response == schema .............................................. passed
+* def durante = FixtureBridge.consultar(runId, correo, password) .......... passed
+* match durante.tokens == 1 ............................................... passed
+* def token = sesion2.token ............................................... passed
+* def cierreFinal = call read('classpath:helpers/logout.feature') ......... passed
+* def despues = FixtureBridge.consultar(runId, correo, password) .......... passed
+* match despues.tokens == 0 ............................................... passed
+</system-out></testcase>
+</testsuite>

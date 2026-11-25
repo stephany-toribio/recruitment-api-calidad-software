@@ -1,0 +1,5 @@
+Escenarios Karate: 4
+Aprobados: 4
+Fallidos: 0
+Maven: BUILD SUCCESS
+Revision automatica de secretos: PASS
