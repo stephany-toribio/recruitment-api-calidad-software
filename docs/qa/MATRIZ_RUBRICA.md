@@ -136,3 +136,19 @@ la automatizacion posterior de registro y perfiles.
 No se declaran satisfechos los controles de la rubrica
 Karate, JMeter, Selenium, Appium o Jira a partir de estas
 ejecuciones auxiliares.
+
+## Seguimiento QA-08
+
+<!-- QA08-RUBRICA -->
+
+Evidencia incorporada:
+
+- Nueve pruebas nuevas de integracion MySQL.
+- Veintiocho pruebas auxiliares frontend.
+- Ocho fallos iniciales superados mediante RED-GREEN.
+- Dos escenarios concurrentes mediante HTTP Kernel.
+- Selectores data-testid para automatizacion posterior.
+- Regresion completa: 804 pruebas aprobadas.
+
+Esta evidencia no acredita por si sola los controles
+obligatorios de Karate, JMeter, Selenium, Appium y Jira.

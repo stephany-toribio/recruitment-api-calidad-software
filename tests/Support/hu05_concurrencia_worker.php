@@ -153,6 +153,59 @@ try {
 
     esperarOrdenWorker('INICIAR');
 
+    if (($entrada['modo'] ?? 'servicio') === 'http') {
+        $token = $entrada['token'] ?? null;
+
+        if (! is_string($token) || $token === '') {
+            throw new RuntimeException(
+                'Falta el token de integracion HTTP.'
+            );
+        }
+
+        $request = \Illuminate\Http\Request::create(
+            '/api/v1/candidatos/me/postulaciones',
+            'POST',
+            [],
+            [],
+            [],
+            [
+                'HTTP_ACCEPT' => 'application/json',
+                'CONTENT_TYPE' => 'application/json',
+                'HTTP_AUTHORIZATION' => 'Bearer '.$token,
+            ],
+            json_encode([
+                'vacante_id' => $entrada['vacante_id'],
+            ], JSON_THROW_ON_ERROR)
+        );
+
+        $kernel = $app->make(
+            \Illuminate\Contracts\Http\Kernel::class
+        );
+
+        $response = $kernel->handle($request);
+
+        $body = json_decode(
+            $response->getContent(),
+            true,
+            512,
+            JSON_THROW_ON_ERROR
+        );
+
+        $kernel->terminate($request, $response);
+
+        responderWorker([
+            'evento' => 'RESULTADO',
+            'modo' => 'http',
+            'status' => $response->getStatusCode(),
+            'success' => $body['success'] ?? null,
+            'error_code' => $body['error_code'] ?? null,
+            'postulacion_id' => $body['data']['id'] ?? null,
+            'estado' => $body['data']['estado']['codigo'] ?? null,
+        ]);
+
+        exit(0);
+    }
+
     try {
         $postulacion = app(PostulacionService::class)->postular(
             $candidato,

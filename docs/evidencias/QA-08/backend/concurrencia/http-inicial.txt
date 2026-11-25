@@ -1,0 +1,14 @@
+PHPUnit 11.5.56 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.3.37
+Configuration: /var/www/html/phpunit.mysql.xml
+
+
+{"caso":"CP-13-02","status":[201,409],"error_code":"DUPLICATE_APPLICATION","registros":1}
+.
+{"caso":"CP-14-01","status":[201,201],"numero_vacantes":1,"registros":2}
+.                                                                  2 / 2 (100%)
+
+Time: 00:02.108, Memory: 34.00 MB
+
+OK (2 tests, 33 assertions)

@@ -1562,3 +1562,26 @@ formales de Karate, Selenium o Appium.
 La respuesta del registro empresarial no incluye el rol
 en su recurso JSON. El rol se comprueba mediante persistencia
 y autorizacion.
+
+## Anexo QA-08 - Postulaciones y retiro
+
+<!-- QA08-CONTRATOS -->
+
+| Operacion | Resultado |
+| --- | --- |
+| POST /candidatos/me/postulaciones | 201 |
+| Postulacion duplicada | 409 DUPLICATE_APPLICATION |
+| Vacante no disponible | 404 VACANCY_NOT_AVAILABLE |
+| PATCH /candidatos/me/postulaciones/{id}/retirar | 200 |
+| Retiro repetido | 409 APPLICATION_ALREADY_WITHDRAWN |
+| Retiro no permitido | 409 APPLICATION_NOT_WITHDRAWABLE |
+| GET /candidatos/me/postulaciones | 200 |
+
+El POST admite vacante_id y obtiene el candidato
+del token. El retiro no admite campos adicionales.
+
+El retiro conserva la etapa alcanzada y registra
+retirada_en.
+
+El numero de puestos limita contrataciones,
+no la cantidad de postulantes.
