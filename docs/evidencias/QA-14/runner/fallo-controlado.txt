@@ -1,0 +1,120 @@
+[INFO] Scanning for projects...
+[INFO]
+[INFO] --------------------< pe.creo.qa:creo-karate-tests >--------------------
+[INFO] Building CREO+ API Quality Tests 1.0.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO]
+[INFO] --- clean:3.2.0:clean (default-clean) @ creo-karate-tests ---
+[INFO] Deleting /home/steph/projects/recruitment-api-calidad-software/qa/karate/target
+[INFO]
+[INFO] --- resources:3.3.1:resources (default-resources) @ creo-karate-tests ---
+[INFO] skip non existing resourceDirectory /home/steph/projects/recruitment-api-calidad-software/qa/karate/src/main/resources
+[INFO]
+[INFO] --- compiler:3.13.0:compile (default-compile) @ creo-karate-tests ---
+[INFO] No sources to compile
+[INFO]
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ creo-karate-tests ---
+[INFO] Copying 8 resources from src/test/resources to target/test-classes
+[INFO]
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ creo-karate-tests ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 1 source file with javac [debug release 21] to target/test-classes
+[INFO]
+[INFO] --- surefire:3.5.2:test (default-test) @ creo-karate-tests ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[WARNING] System property [karate.env] overwritten by user properties from Maven session
+[INFO]
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running creo.SmokeTest
+08:16:31.127 INFO  com.intuit.karate.Runner - using system property 'karate.env': local
+---------------------------------------------------------
+feature: classpath:features/smoke/api-smoke.feature
+scenarios:  3 | passed:  3 | failed:  0 | time: 0.3742
+---------------------------------------------------------
+
+08:16:34.714 INFO  com.intuit.karate.Suite - <<pass>> feature 1 of 2 (1 remaining) classpath:features/smoke/api-smoke.feature
+08:16:34.726 ERROR com.intuit.karate - classpath:features/smoke/runner-probe.feature:6
+* match 1 == 2
+match failed: EQUALS
+  $ | not equal (NUMBER:NUMBER)
+  1
+  2
+
+classpath:features/smoke/runner-probe.feature:6
+---------------------------------------------------------
+feature: classpath:features/smoke/runner-probe.feature
+scenarios:  1 | passed:  0 | failed:  1 | time: 0.0017
+---------------------------------------------------------
+
+08:16:34.774 INFO  com.intuit.karate.Suite - <<fail>> feature 2 of 2 (0 remaining) classpath:features/smoke/runner-probe.feature
+Karate version: 1.5.2 | env: local
+======================================================
+elapsed:   3.66 | threads:    1 | thread time: 0.38
+features:     2 | skipped:    0 | efficiency: 0.10
+scenarios:    4 | passed:     3 | failed: 1
+======================================================
+>>> failed features:
+match failed: EQUALS
+  $ | not equal (NUMBER:NUMBER)
+  1
+  2
+
+classpath:features/smoke/runner-probe.feature:6
+<<<
+
+HTML report: (paste into browser to view) | Karate version: 1.5.2 | env: local
+file:///home/steph/projects/recruitment-api-calidad-software/qa/karate/target/karate-reports/karate-summary.html
+===================================================================
+
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 4.276 s <<< FAILURE! -- in creo.SmokeTest
+[ERROR] creo.SmokeTest.ejecutarSmoke -- Time elapsed: 4.231 s <<< FAILURE!
+org.opentest4j.AssertionFailedError:
+match failed: EQUALS
+  $ | not equal (NUMBER:NUMBER)
+  1
+  2
+
+classpath:features/smoke/runner-probe.feature:6 ==> expected: <0> but was: <1>
+	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:150)
+	at org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:563)
+	at creo.SmokeTest.ejecutarSmoke(SmokeTest.java:27)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+
+[INFO]
+[INFO] Results:
+[INFO]
+[ERROR] Failures:
+[ERROR]   SmokeTest.ejecutarSmoke:27 match failed: EQUALS
+  $ | not equal (NUMBER:NUMBER)
+  1
+  2
+
+classpath:features/smoke/runner-probe.feature:6 ==> expected: <0> but was: <1>
+[INFO]
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0
+[INFO]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  7.760 s
+[INFO] Finished at: 2026-11-25T08:16:35-05:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.2:test (default-test) on project creo-karate-tests: There are test failures.
+[ERROR]
+[ERROR] See /home/steph/projects/recruitment-api-calidad-software/qa/karate/target/surefire-reports for the individual test results.
+[ERROR] See dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR]
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR]
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

@@ -1,0 +1,22 @@
+<testsuite failures="0" name="features/smoke/auth-smoke.feature" skipped="0" tests="1" time="0.545528"><testcase classname="features.smoke.auth-smoke" name="Login consulta autenticada y revocacion" time="0.545528"><system-out>* def System = Java.type('java.lang.System') .............................. passed
+* def correo = System.getenv('KARATE_FIXTURE_EMAIL') ...................... passed
+* assert correo != null ................................................... passed
+* def sesion = call read('classpath:helpers/login.feature') { correo: '#(correo)', rol: 'admin' } . passed
+Given url apiUrl .......................................................... passed
+And path 'auth', 'me' ..................................................... passed
+And header Authorization = 'Bearer ' + sesion.token ....................... passed
+When method get ........................................................... passed
+Then status 200 ........................................................... passed
+And match response.success == true ........................................ passed
+And assert responseTime &lt; responseTimeLimit ............................... passed
+* def token = sesion.token ................................................ passed
+* def cierre = call read('classpath:helpers/logout.feature') .............. passed
+Given url apiUrl .......................................................... passed
+And path 'auth', 'me' ..................................................... passed
+And header Authorization = 'Bearer ' + sesion.token ....................... passed
+When method get ........................................................... passed
+Then status 401 ........................................................... passed
+* def schema = read('classpath:schemas/unauthenticated.json') ............. passed
+And match response == schema .............................................. passed
+</system-out></testcase>
+</testsuite>
