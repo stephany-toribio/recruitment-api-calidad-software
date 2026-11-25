@@ -1,0 +1,40 @@
+QA-13 - Inventario local
+Fecha: 2026-11-25T09:26:06.1599876-05:00
+
+Backend - rama y commit base:
+feature/QA-13-entorno-local-reproducible
+9efd9462123a2dc30c73113aa11aa523872e0f4d
+
+Frontend - rama y commit base:
+feature/QA-13-entorno-local-reproducible
+cb54dc9de80e2b6565b601931f925cf24445ce00
+
+Docker:
+Docker version 29.7.2, build a7dcaa6
+Docker Compose version v5.4.0
+
+Servicios:
+NAME                       IMAGE                  COMMAND                  SERVICE   CREATED        STATUS                  PORTS
+calidad_software-app-1     calidad_software-app   "docker-php-entrypoiÔÇª"   app       18 hours ago   Up 18 hours             127.0.0.1:8002->8000/tcp
+calidad_software-mysql-1   mysql:8.0              "docker-entrypoint.sÔÇª"   mysql     18 hours ago   Up 18 hours (healthy)   127.0.0.1:3307->3306/tcp
+
+PHP:
+PHP 8.3.37 (cli) (built: Nov 24 2026 04:26:47) (NTS)
+Copyright (c) The PHP Group
+Zend Engine v4.3.37, Copyright (c) Zend Technologies
+    with Zend OPcache v8.3.37, Copyright (c), by Zend Technologies
+
+Laravel:
+Laravel Framework 12.69.2
+
+Node y npm de esta terminal:
+v22.23.5
+10.9.9
+
+Cambios backend:
+?? config/cors.php
+?? database/seeders/QaEntornoSeeder.php
+?? docs/evidencias/QA-13/
+?? scripts/
+
+Cambios frontend:
