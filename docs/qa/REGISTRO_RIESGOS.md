@@ -174,3 +174,20 @@ las pruebas auxiliares.
 
 No se consideran eliminados todos los riesgos
 por aprobar pruebas auxiliares.
+
+## Seguimiento QA-09
+
+<!-- QA09-RIESGOS -->
+
+| Riesgo | Control verificado | Pendiente |
+| --- | --- | --- |
+| Sobrecontratacion | Bloqueos MySQL y concurrencia HTTP Kernel | Carga por red |
+| Doble decision | Guarda comun de procesamiento | Selenium E2E |
+| Perfil desactualizado | Versionado de solicitudes | Selenium E2E |
+| Historial inconsistente | Integracion MySQL y consulta tipada | Validacion visual |
+| Mensajeria ficticia | Eliminacion de simulacion | No aplica |
+| Resultado incierto por desconexion | Reconciliacion del tablero | Pruebas de red |
+| Accesibilidad del historial | Etiquetas y controles | Validacion E2E |
+
+Los riesgos no se consideran eliminados
+unicamente por aprobar pruebas auxiliares.

@@ -288,3 +288,19 @@ No utilizar datos personales ni credenciales reales.
 - Limpieza de fixtures y tokens al finalizar.
 
 Base aislada: portalempleoshu04testing.
+
+## Anexo QA-09 - Datos de prueba
+
+<!-- QA09-DATOS -->
+
+- Empresas y candidatos sinteticos.
+- Correos example.test.
+- Vacantes con uno y dos puestos.
+- Cinco estados de postulacion.
+- Motivo de rechazo sintetico.
+- Tokens temporales de empresa y candidato.
+- Conexiones MySQL independientes.
+- Notificaciones aisladas mediante mocks.
+- Limpieza de fixtures, movimientos y tokens.
+
+Base aislada: portalempleoshu04testing.

@@ -1,0 +1,27 @@
+PHPUnit 11.5.56 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.3.37
+Configuration: /var/www/html/phpunit.mysql.xml
+
+...............................................................  63 / 449 ( 14%)
+............................................................... 126 / 449 ( 28%)
+........................
+{"caso":"CP-13-02","status":[201,409],"error_code":"DUPLICATE_APPLICATION","registros":1}
+.
+{"caso":"CP-14-01","status":[201,201],"numero_vacantes":1,"registros":2}
+...................................... 189 / 449 ( 42%)
+............................................................... 252 / 449 ( 56%)
+............................................................... 315 / 449 ( 70%)
+....................................
+{"caso":"CP-19-01","status":[200,409],"error_code":"HIRING_LIMIT_REACHED","contratados":1,"puestos":1}
+.
+{"caso":"CP-19-02","status":[200,200],"contratados":2,"puestos":2}
+.
+{"caso":"QA09-CONTRATACION-DUPLICADA","status":[200,409],"error_code":"INVALID_TRANSITION","contratados":1}
+......................... 378 / 449 ( 84%)
+............................................................... 441 / 449 ( 98%)
+........                                                        449 / 449 (100%)
+
+Time: 01:15.287, Memory: 62.50 MB
+
+OK (449 tests, 4103 assertions)

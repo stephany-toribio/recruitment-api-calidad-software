@@ -1585,3 +1585,30 @@ retirada_en.
 
 El numero de puestos limita contrataciones,
 no la cantidad de postulantes.
+
+## Anexo QA-09 - Kanban e historial
+
+<!-- QA09-CONTRATOS -->
+
+Prefijo de operaciones:
+
+/api/v1/empresas/me/vacantes/{vacante}/postulaciones
+
+| Operacion | Resultado esperado |
+| --- | --- |
+| GET tablero | 200 |
+| PATCH /{postulacion}/avanzar | 200 |
+| PATCH /{postulacion}/contratar | 200 |
+| PATCH /{postulacion}/rechazar | 200 |
+| GET /historial | 200 |
+| Transicion invalida | 409 INVALID_TRANSITION |
+| Postulacion retirada | 409 APPLICATION_WITHDRAWN |
+| Limite de contratacion | 409 HIRING_LIMIT_REACHED |
+| Vacante finalizada, mutacion | 409 VACANCY_FINALIZED |
+| Vacante eliminada, mutacion | 409 VACANCY_DELETED |
+
+Avanzar y contratar no requieren campos de negocio.
+Rechazar requiere motivo_rechazo_id valido.
+
+La concurrencia MySQL verifica el limite de
+contrataciones y la integridad del historial.

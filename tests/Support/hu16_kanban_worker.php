@@ -66,6 +66,17 @@ try {
 
             if (
                 str_starts_with($consulta, 'select')
+                && str_contains($consulta, '`empleos`')
+                && str_contains($consulta, 'for update')
+            ) {
+                responderKanbanHu16([
+                    'evento' => 'INTENTO_VACANTE',
+                    'nivel_transaccion' => $conexion->transactionLevel(),
+                ]);
+            }
+
+            if (
+                str_starts_with($consulta, 'select')
                 && str_contains($consulta, '`postulaciones`')
                 && str_contains($consulta, 'for update')
             ) {
@@ -88,6 +99,71 @@ try {
 
     if ($orden === false || trim($orden) !== 'INICIAR') {
         throw new RuntimeException('Se esperaba la orden INICIAR.');
+    }
+
+    if (($entrada['modo'] ?? 'servicio') === 'http') {
+        $token = $entrada['token'] ?? null;
+
+        if (! is_string($token) || $token === '') {
+            throw new RuntimeException('Token HTTP requerido.');
+        }
+
+        $app->instance(
+            \App\Services\Postulaciones\NotificacionPostulacionService::class,
+            \Mockery::mock(
+                \App\Services\Postulaciones\NotificacionPostulacionService::class
+            )->shouldReceive('notificarDecision')
+                ->zeroOrMoreTimes()
+                ->andReturnNull()
+                ->getMock()
+        );
+
+        $url = sprintf(
+            '/api/v1/empresas/me/vacantes/%d/postulaciones/%d/contratar',
+            $entrada['vacante_id'],
+            $entrada['postulacion_id']
+        );
+
+        $request = \Illuminate\Http\Request::create(
+            $url,
+            'PATCH',
+            [],
+            [],
+            [],
+            [
+                'HTTP_ACCEPT' => 'application/json',
+                'CONTENT_TYPE' => 'application/json',
+                'HTTP_AUTHORIZATION' => 'Bearer '.$token,
+            ],
+            '{}'
+        );
+
+        $kernel = $app->make(
+            \Illuminate\Contracts\Http\Kernel::class
+        );
+
+        $response = $kernel->handle($request);
+
+        $body = json_decode(
+            $response->getContent(),
+            true,
+            512,
+            JSON_THROW_ON_ERROR
+        );
+
+        $kernel->terminate($request, $response);
+
+        responderKanbanHu16([
+            'evento' => 'RESULTADO',
+            'modo' => 'http',
+            'status' => $response->getStatusCode(),
+            'success' => $body['success'] ?? null,
+            'error_code' => $body['error_code'] ?? null,
+            'postulacion_id' => $body['data']['id'] ?? null,
+            'estado' => $body['data']['estado']['codigo'] ?? null,
+        ]);
+
+        exit(0);
     }
 
     try {

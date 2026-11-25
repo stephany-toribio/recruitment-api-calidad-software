@@ -1,0 +1,11 @@
+fb82bea15cd3cf3f5e18ad99ca2201435de80a47d41932d41d6885cb49ca1bde  ./DEFECTOS.md
+62b46cc99bf05d1bcd076d0eca8d811963d5ee93dbcac22020a1fb5c2f5e6d8b  ./RESULTADOS.md
+18faf72382f410fa043f68181921bfa4fa1f28085c24aef61891d5008d8f141c  ./backend/antes/KanbanTest.txt
+df9d87cf7b9c957be0491dbe6368f6e58456d16e9ca99f700c2de5efe151b13a  ./backend/concurrencia/http-inicial.txt
+157ecff8d9958b7c23c5f5e1bc1be57a8e434e75299092503bcc631704f3e139  ./backend/concurrencia/http-retest-01.txt
+6389ce29053dab760d1caa5a43b8aa46b2f3cb3663f0a8ec2bf18ab387f200bf  ./backend/concurrencia/suite-ampliada-final.txt
+7adeb51cea419c5dfb75e1ca48320f57194d34cfb9db9f3fa047e86d6a42e043  ./backend/concurrencia/suite-completa.txt
+caeb96f95d83c5115baf67761eba727bac7a521a5a6829221e848b2cc2a2bae8  ./backend/final/mysql.txt
+899bad5f7bfe353d2e12365994d80e248253a507f0b79828f7f769b8782cf241  ./backend/final/unit-feature.txt
+a19a9f8985bb164efcd70919a5c0e765ba6bfda69a2f5e65dfb3b3b04fffe9a7  ./backend/historial/integracion-retest-01.txt
+351a3d98df6321eb53ccc9107f5843f40995b1010546a110478c1a002a86908f  ./backend/historial/integracion.txt

@@ -286,3 +286,34 @@ Evidencia: docs/evidencias/QA-08/RESULTADOS.md.
 
 Las ejecuciones formales Karate, JMeter, Selenium
 y Appium permanecen pendientes.
+
+## Anexo QA-09 - Evidencias de implementacion
+
+<!-- QA09-TRAZABILIDAD -->
+
+| Familia | Cobertura |
+| --- | --- |
+| CP-16 | Avance y contratacion |
+| CP-17 | Rechazo y motivo obligatorio |
+| CP-18 | Transiciones invalidas y retiradas |
+| CP-19 | Contrataciones concurrentes |
+| CP-21 | Seguimiento del candidato |
+| CP-22 | Historial, motivos y retiros |
+
+Evidencias backend:
+
+- docs/evidencias/QA-09/RESULTADOS.md.
+- tests/Feature/Postulaciones/KanbanTest.php.
+- tests/MySql/RetirarPostulacionConcurrenciaMySqlTest.php.
+- tests/Support/hu16_kanban_worker.php.
+
+Evidencias frontend:
+
+- tests/qa09/kanban.test.mjs.
+- tests/qa09/historial.test.mjs.
+- docs/evidencias/QA-09/RESULTADOS.md.
+
+Resultado de regresion: 843 pruebas aprobadas.
+
+Las pruebas formales de Karate, Selenium, Appium
+y JMeter continuan pendientes.
