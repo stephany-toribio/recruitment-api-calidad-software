@@ -52,3 +52,14 @@ Estas advertencias no fueron la causa del fallo observado.
 
 Pendiente: actualizar las acciones a versiones compatibles
 y verificar el pipeline.
+
+### Retest INC-QA27-01
+
+- Run ID: 45710340550.
+- Resultado: PASS.
+- Validacion preventiva de credencial: PASS.
+- Preparacion completa del entorno: PASS.
+- PHPUnit: 708/708.
+- Karate FULL: 109/109.
+
+Estado de la incidencia: corregida y verificada.

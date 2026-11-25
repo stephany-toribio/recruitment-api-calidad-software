@@ -1,0 +1,12 @@
+{
+  "suite": "QA-15",
+  "modo": "full",
+  "escenarios_esperados": 39,
+  "escenarios": 39,
+  "aprobados": 39,
+  "fallidos": 0,
+  "codigo_salida": 0,
+  "limpieza": true,
+  "escaneo": true,
+  "resultado": "PASS"
+}
