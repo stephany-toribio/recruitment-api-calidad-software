@@ -121,3 +121,18 @@ Estas evidencias son complementarias.
 No se modifican los estados de acreditacion de los
 24 controles de la rubrica. Su cumplimiento formal
 requiere las herramientas obligatorias y Jira.
+
+## Seguimiento QA-06
+
+<!-- QA06-RUBRICA -->
+
+QA-06 aporta una base funcional verificada para
+la automatizacion posterior de registro y perfiles.
+
+- PHPUnit: 49 pruebas nuevas.
+- Node Test Runner: 49 pruebas nuevas.
+- Angular: tres configuraciones compiladas.
+
+No se declaran satisfechos los controles de la rubrica
+Karate, JMeter, Selenium, Appium o Jira a partir de estas
+ejecuciones auxiliares.

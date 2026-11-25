@@ -241,3 +241,21 @@ de todos los casos canonicos mediante cada herramienta.
 
 Se conservan los estados de ejecucion formal de Karate,
 Selenium, Appium y JMeter.
+
+## Anexo QA-06 - Evidencia de implementacion
+
+<!-- QA06-TRAZABILIDAD -->
+
+| Familia | Backend | Frontend | Automatizacion formal |
+| --- | --- | --- | --- |
+| CP-01 | Integracion PASS | Metodos auxiliares PASS | Pendiente |
+| CP-02 | Integracion PASS | Metodos auxiliares PASS | Pendiente |
+| CP-06 | Integracion PASS | Metodos auxiliares PASS | Pendiente |
+
+Evidencia complementaria:
+docs/evidencias/QA-06/RESULTADOS.md.
+
+Se conserva la evidencia de propiedad obtenida en QA-05.
+
+La validacion E2E, visual y de accesibilidad permanece
+pendiente en las tareas correspondientes.

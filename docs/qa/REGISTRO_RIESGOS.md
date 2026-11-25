@@ -145,3 +145,17 @@ regresiones futuras.
 | QA07-R05 | Vinculacion Jira pendiente | QA-29 |
 
 Consultar docs/evidencias/QA-07/DEFECTOS.md.
+
+## Seguimiento QA-06
+
+<!-- QA06-RIESGOS -->
+
+| Riesgo residual | Control implementado | Verificacion pendiente |
+| --- | --- | --- |
+| Registros concurrentes | Validacion y restricciones UNIQUE | Concurrencia HTTP |
+| Datos en almacenamiento del cliente | sessionStorage sin contrasenas | Navegador y seguridad cliente |
+| Regresiones en formularios | 49 pruebas auxiliares frontend | Selenium |
+| Comportamiento movil | Compilacion Angular Android | APK y Appium |
+
+Estos riesgos no se consideran eliminados por aprobar
+las pruebas auxiliares.
