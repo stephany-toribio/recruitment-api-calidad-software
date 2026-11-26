@@ -1,0 +1,915 @@
+<?xml version='1.0' encoding='utf-8'?>
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6.3">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="QA-24 Carga Recruitment API" enabled="true">
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+        <collectionProp name="Arguments.arguments" />
+      </elementProp>
+    </TestPlan>
+    <hashTree>
+      <ConfigTestElement guiclass="HttpDefaultsGui" testclass="ConfigTestElement" testname="HTTP Defaults" enabled="true">
+        <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+          <collectionProp name="Arguments.arguments" />
+        </elementProp>
+        <stringProp name="HTTPSampler.domain">${__P(host,127.0.0.1)}</stringProp>
+        <stringProp name="HTTPSampler.port">${__P(port,8002)}</stringProp>
+        <stringProp name="HTTPSampler.protocol">${__P(protocol,http)}</stringProp>
+        <stringProp name="HTTPSampler.contentEncoding">UTF-8</stringProp>
+        <stringProp name="HTTPSampler.connect_timeout">${__P(connect_timeout,5000)}</stringProp>
+        <stringProp name="HTTPSampler.response_timeout">${__P(response_timeout,15000)}</stringProp>
+      </ConfigTestElement>
+      <hashTree />
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="TG_Consulta" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">${__P(onerror,stopthread)}</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <intProp name="LoopController.loops">1</intProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">${__P(users_read,15)}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">${__P(rampup,30)}</stringProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.duration">${__P(duration,300)}</stringProp>
+        <stringProp name="ThreadGroup.delay" />
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+      </ThreadGroup>
+      <hashTree>
+        <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Headers" enabled="true">
+          <collectionProp name="HeaderManager.headers">
+            <elementProp name="" elementType="Header">
+              <stringProp name="Header.name">Content-Type</stringProp>
+              <stringProp name="Header.value">application/json</stringProp>
+            </elementProp>
+            <elementProp name="" elementType="Header">
+              <stringProp name="Header.name">Accept</stringProp>
+              <stringProp name="Header.value">application/json</stringProp>
+            </elementProp>
+          </collectionProp>
+        </HeaderManager>
+        <hashTree />
+        <UniformRandomTimer guiclass="UniformRandomTimerGui" testclass="UniformRandomTimer" testname="Think time 1-3 s" enabled="true">
+          <stringProp name="ConstantTimer.delay">${__P(think_min,1000)}</stringProp>
+          <stringProp name="RandomTimer.range">${__P(think_range,2000)}</stringProp>
+        </UniformRandomTimer>
+        <hashTree />
+        <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="CSV usuarios_lectura" enabled="true">
+          <stringProp name="delimiter">,</stringProp>
+          <stringProp name="fileEncoding">UTF-8</stringProp>
+          <stringProp name="filename">${__P(datadir,data)}/usuarios_lectura.csv</stringProp>
+          <boolProp name="ignoreFirstLine">true</boolProp>
+          <boolProp name="quotedData">false</boolProp>
+          <boolProp name="recycle">false</boolProp>
+          <stringProp name="shareMode">shareMode.all</stringProp>
+          <boolProp name="stopThread">true</boolProp>
+          <stringProp name="variableNames">correo,password</stringProp>
+        </CSVDataSet>
+        <hashTree />
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="SETUP_identidad_lectura" enabled="true">
+          <stringProp name="scriptLanguage">groovy</stringProp>
+          <stringProp name="parameters" />
+          <stringProp name="filename" />
+          <stringProp name="cacheKey">true</stringProp>
+          <stringProp name="script">
+try {
+  def email=vars.get('correo'); def password=vars.get('password')
+  assert email &amp;&amp; email.endsWith('@carga.qa.invalid') &amp;&amp; password &amp;&amp; email != '&lt;EOF&gt;'
+  vars.put('qa_run_id',props.getProperty('run_id','gui-validacion'))
+  vars.put('qa_profile','lectura'); vars.put('qa_vu',vars.get('qa_profile')+'-'+ctx.getThreadNum())
+  vars.put('qa_job_id',''); vars.put('qa_app_id',''); vars.put('pages','1'); vars.putObject('seenJobs',new HashSet())
+  synchronized(props) {
+    def key='qa24.accounts.'+vars.get('qa_run_id')
+    def accounts=props.get(key)
+    if (accounts == null) { accounts=new HashMap();props.put(key,accounts) }
+    def previous=accounts.putIfAbsent(email,vars.get('qa_vu'))
+    assert previous == null || previous == vars.get('qa_vu')
+  }
+  SampleResult.setResponseCode('200');SampleResult.setResponseMessage('Cuenta ficticia independiente asignada');SampleResult.setSuccessful(true)
+} catch (Throwable ignored) {
+  SampleResult.setResponseCode('500');SampleResult.setResponseMessage('Asignacion CSV invalida o cuenta compartida');SampleResult.setSuccessful(false);SampleResult.setStopThread(true)
+}
+</stringProp>
+        </JSR223Sampler>
+        <hashTree />
+        <OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="Login inicial del VU" enabled="true" />
+        <hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="LOGIN_setup" enabled="true">
+            <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+              <collectionProp name="Arguments.arguments">
+                <elementProp name="" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                  <stringProp name="Argument.value">{"correo":"${correo}","password":"${password}"}</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                </elementProp>
+              </collectionProp>
+            </elementProp>
+            <stringProp name="HTTPSampler.path">/api/v1/auth/login</stringProp>
+            <stringProp name="HTTPSampler.method">POST</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="HTTP exacto 200" enabled="true">
+              <collectionProp name="Asserion.test_strings">
+                <stringProp name="1">^200$</stringProp>
+              </collectionProp>
+              <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+              <boolProp name="Assertion.assume_success">false</boolProp>
+              <intProp name="Assertion.test_type">1</intProp>
+            </ResponseAssertion>
+            <hashTree />
+            <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Token obligatorio" enabled="true">
+              <stringProp name="scriptLanguage">groovy</stringProp>
+              <stringProp name="parameters" />
+              <stringProp name="filename" />
+              <stringProp name="cacheKey">true</stringProp>
+              <stringProp name="script">import groovy.json.JsonSlurper
+try {
+  assert prev.getResponseCode() == '200'
+  def data = new JsonSlurper().parseText(prev.getResponseDataAsString()).data
+  assert data.token instanceof String &amp;&amp; data.token.size() &gt; 5
+  assert data.usuario_id instanceof Number &amp;&amp; data.usuario_id &gt; 0
+  vars.put('qa_user_id',data.usuario_id.toString())
+  vars.put('token', data.token)
+} catch (Throwable ignored) {
+  AssertionResult.setFailure(true); AssertionResult.setFailureMessage('Login sin token valido; VU detenido')
+  vars.remove('token'); prev.setStopThread(true)
+}</stringProp>
+            </JSR223Assertion>
+            <hashTree />
+          </hashTree>
+        </hashTree>
+        <LoopController guiclass="LoopControlPanel" testclass="LoopController" testname="Sesion hasta duracion programada" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <intProp name="LoopController.loops">-1</intProp>
+        </LoopController>
+        <hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="READ_listar_vacantes" enabled="true">
+            <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+              <collectionProp name="Arguments.arguments" />
+            </elementProp>
+            <stringProp name="HTTPSampler.path">/api/v1/vacantes?page=${__Random(1,${pages})}</stringProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Bearer del VU" enabled="true">
+              <collectionProp name="HeaderManager.headers">
+                <elementProp name="" elementType="Header">
+                  <stringProp name="Header.name">Authorization</stringProp>
+                  <stringProp name="Header.value">Bearer ${token}</stringProp>
+                </elementProp>
+              </collectionProp>
+            </HeaderManager>
+            <hashTree />
+            <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="HTTP exacto 200" enabled="true">
+              <collectionProp name="Asserion.test_strings">
+                <stringProp name="1">^200$</stringProp>
+              </collectionProp>
+              <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+              <boolProp name="Assertion.assume_success">false</boolProp>
+              <intProp name="Assertion.test_type">1</intProp>
+            </ResponseAssertion>
+            <hashTree />
+            <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Correlacion de vacante real" enabled="true">
+              <stringProp name="scriptLanguage">groovy</stringProp>
+              <stringProp name="parameters" />
+              <stringProp name="filename" />
+              <stringProp name="cacheKey">true</stringProp>
+              <stringProp name="script">import groovy.json.JsonSlurper
+vars.remove('jobId'); vars.put('canApply','false'); vars.put('created','false'); vars.put('doDuplicate','false'); vars.remove('appId'); vars.put('qa_app_id','')
+try {
+  assert prev.getResponseCode() == '200'
+  def json = new JsonSlurper().parseText(prev.getResponseDataAsString())
+  assert json.data instanceof List &amp;&amp; !json.data.isEmpty()
+  def pages = (json.meta?.last_page ?: 1) as int
+  vars.put('pages', Math.max(1,pages).toString())
+  def seen = vars.getObject('seenJobs') ?: new HashSet()
+  def choices = json.data.findAll { it.id instanceof Number &amp;&amp; !seen.contains(it.id.toString()) }
+  if (choices.isEmpty()) choices = json.data.findAll { it.id instanceof Number }
+  assert !choices.isEmpty()
+  def selected = choices[java.util.concurrent.ThreadLocalRandom.current().nextInt(choices.size())]
+  vars.put('jobId', selected.id.toString()); vars.put('qa_job_id', selected.id.toString())
+} catch (Throwable ignored) {
+  AssertionResult.setFailure(true); AssertionResult.setFailureMessage('Listado invalido o sin IDs; VU detenido')
+  prev.setStopThread(true)
+}</stringProp>
+            </JSR223Assertion>
+            <hashTree />
+          </hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="READ_detalle_vacante" enabled="true">
+            <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+              <collectionProp name="Arguments.arguments" />
+            </elementProp>
+            <stringProp name="HTTPSampler.path">/api/v1/vacantes/${jobId}</stringProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Bearer del VU" enabled="true">
+              <collectionProp name="HeaderManager.headers">
+                <elementProp name="" elementType="Header">
+                  <stringProp name="Header.name">Authorization</stringProp>
+                  <stringProp name="Header.value">Bearer ${token}</stringProp>
+                </elementProp>
+              </collectionProp>
+            </HeaderManager>
+            <hashTree />
+            <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="HTTP exacto 200" enabled="true">
+              <collectionProp name="Asserion.test_strings">
+                <stringProp name="1">^200$</stringProp>
+              </collectionProp>
+              <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+              <boolProp name="Assertion.assume_success">false</boolProp>
+              <intProp name="Assertion.test_type">1</intProp>
+            </ResponseAssertion>
+            <hashTree />
+            <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Detalle corresponde a ID solicitado" enabled="true">
+              <stringProp name="scriptLanguage">groovy</stringProp>
+              <stringProp name="parameters" />
+              <stringProp name="filename" />
+              <stringProp name="cacheKey">true</stringProp>
+              <stringProp name="script">import groovy.json.JsonSlurper
+vars.put('canApply','false')
+try {
+  assert prev.getResponseCode() == '200'
+  def data = new JsonSlurper().parseText(prev.getResponseDataAsString()).data
+  assert data.id.toString() == vars.get('jobId')
+  if (data.postulacion != null) {
+    vars.getObject('seenJobs').add(vars.get('jobId'))
+  } else if (data.puede_postular == true) { vars.put('canApply','true') }
+} catch (Throwable ignored) {
+  AssertionResult.setFailure(true); AssertionResult.setFailureMessage('Detalle invalido; VU detenido'); prev.setStopThread(true)
+}</stringProp>
+            </JSR223Assertion>
+            <hashTree />
+          </hashTree>
+        </hashTree>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="TG_Login" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">${__P(onerror,stopthread)}</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <intProp name="LoopController.loops">1</intProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">${__P(users_login,4)}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">${__P(rampup,30)}</stringProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.duration">${__P(duration,300)}</stringProp>
+        <stringProp name="ThreadGroup.delay" />
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+      </ThreadGroup>
+      <hashTree>
+        <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Headers" enabled="true">
+          <collectionProp name="HeaderManager.headers">
+            <elementProp name="" elementType="Header">
+              <stringProp name="Header.name">Content-Type</stringProp>
+              <stringProp name="Header.value">application/json</stringProp>
+            </elementProp>
+            <elementProp name="" elementType="Header">
+              <stringProp name="Header.name">Accept</stringProp>
+              <stringProp name="Header.value">application/json</stringProp>
+            </elementProp>
+          </collectionProp>
+        </HeaderManager>
+        <hashTree />
+        <UniformRandomTimer guiclass="UniformRandomTimerGui" testclass="UniformRandomTimer" testname="Think time 1-3 s" enabled="true">
+          <stringProp name="ConstantTimer.delay">${__P(think_min,1000)}</stringProp>
+          <stringProp name="RandomTimer.range">${__P(think_range,2000)}</stringProp>
+        </UniformRandomTimer>
+        <hashTree />
+        <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="CSV usuarios_login" enabled="true">
+          <stringProp name="delimiter">,</stringProp>
+          <stringProp name="fileEncoding">UTF-8</stringProp>
+          <stringProp name="filename">${__P(datadir,data)}/usuarios_login.csv</stringProp>
+          <boolProp name="ignoreFirstLine">true</boolProp>
+          <boolProp name="quotedData">false</boolProp>
+          <boolProp name="recycle">false</boolProp>
+          <stringProp name="shareMode">shareMode.all</stringProp>
+          <boolProp name="stopThread">true</boolProp>
+          <stringProp name="variableNames">correo,password</stringProp>
+        </CSVDataSet>
+        <hashTree />
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="SETUP_identidad_login" enabled="true">
+          <stringProp name="scriptLanguage">groovy</stringProp>
+          <stringProp name="parameters" />
+          <stringProp name="filename" />
+          <stringProp name="cacheKey">true</stringProp>
+          <stringProp name="script">
+try {
+  def email=vars.get('correo'); def password=vars.get('password')
+  assert email &amp;&amp; email.endsWith('@carga.qa.invalid') &amp;&amp; password &amp;&amp; email != '&lt;EOF&gt;'
+  vars.put('qa_run_id',props.getProperty('run_id','gui-validacion'))
+  vars.put('qa_profile','login'); vars.put('qa_vu',vars.get('qa_profile')+'-'+ctx.getThreadNum())
+  vars.put('qa_job_id',''); vars.put('qa_app_id',''); vars.put('pages','1'); vars.putObject('seenJobs',new HashSet())
+  synchronized(props) {
+    def key='qa24.accounts.'+vars.get('qa_run_id')
+    def accounts=props.get(key)
+    if (accounts == null) { accounts=new HashMap();props.put(key,accounts) }
+    def previous=accounts.putIfAbsent(email,vars.get('qa_vu'))
+    assert previous == null || previous == vars.get('qa_vu')
+  }
+  SampleResult.setResponseCode('200');SampleResult.setResponseMessage('Cuenta ficticia independiente asignada');SampleResult.setSuccessful(true)
+} catch (Throwable ignored) {
+  SampleResult.setResponseCode('500');SampleResult.setResponseMessage('Asignacion CSV invalida o cuenta compartida');SampleResult.setSuccessful(false);SampleResult.setStopThread(true)
+}
+</stringProp>
+        </JSR223Sampler>
+        <hashTree />
+        <LoopController guiclass="LoopControlPanel" testclass="LoopController" testname="Sesion hasta duracion programada" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <intProp name="LoopController.loops">-1</intProp>
+        </LoopController>
+        <hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="LOGIN_valido" enabled="true">
+            <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+              <collectionProp name="Arguments.arguments">
+                <elementProp name="" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                  <stringProp name="Argument.value">{"correo":"${correo}","password":"${password}"}</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                </elementProp>
+              </collectionProp>
+            </elementProp>
+            <stringProp name="HTTPSampler.path">/api/v1/auth/login</stringProp>
+            <stringProp name="HTTPSampler.method">POST</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="HTTP exacto 200" enabled="true">
+              <collectionProp name="Asserion.test_strings">
+                <stringProp name="1">^200$</stringProp>
+              </collectionProp>
+              <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+              <boolProp name="Assertion.assume_success">false</boolProp>
+              <intProp name="Assertion.test_type">1</intProp>
+            </ResponseAssertion>
+            <hashTree />
+            <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Token obligatorio" enabled="true">
+              <stringProp name="scriptLanguage">groovy</stringProp>
+              <stringProp name="parameters" />
+              <stringProp name="filename" />
+              <stringProp name="cacheKey">true</stringProp>
+              <stringProp name="script">import groovy.json.JsonSlurper
+try {
+  assert prev.getResponseCode() == '200'
+  def data = new JsonSlurper().parseText(prev.getResponseDataAsString()).data
+  assert data.token instanceof String &amp;&amp; data.token.size() &gt; 5
+  assert data.usuario_id instanceof Number &amp;&amp; data.usuario_id &gt; 0
+  vars.put('qa_user_id',data.usuario_id.toString())
+  vars.put('token', data.token)
+} catch (Throwable ignored) {
+  AssertionResult.setFailure(true); AssertionResult.setFailureMessage('Login sin token valido; VU detenido')
+  vars.remove('token'); prev.setStopThread(true)
+}</stringProp>
+            </JSR223Assertion>
+            <hashTree />
+          </hashTree>
+          <IfController guiclass="IfControllerPanel" testclass="IfController" testname="Negativo login separado" enabled="true">
+            <stringProp name="IfController.condition">${__P(negative_cases,false)}</stringProp>
+            <boolProp name="IfController.evaluateAll">false</boolProp>
+            <boolProp name="IfController.useExpression">true</boolProp>
+          </IfController>
+          <hashTree>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="EXPECTED_401_login" enabled="true">
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{"correo":"noexiste${__threadNum}@carga.qa.invalid","password":"incorrecta-QA"}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+              <stringProp name="HTTPSampler.path">/api/v1/auth/login</stringProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.follow_redirects">false</boolProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            </HTTPSamplerProxy>
+            <hashTree>
+              <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="HTTP exacto 401" enabled="true">
+                <collectionProp name="Asserion.test_strings">
+                  <stringProp name="1">^401$</stringProp>
+                </collectionProp>
+                <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+                <boolProp name="Assertion.assume_success">true</boolProp>
+                <intProp name="Assertion.test_type">1</intProp>
+              </ResponseAssertion>
+              <hashTree />
+            </hashTree>
+          </hashTree>
+        </hashTree>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="TG_Postulacion" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">${__P(onerror,stopthread)}</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <intProp name="LoopController.loops">1</intProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">${__P(users_apply,6)}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">${__P(rampup,30)}</stringProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.duration">${__P(duration,300)}</stringProp>
+        <stringProp name="ThreadGroup.delay" />
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+      </ThreadGroup>
+      <hashTree>
+        <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Headers" enabled="true">
+          <collectionProp name="HeaderManager.headers">
+            <elementProp name="" elementType="Header">
+              <stringProp name="Header.name">Content-Type</stringProp>
+              <stringProp name="Header.value">application/json</stringProp>
+            </elementProp>
+            <elementProp name="" elementType="Header">
+              <stringProp name="Header.name">Accept</stringProp>
+              <stringProp name="Header.value">application/json</stringProp>
+            </elementProp>
+          </collectionProp>
+        </HeaderManager>
+        <hashTree />
+        <UniformRandomTimer guiclass="UniformRandomTimerGui" testclass="UniformRandomTimer" testname="Think time 1-3 s" enabled="true">
+          <stringProp name="ConstantTimer.delay">${__P(think_min,1000)}</stringProp>
+          <stringProp name="RandomTimer.range">${__P(think_range,2000)}</stringProp>
+        </UniformRandomTimer>
+        <hashTree />
+        <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="CSV usuarios_postulacion" enabled="true">
+          <stringProp name="delimiter">,</stringProp>
+          <stringProp name="fileEncoding">UTF-8</stringProp>
+          <stringProp name="filename">${__P(datadir,data)}/usuarios_postulacion.csv</stringProp>
+          <boolProp name="ignoreFirstLine">true</boolProp>
+          <boolProp name="quotedData">false</boolProp>
+          <boolProp name="recycle">false</boolProp>
+          <stringProp name="shareMode">shareMode.all</stringProp>
+          <boolProp name="stopThread">true</boolProp>
+          <stringProp name="variableNames">correo,password</stringProp>
+        </CSVDataSet>
+        <hashTree />
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="SETUP_identidad_postulacion" enabled="true">
+          <stringProp name="scriptLanguage">groovy</stringProp>
+          <stringProp name="parameters" />
+          <stringProp name="filename" />
+          <stringProp name="cacheKey">true</stringProp>
+          <stringProp name="script">
+try {
+  def email=vars.get('correo'); def password=vars.get('password')
+  assert email &amp;&amp; email.endsWith('@carga.qa.invalid') &amp;&amp; password &amp;&amp; email != '&lt;EOF&gt;'
+  vars.put('qa_run_id',props.getProperty('run_id','gui-validacion'))
+  vars.put('qa_profile','postulacion'); vars.put('qa_vu',vars.get('qa_profile')+'-'+ctx.getThreadNum())
+  vars.put('qa_job_id',''); vars.put('qa_app_id',''); vars.put('pages','1'); vars.putObject('seenJobs',new HashSet())
+  synchronized(props) {
+    def key='qa24.accounts.'+vars.get('qa_run_id')
+    def accounts=props.get(key)
+    if (accounts == null) { accounts=new HashMap();props.put(key,accounts) }
+    def previous=accounts.putIfAbsent(email,vars.get('qa_vu'))
+    assert previous == null || previous == vars.get('qa_vu')
+  }
+  SampleResult.setResponseCode('200');SampleResult.setResponseMessage('Cuenta ficticia independiente asignada');SampleResult.setSuccessful(true)
+} catch (Throwable ignored) {
+  SampleResult.setResponseCode('500');SampleResult.setResponseMessage('Asignacion CSV invalida o cuenta compartida');SampleResult.setSuccessful(false);SampleResult.setStopThread(true)
+}
+</stringProp>
+        </JSR223Sampler>
+        <hashTree />
+        <OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="Login inicial del VU" enabled="true" />
+        <hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="LOGIN_setup" enabled="true">
+            <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+              <collectionProp name="Arguments.arguments">
+                <elementProp name="" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                  <stringProp name="Argument.value">{"correo":"${correo}","password":"${password}"}</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                </elementProp>
+              </collectionProp>
+            </elementProp>
+            <stringProp name="HTTPSampler.path">/api/v1/auth/login</stringProp>
+            <stringProp name="HTTPSampler.method">POST</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="HTTP exacto 200" enabled="true">
+              <collectionProp name="Asserion.test_strings">
+                <stringProp name="1">^200$</stringProp>
+              </collectionProp>
+              <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+              <boolProp name="Assertion.assume_success">false</boolProp>
+              <intProp name="Assertion.test_type">1</intProp>
+            </ResponseAssertion>
+            <hashTree />
+            <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Token obligatorio" enabled="true">
+              <stringProp name="scriptLanguage">groovy</stringProp>
+              <stringProp name="parameters" />
+              <stringProp name="filename" />
+              <stringProp name="cacheKey">true</stringProp>
+              <stringProp name="script">import groovy.json.JsonSlurper
+try {
+  assert prev.getResponseCode() == '200'
+  def data = new JsonSlurper().parseText(prev.getResponseDataAsString()).data
+  assert data.token instanceof String &amp;&amp; data.token.size() &gt; 5
+  assert data.usuario_id instanceof Number &amp;&amp; data.usuario_id &gt; 0
+  vars.put('qa_user_id',data.usuario_id.toString())
+  vars.put('token', data.token)
+} catch (Throwable ignored) {
+  AssertionResult.setFailure(true); AssertionResult.setFailureMessage('Login sin token valido; VU detenido')
+  vars.remove('token'); prev.setStopThread(true)
+}</stringProp>
+            </JSR223Assertion>
+            <hashTree />
+          </hashTree>
+        </hashTree>
+        <LoopController guiclass="LoopControlPanel" testclass="LoopController" testname="Sesion hasta duracion programada" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <intProp name="LoopController.loops">-1</intProp>
+        </LoopController>
+        <hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="READ_listar_vacantes" enabled="true">
+            <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+              <collectionProp name="Arguments.arguments" />
+            </elementProp>
+            <stringProp name="HTTPSampler.path">/api/v1/vacantes?page=${__Random(1,${pages})}</stringProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Bearer del VU" enabled="true">
+              <collectionProp name="HeaderManager.headers">
+                <elementProp name="" elementType="Header">
+                  <stringProp name="Header.name">Authorization</stringProp>
+                  <stringProp name="Header.value">Bearer ${token}</stringProp>
+                </elementProp>
+              </collectionProp>
+            </HeaderManager>
+            <hashTree />
+            <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="HTTP exacto 200" enabled="true">
+              <collectionProp name="Asserion.test_strings">
+                <stringProp name="1">^200$</stringProp>
+              </collectionProp>
+              <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+              <boolProp name="Assertion.assume_success">false</boolProp>
+              <intProp name="Assertion.test_type">1</intProp>
+            </ResponseAssertion>
+            <hashTree />
+            <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Correlacion de vacante real" enabled="true">
+              <stringProp name="scriptLanguage">groovy</stringProp>
+              <stringProp name="parameters" />
+              <stringProp name="filename" />
+              <stringProp name="cacheKey">true</stringProp>
+              <stringProp name="script">import groovy.json.JsonSlurper
+vars.remove('jobId'); vars.put('canApply','false'); vars.put('created','false'); vars.put('doDuplicate','false'); vars.remove('appId'); vars.put('qa_app_id','')
+try {
+  assert prev.getResponseCode() == '200'
+  def json = new JsonSlurper().parseText(prev.getResponseDataAsString())
+  assert json.data instanceof List &amp;&amp; !json.data.isEmpty()
+  def pages = (json.meta?.last_page ?: 1) as int
+  vars.put('pages', Math.max(1,pages).toString())
+  def seen = vars.getObject('seenJobs') ?: new HashSet()
+  def choices = json.data.findAll { it.id instanceof Number &amp;&amp; !seen.contains(it.id.toString()) }
+  if (choices.isEmpty()) choices = json.data.findAll { it.id instanceof Number }
+  assert !choices.isEmpty()
+  def selected = choices[java.util.concurrent.ThreadLocalRandom.current().nextInt(choices.size())]
+  vars.put('jobId', selected.id.toString()); vars.put('qa_job_id', selected.id.toString())
+} catch (Throwable ignored) {
+  AssertionResult.setFailure(true); AssertionResult.setFailureMessage('Listado invalido o sin IDs; VU detenido')
+  prev.setStopThread(true)
+}</stringProp>
+            </JSR223Assertion>
+            <hashTree />
+          </hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="READ_detalle_antes_postular" enabled="true">
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+              <collectionProp name="Arguments.arguments" />
+            </elementProp>
+            <stringProp name="HTTPSampler.path">/api/v1/vacantes/${jobId}</stringProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
+            <boolProp name="HTTPSampler.follow_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Bearer del VU" enabled="true">
+              <collectionProp name="HeaderManager.headers">
+                <elementProp name="" elementType="Header">
+                  <stringProp name="Header.name">Authorization</stringProp>
+                  <stringProp name="Header.value">Bearer ${token}</stringProp>
+                </elementProp>
+              </collectionProp>
+            </HeaderManager>
+            <hashTree />
+            <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="HTTP exacto 200" enabled="true">
+              <collectionProp name="Asserion.test_strings">
+                <stringProp name="1">^200$</stringProp>
+              </collectionProp>
+              <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+              <boolProp name="Assertion.assume_success">false</boolProp>
+              <intProp name="Assertion.test_type">1</intProp>
+            </ResponseAssertion>
+            <hashTree />
+            <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Consultar estado antes de escribir" enabled="true">
+              <stringProp name="scriptLanguage">groovy</stringProp>
+              <stringProp name="parameters" />
+              <stringProp name="filename" />
+              <stringProp name="cacheKey">true</stringProp>
+              <stringProp name="script">import groovy.json.JsonSlurper
+vars.put('canApply','false')
+try {
+  assert prev.getResponseCode() == '200'
+  def data = new JsonSlurper().parseText(prev.getResponseDataAsString()).data
+  assert data.id.toString() == vars.get('jobId')
+  if (data.postulacion != null) {
+    vars.getObject('seenJobs').add(vars.get('jobId'))
+  } else if (data.puede_postular == true) { vars.put('canApply','true') }
+} catch (Throwable ignored) {
+  AssertionResult.setFailure(true); AssertionResult.setFailureMessage('Detalle invalido; VU detenido'); prev.setStopThread(true)
+}</stringProp>
+            </JSR223Assertion>
+            <hashTree />
+          </hashTree>
+          <IfController guiclass="IfControllerPanel" testclass="IfController" testname="Solo postulacion nueva" enabled="true">
+            <stringProp name="IfController.condition">${canApply}</stringProp>
+            <boolProp name="IfController.evaluateAll">false</boolProp>
+            <boolProp name="IfController.useExpression">true</boolProp>
+          </IfController>
+          <hashTree>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="WRITE_postular" enabled="true">
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{"vacante_id":${jobId}}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+              <stringProp name="HTTPSampler.path">/api/v1/candidatos/me/postulaciones</stringProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.follow_redirects">false</boolProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            </HTTPSamplerProxy>
+            <hashTree>
+              <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Bearer del VU" enabled="true">
+                <collectionProp name="HeaderManager.headers">
+                  <elementProp name="" elementType="Header">
+                    <stringProp name="Header.name">Authorization</stringProp>
+                    <stringProp name="Header.value">Bearer ${token}</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </HeaderManager>
+              <hashTree />
+              <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="HTTP exacto 201" enabled="true">
+                <collectionProp name="Asserion.test_strings">
+                  <stringProp name="1">^201$</stringProp>
+                </collectionProp>
+                <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+                <boolProp name="Assertion.assume_success">false</boolProp>
+                <intProp name="Assertion.test_type">1</intProp>
+              </ResponseAssertion>
+              <hashTree />
+              <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Correlacion appId y jobId" enabled="true">
+                <stringProp name="scriptLanguage">groovy</stringProp>
+                <stringProp name="parameters" />
+                <stringProp name="filename" />
+                <stringProp name="cacheKey">true</stringProp>
+                <stringProp name="script">import groovy.json.JsonSlurper
+vars.put('created','false'); vars.remove('appId'); vars.put('qa_app_id','')
+try {
+  assert prev.getResponseCode() == '201'
+  def data = new JsonSlurper().parseText(prev.getResponseDataAsString()).data
+  assert data.id instanceof Number &amp;&amp; data.id &gt; 0
+  assert data.vacante.id.toString() == vars.get('jobId')
+  vars.put('appId',data.id.toString()); vars.put('qa_app_id',data.id.toString()); vars.put('created','true')
+  vars.getObject('seenJobs').add(vars.get('jobId'))
+  vars.put('doDuplicate', (props.getProperty('negative_cases','false') == 'true' &amp;&amp; vars.get('duplicateChecked') != 'true').toString())
+} catch (Throwable ignored) {
+  AssertionResult.setFailure(true); AssertionResult.setFailureMessage('Postulacion nueva sin 201/IDs correlacionados; VU detenido')
+  prev.setStopThread(true)
+}</stringProp>
+              </JSR223Assertion>
+              <hashTree />
+            </hashTree>
+          </hashTree>
+          <IfController guiclass="IfControllerPanel" testclass="IfController" testname="Verificar creacion exitosa" enabled="true">
+            <stringProp name="IfController.condition">${created}</stringProp>
+            <boolProp name="IfController.evaluateAll">false</boolProp>
+            <boolProp name="IfController.useExpression">true</boolProp>
+          </IfController>
+          <hashTree>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="READ_verificar_postulacion" enabled="true">
+              <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments" />
+              </elementProp>
+              <stringProp name="HTTPSampler.path">/api/v1/vacantes/${jobId}</stringProp>
+              <stringProp name="HTTPSampler.method">GET</stringProp>
+              <boolProp name="HTTPSampler.follow_redirects">false</boolProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            </HTTPSamplerProxy>
+            <hashTree>
+              <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Bearer del VU" enabled="true">
+                <collectionProp name="HeaderManager.headers">
+                  <elementProp name="" elementType="Header">
+                    <stringProp name="Header.name">Authorization</stringProp>
+                    <stringProp name="Header.value">Bearer ${token}</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </HeaderManager>
+              <hashTree />
+              <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="HTTP exacto 200" enabled="true">
+                <collectionProp name="Asserion.test_strings">
+                  <stringProp name="1">^200$</stringProp>
+                </collectionProp>
+                <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+                <boolProp name="Assertion.assume_success">false</boolProp>
+                <intProp name="Assertion.test_type">1</intProp>
+              </ResponseAssertion>
+              <hashTree />
+              <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Integridad IDs exactos" enabled="true">
+                <stringProp name="scriptLanguage">groovy</stringProp>
+                <stringProp name="parameters" />
+                <stringProp name="filename" />
+                <stringProp name="cacheKey">true</stringProp>
+                <stringProp name="script">import groovy.json.JsonSlurper
+try {
+  assert prev.getResponseCode() == '200'
+  def data = new JsonSlurper().parseText(prev.getResponseDataAsString()).data
+  assert data.id.toString() == vars.get('jobId')
+  assert data.postulacion.id.toString() == vars.get('appId')
+  assert data.postulacion.retirada == false
+} catch (Throwable ignored) {
+  AssertionResult.setFailure(true); AssertionResult.setFailureMessage('Integridad: GET no confirma el mismo ID de postulacion/vacante'); prev.setStopThread(true)
+}</stringProp>
+              </JSR223Assertion>
+              <hashTree />
+            </hashTree>
+          </hashTree>
+          <IfController guiclass="IfControllerPanel" testclass="IfController" testname="Duplicada deliberada separada" enabled="true">
+            <stringProp name="IfController.condition">${doDuplicate}</stringProp>
+            <boolProp name="IfController.evaluateAll">false</boolProp>
+            <boolProp name="IfController.useExpression">true</boolProp>
+          </IfController>
+          <hashTree>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="EXPECTED_409_duplicada" enabled="true">
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{"vacante_id":${jobId}}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+              <stringProp name="HTTPSampler.path">/api/v1/candidatos/me/postulaciones</stringProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <boolProp name="HTTPSampler.follow_redirects">false</boolProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            </HTTPSamplerProxy>
+            <hashTree>
+              <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Bearer del VU" enabled="true">
+                <collectionProp name="HeaderManager.headers">
+                  <elementProp name="" elementType="Header">
+                    <stringProp name="Header.name">Authorization</stringProp>
+                    <stringProp name="Header.value">Bearer ${token}</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </HeaderManager>
+              <hashTree />
+              <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="HTTP exacto 409" enabled="true">
+                <collectionProp name="Asserion.test_strings">
+                  <stringProp name="1">^409$</stringProp>
+                </collectionProp>
+                <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+                <boolProp name="Assertion.assume_success">true</boolProp>
+                <intProp name="Assertion.test_type">1</intProp>
+              </ResponseAssertion>
+              <hashTree />
+              <JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="Una comprobacion duplicada por VU" enabled="true">
+                <stringProp name="scriptLanguage">groovy</stringProp>
+                <stringProp name="parameters" />
+                <stringProp name="filename" />
+                <stringProp name="cacheKey">true</stringProp>
+                <stringProp name="script">vars.put('duplicateChecked','true')</stringProp>
+              </JSR223PostProcessor>
+              <hashTree />
+            </hashTree>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="READ_verificar_tras_duplicada" enabled="true">
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments" />
+              </elementProp>
+              <stringProp name="HTTPSampler.path">/api/v1/vacantes/${jobId}</stringProp>
+              <stringProp name="HTTPSampler.method">GET</stringProp>
+              <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
+              <boolProp name="HTTPSampler.follow_redirects">false</boolProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            </HTTPSamplerProxy>
+            <hashTree>
+              <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Bearer del VU" enabled="true">
+                <collectionProp name="HeaderManager.headers">
+                  <elementProp name="" elementType="Header">
+                    <stringProp name="Header.name">Authorization</stringProp>
+                    <stringProp name="Header.value">Bearer ${token}</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </HeaderManager>
+              <hashTree />
+              <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="HTTP exacto 200" enabled="true">
+                <collectionProp name="Asserion.test_strings">
+                  <stringProp name="1">^200$</stringProp>
+                </collectionProp>
+                <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+                <boolProp name="Assertion.assume_success">false</boolProp>
+                <intProp name="Assertion.test_type">1</intProp>
+              </ResponseAssertion>
+              <hashTree />
+              <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Mismo ID tras rechazar duplicada" enabled="true">
+                <stringProp name="scriptLanguage">groovy</stringProp>
+                <stringProp name="parameters" />
+                <stringProp name="filename" />
+                <stringProp name="cacheKey">true</stringProp>
+                <stringProp name="script">import groovy.json.JsonSlurper
+try {
+  assert prev.getResponseCode() == '200'
+  def data = new JsonSlurper().parseText(prev.getResponseDataAsString()).data
+  assert data.id.toString() == vars.get('jobId')
+  assert data.postulacion.id.toString() == vars.get('appId')
+  assert data.postulacion.retirada == false
+} catch (Throwable ignored) {
+  AssertionResult.setFailure(true); AssertionResult.setFailureMessage('Integridad: GET no confirma el mismo ID de postulacion/vacante'); prev.setStopThread(true)
+}</stringProp>
+              </JSR223Assertion>
+              <hashTree />
+            </hashTree>
+          </hashTree>
+        </hashTree>
+      </hashTree>
+      <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report (solo depuracion GUI)" enabled="false">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+            <code>true</code>
+            <message>true</message>
+            <threadName>true</threadName>
+            <dataType>true</dataType>
+            <assertions>true</assertions>
+            <subresults>true</subresults>
+            <bytes>true</bytes>
+            <url>true</url>
+            <threadCounts>true</threadCounts>
+          </value>
+        </objProp>
+        <stringProp name="filename" />
+      </ResultCollector>
+      <hashTree />
+      <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report (solo depuracion GUI)" enabled="false">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+            <code>true</code>
+            <message>true</message>
+            <threadName>true</threadName>
+            <dataType>true</dataType>
+            <assertions>true</assertions>
+            <subresults>true</subresults>
+            <bytes>true</bytes>
+            <url>true</url>
+            <threadCounts>true</threadCounts>
+          </value>
+        </objProp>
+        <stringProp name="filename" />
+      </ResultCollector>
+      <hashTree />
+      <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Auditoria sin credenciales" enabled="true">
+        <stringProp name="scriptLanguage">groovy</stringProp>
+        <stringProp name="parameters" />
+        <stringProp name="filename" />
+        <stringProp name="cacheKey">true</stringProp>
+        <stringProp name="script">vars.put('qa_job_id',vars.get('jobId') ?: ''); vars.put('qa_app_id',vars.get('appId') ?: '')</stringProp>
+      </JSR223PreProcessor>
+      <hashTree />
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>

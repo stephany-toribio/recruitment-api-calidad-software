@@ -1,0 +1,16 @@
+test_duplicate_success_is_detected (test_analisis.AnalysisTest.test_duplicate_success_is_detected) ... ok
+test_empty_is_not_pass (test_analisis.AnalysisTest.test_empty_is_not_pass) ... ok
+test_expected_case_with_500_is_error (test_analisis.AnalysisTest.test_expected_case_with_500_is_error) ... ok
+test_expected_negative_not_an_error_or_latency_write (test_analisis.AnalysisTest.test_expected_negative_not_an_error_or_latency_write) ... ok
+test_failed_verification_is_not_evidence_of_persistence (test_analisis.AnalysisTest.test_failed_verification_is_not_evidence_of_persistence) ... ok
+test_failed_write_cannot_be_approved_by_low_error_percentage (test_analisis.AnalysisTest.test_failed_write_cannot_be_approved_by_low_error_percentage) ... ok
+test_global_pass_requires_backend_and_correlated_ids (test_analisis.AnalysisTest.test_global_pass_requires_backend_and_correlated_ids) ... ok
+test_missing_write_and_login_are_incomplete (test_analisis.AnalysisTest.test_missing_write_and_login_are_incomplete) ... ok
+test_one_percent_is_not_less_than_one (test_analisis.AnalysisTest.test_one_percent_is_not_less_than_one) ... ok
+test_percentile_is_numeric (test_analisis.AnalysisTest.test_percentile_is_numeric) ... ok
+test_regular_write_409_never_counts_as_success (test_analisis.AnalysisTest.test_regular_write_409_never_counts_as_success) ... ok
+
+----------------------------------------------------------------------
+Ran 11 tests in 0.003s
+
+OK

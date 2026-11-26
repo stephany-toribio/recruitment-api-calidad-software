@@ -1,0 +1,16 @@
+timeStamp,elapsed,label,responseCode,responseMessage,threadName,dataType,success,failureMessage,bytes,sentBytes,grpThreads,allThreads,URL,Latency,IdleTime,Connect,"qa_run_id","qa_profile","qa_vu","qa_user_id","qa_job_id","qa_app_id"
+1795649752030,477,SETUP_identidad_postulacion,200,Cuenta ficticia independiente asignada,TG_Postulacion 3-1,text,true,,0,0,1,3,null,0,0,0,ce988d61-0af6-4c74-8142-86d998f7d89d,postulacion,postulacion-0,null,,
+1795649752307,200,SETUP_identidad_lectura,200,Cuenta ficticia independiente asignada,TG_Consulta 1-1,text,true,,0,0,1,3,null,0,0,0,ce988d61-0af6-4c74-8142-86d998f7d89d,lectura,lectura-0,null,,
+1795649752926,51,SETUP_identidad_login,200,Cuenta ficticia independiente asignada,TG_Login 2-1,text,true,,0,0,1,3,null,0,0,0,ce988d61-0af6-4c74-8142-86d998f7d89d,login,login-0,null,,
+1795649754618,4349,LOGIN_setup,200,OK,TG_Consulta 1-1,text,true,,406,281,1,3,http://127.0.0.1:8002/api/v1/auth/login,4332,0,40,ce988d61-0af6-4c74-8142-86d998f7d89d,lectura,lectura-0,21,,
+1795649755054,9613,LOGIN_setup,200,OK,TG_Postulacion 3-1,text,true,,411,285,1,3,http://127.0.0.1:8002/api/v1/auth/login,9597,0,1,ce988d61-0af6-4c74-8142-86d998f7d89d,postulacion,postulacion-0,121,,
+1795649755407,12550,LOGIN_valido,200,OK,TG_Login 2-1,text,true,,404,279,1,3,http://127.0.0.1:8002/api/v1/auth/login,12533,0,2,ce988d61-0af6-4c74-8142-86d998f7d89d,login,login-0,71,,
+1795649760822,10672,READ_listar_vacantes,200,OK,TG_Consulta 1-1,text,true,,7268,273,1,3,http://127.0.0.1:8002/api/v1/vacantes?page=1,10654,0,4,ce988d61-0af6-4c74-8142-86d998f7d89d,lectura,lectura-0,21,9402,
+1795649765884,12408,READ_listar_vacantes,200,OK,TG_Postulacion 3-1,text,true,,7268,273,1,3,http://127.0.0.1:8002/api/v1/vacantes?page=1,12391,0,1,ce988d61-0af6-4c74-8142-86d998f7d89d,postulacion,postulacion-0,121,9397,
+1795649770252,10974,EXPECTED_401_login,401,Unauthorized,TG_Login 2-1,text,true,,282,280,1,3,http://127.0.0.1:8002/api/v1/auth/login,10958,0,3,ce988d61-0af6-4c74-8142-86d998f7d89d,login,login-0,71,,
+1795649774401,10027,READ_detalle_vacante,200,OK,TG_Consulta 1-1,text,true,,1163,271,1,3,http://127.0.0.1:8002/api/v1/vacantes/9402,10008,0,2,ce988d61-0af6-4c74-8142-86d998f7d89d,lectura,lectura-0,21,9402,
+1795649780702,6962,READ_detalle_antes_postular,200,OK,TG_Postulacion 3-1,text,true,,1163,271,1,3,http://127.0.0.1:8002/api/v1/vacantes/9397,6945,0,1,ce988d61-0af6-4c74-8142-86d998f7d89d,postulacion,postulacion-0,121,9397,
+1795649782235,9134,LOGIN_valido,200,OK,TG_Login 2-1,text,true,,404,279,1,3,http://127.0.0.1:8002/api/v1/auth/login,9110,0,2,ce988d61-0af6-4c74-8142-86d998f7d89d,login,login-0,71,,
+1795649785583,9283,READ_listar_vacantes,200,OK,TG_Consulta 1-1,text,true,,7268,273,1,3,http://127.0.0.1:8002/api/v1/vacantes?page=5,9266,0,2,ce988d61-0af6-4c74-8142-86d998f7d89d,lectura,lectura-0,21,9357,
+1795649789952,8429,WRITE_postular,201,Created,TG_Postulacion 3-1,text,true,,451,325,1,2,http://127.0.0.1:8002/api/v1/candidatos/me/postulaciones,8412,0,3,ce988d61-0af6-4c74-8142-86d998f7d89d,postulacion,postulacion-0,121,9397,9208
+1795649793697,7601,EXPECTED_401_login,401,Unauthorized,TG_Login 2-1,text,true,,282,280,1,1,http://127.0.0.1:8002/api/v1/auth/login,7586,0,2,ce988d61-0af6-4c74-8142-86d998f7d89d,login,login-0,71,,

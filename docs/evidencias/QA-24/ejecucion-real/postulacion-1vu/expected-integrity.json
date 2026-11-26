@@ -1,0 +1,22 @@
+{
+  "expected": [
+    {
+      "user_id": 121,
+      "job_id": 9398,
+      "app_id": 9209,
+      "vu_id": "postulacion-0"
+    },
+    {
+      "user_id": 121,
+      "job_id": 9141,
+      "app_id": 9210,
+      "vu_id": "postulacion-0"
+    },
+    {
+      "user_id": 121,
+      "job_id": 9118,
+      "app_id": 9211,
+      "vu_id": "postulacion-0"
+    }
+  ]
+}

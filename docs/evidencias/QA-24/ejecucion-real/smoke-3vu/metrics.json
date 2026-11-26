@@ -1,0 +1,83 @@
+{
+  "schema": 1,
+  "http_samples": 12,
+  "positive_samples": 10,
+  "expected_4xx": 2,
+  "expected_case_failures": 0,
+  "unexpected_errors": 0,
+  "setup_errors": 0,
+  "error_pct": 0.0,
+  "duration_observed_s": 46.68,
+  "throughput_http_s": 0.2570694087403599,
+  "latency": {
+    "read": {
+      "n": 5,
+      "p95_ms": 12408.0
+    },
+    "login": {
+      "n": 4,
+      "p95_ms": 12550.0
+    },
+    "write": {
+      "n": 1,
+      "p95_ms": 8429.0
+    }
+  },
+  "labels": {
+    "EXPECTED_401_login": {
+      "n": 2,
+      "errors": 0,
+      "p95_ms": 10974.0
+    },
+    "LOGIN_setup": {
+      "n": 2,
+      "errors": 0,
+      "p95_ms": 9613.0
+    },
+    "LOGIN_valido": {
+      "n": 2,
+      "errors": 0,
+      "p95_ms": 12550.0
+    },
+    "READ_detalle_antes_postular": {
+      "n": 1,
+      "errors": 0,
+      "p95_ms": 6962.0
+    },
+    "READ_detalle_vacante": {
+      "n": 1,
+      "errors": 0,
+      "p95_ms": 10027.0
+    },
+    "READ_listar_vacantes": {
+      "n": 3,
+      "errors": 0,
+      "p95_ms": 12408.0
+    },
+    "WRITE_postular": {
+      "n": 1,
+      "errors": 0,
+      "p95_ms": 8429.0
+    }
+  },
+  "active_peak_reported": 3,
+  "successful_creates": 1,
+  "unconfirmed_writes": 0,
+  "duplicate_successful_pairs": 0,
+  "creates_without_correlated_get": 1,
+  "client_ids_available": true,
+  "performance": "NO_CUMPLE_O_INCOMPLETO",
+  "backend_integrity": "VERIFICADA",
+  "overall": "NO_APROBADO",
+  "expected": [
+    {
+      "user_id": 121,
+      "job_id": 9397,
+      "app_id": 9208,
+      "vu_id": "postulacion-0"
+    }
+  ],
+  "requested_users": 3,
+  "requested_duration_s": 45,
+  "run_conditions_met": true
+}

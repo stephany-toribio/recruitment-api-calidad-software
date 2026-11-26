@@ -1,0 +1,4 @@
+PARSE PASS: analizar_resultados.ps1
+PARSE PASS: config.ps1
+PARSE PASS: run_baseline.ps1
+PARSE PASS: run_exploracion.ps1

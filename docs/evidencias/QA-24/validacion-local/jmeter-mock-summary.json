@@ -1,0 +1,41 @@
+{
+  "scope": "API simulada local; no mide el backend del usuario ni acredita sus objetivos.",
+  "tests": [
+    {
+      "mode": "normal",
+      "jmeter_exit": 0,
+      "http_samples": 1084,
+      "assertion_failures": 0,
+      "independent_accounts": 3,
+      "seconds": 14.3,
+      "verification": "PASS"
+    },
+    {
+      "mode": "unexpected-409",
+      "jmeter_exit": 0,
+      "http_samples": 724,
+      "assertion_failures": 1,
+      "independent_accounts": 3,
+      "seconds": 14.54,
+      "verification": "PASS"
+    },
+    {
+      "mode": "lost-write",
+      "jmeter_exit": 0,
+      "http_samples": 733,
+      "assertion_failures": 1,
+      "independent_accounts": 3,
+      "seconds": 14.19,
+      "verification": "PASS"
+    },
+    {
+      "mode": "missing-token",
+      "jmeter_exit": 0,
+      "http_samples": 3,
+      "assertion_failures": 3,
+      "independent_accounts": 0,
+      "seconds": 2.75,
+      "verification": "PASS"
+    }
+  ]
+}
