@@ -1,0 +1,4 @@
+724f6ddfe6edfdb4d8bef63d00ff9fbd01945fa1c6dc0d53c47d3c581abb43ea  docs/evidencias/QA-05/regresion-wsl/auth-regresion.txt
+b0a3f08175b2bd43f5ca1063cc9c02bf0baaaa678d455c0245b69520bad50b8e  docs/evidencias/QA-05/regresion-wsl/cp15-02-get.txt
+d28b9a705fad3cf3b051a0eab4b835994815746721c0336dcdf8e7926175ce36  docs/evidencias/QA-05/regresion-wsl/mysql-propiedad.txt
+020407fd9c524175f98d46e61f7ed7188478ec7c08e98060d15835982e01c12b  docs/evidencias/QA-05/regresion-wsl/unit-feature.txt

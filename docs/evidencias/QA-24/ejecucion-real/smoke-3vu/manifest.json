@@ -1,0 +1,48 @@
+﻿{
+    "run_id":  "ce988d61-0af6-4c74-8142-86d998f7d89d",
+    "started":  "2026-11-25T18:35:41.6835711-05:00",
+    "name":  "smoke-qa24",
+    "users":  3,
+    "profiles":  {
+                     "lectura":  1,
+                     "postulacion":  1,
+                     "login":  1
+                 },
+    "ramp_up_s":  5,
+    "duration_s":  45,
+    "think_time_ms":  [
+                          1000,
+                          3000
+                      ],
+    "negative_cases":  true,
+    "target":  "http://127.0.0.1:8002",
+    "on_error":  "stopthread",
+    "commit":  "b0f9df34a57078b02ed28db05908d3c371384917",
+    "branch":  "feature/QA-24-jmeter-cargas",
+    "jmx_sha256":  "8188C368933B31FB7BED40D40120AA8097560DA02B02263B6765E315378FA20C",
+    "csv_sha256":  {
+                       "lectura":  "9CE6265EBB0E1921BC23717C7506CFDA6E93CA8D9F4170A8C4111534E2DD031A",
+                       "postulacion":  "C580877864CFF3BBDD0E1580AB1F2C6ABCCEA4C113BC1B39BE26A4479E10A6F9",
+                       "login":  "7EA59A1CED5AD2EDBDDDB416251E9A81757CC94EAFFC682FAD7A7000E09387FD"
+                   },
+    "mounts":  [
+                   {
+                       "Source":  "C:\\Users\\vilma\\OneDrive\\Documentos\\Proyecto-Calidad\\recruitment-api-calidad-software",
+                       "Destination":  "/var/www/html",
+                       "Type":  "bind"
+                   }
+               ],
+    "app_limits":  {
+                       "NanoCpus":  0,
+                       "Memory":  0,
+                       "MemorySwap":  0,
+                       "CpuQuota":  0,
+                       "CpuPeriod":  0
+                   },
+    "resources":  [
+                      "16 CPUs; 7975116800 bytes RAM Docker"
+                  ],
+    "note":  "Duracion incluye ramp-up; percentiles incluyen arranque. CLI, sin listeners graficos. SinAnalisis se conserva solo por compatibilidad; la auditoria siempre se ejecuta.",
+    "jmeter_exit_code":  0,
+    "finished":  "2026-11-25T18:36:42.8552456-05:00"
+}

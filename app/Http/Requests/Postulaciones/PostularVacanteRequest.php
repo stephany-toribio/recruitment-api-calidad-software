@@ -2,25 +2,54 @@
 
 namespace App\Http\Requests\Postulaciones;
 
+use Closure;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Validator;
 
-/**
- * FormRequest para que un candidato postule a una vacante laboral.
- */
 class PostularVacanteRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        // En Sprint 1: verificar que el usuario autenticado sea de tipo 'candidato'
         return true;
     }
 
     public function rules(): array
     {
         return [
-            'vacante_id'         => ['required', 'integer'], // En Sprint 1: 'exists:vacantes,id'
-            'carta_presentacion' => ['nullable', 'string', 'max:1000'],
-            'cv_adjunto'         => ['nullable', 'file', 'mimes:pdf', 'max:5120'], // Máximo 5MB en PDF
+            'vacante_id' => [
+                'bail',
+                'required',
+                function (
+                    string $attribute,
+                    mixed $value,
+                    Closure $fail
+                ): void {
+                    if (! is_int($value) && ! is_string($value)) {
+                        $fail(
+                            'La vacante debe ser un identificador entero positivo.'
+                        );
+                    }
+                },
+                'integer',
+                'min:1',
+                'max:'.PHP_INT_MAX,
+            ],
+        ];
+    }
+
+    public function after(): array
+    {
+        return [
+            function (Validator $validator): void {
+                foreach (array_keys($this->all()) as $campo) {
+                    if ($campo !== 'vacante_id') {
+                        $validator->errors()->add(
+                            (string) $campo,
+                            'Este campo no está permitido al postular.'
+                        );
+                    }
+                }
+            },
         ];
     }
 
@@ -28,8 +57,9 @@ class PostularVacanteRequest extends FormRequest
     {
         return [
             'vacante_id.required' => 'La vacante a postular es obligatoria.',
-            'cv_adjunto.mimes'    => 'El currículum debe ser un archivo en formato PDF.',
-            'cv_adjunto.max'      => 'El archivo no debe exceder los 5 MB.',
+            'vacante_id.integer' => 'La vacante debe ser un identificador entero.',
+            'vacante_id.min' => 'El identificador de la vacante debe ser mayor que cero.',
+            'vacante_id.max' => 'El identificador de la vacante supera el máximo permitido.',
         ];
     }
 }

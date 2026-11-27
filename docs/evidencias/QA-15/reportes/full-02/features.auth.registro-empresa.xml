@@ -1,0 +1,312 @@
+<testsuite failures="0" name="features/auth/registro-empresa.feature" skipped="0" tests="12" time="17.489708"><testcase classname="features.auth.registro-empresa" name="Registro valido y persistencia de empresa" time="1.809469"><system-out>* url apiUrl .............................................................. passed
+* def System = Java.type('java.lang.System') .............................. passed
+* def FixtureBridge = Java.type('creo.FixtureBridge') ..................... passed
+* def password = System.getenv('KARATE_FIXTURE_PASSWORD') ................. passed
+* assert password != null &amp;&amp; password.length &gt;= 16 ........................ passed
+* def fixture = FixtureBridge.datos(runId, 'empresa') ..................... passed
+* assert fixture.success == true .......................................... passed
+* def datos = fixture.datos ............................................... passed
+* set datos.password = password ........................................... passed
+Given path 'empresas' ..................................................... passed
+And request datos ......................................................... passed
+When method post .......................................................... passed
+* def camposError = responseStatus == 422 &amp;&amp; response.errors ? karate.keysOf(response.errors) : [] . passed
+* if (responseStatus != 201) karate.fail('HTTP inesperado: ' + responseStatus + '; campos de validacion: ' + camposError.join(', ')) . passed
+Then status 201 ........................................................... passed
+And assert responseTime &lt; responseTimeLimit ............................... passed
+* def schema = read('classpath:schemas/registro-empresa.json') ............ passed
+And match response == schema .............................................. passed
+And match response.data.correo == datos.correo ............................ passed
+And match response.data.ruc == datos.ruc .................................. passed
+And match response.data.razon_social == datos.razon_social ................ passed
+And match response.data.sector == datos.sector ............................ passed
+* def db = FixtureBridge.consultar(runId, datos.correo, password) ......... passed
+* match db.existe == true ................................................. passed
+* match db.rol == 'empresa' ............................................... passed
+* match db.password_hasheada == true ...................................... passed
+* match db.empresa_id == response.data.id ................................. passed
+* match db.ruc == datos.ruc ............................................... passed
+* match db.tokens == 0 .................................................... passed
+</system-out></testcase>
+<testcase classname="features.auth.registro-empresa" name="Rechazar empresa con correo duplicado" time="1.947159"><system-out>* url apiUrl .............................................................. passed
+* def System = Java.type('java.lang.System') .............................. passed
+* def FixtureBridge = Java.type('creo.FixtureBridge') ..................... passed
+* def password = System.getenv('KARATE_FIXTURE_PASSWORD') ................. passed
+* assert password != null &amp;&amp; password.length &gt;= 16 ........................ passed
+* def existente = call read('classpath:helpers/registrar-empresa.feature') . passed
+* def fixture = FixtureBridge.datos(runId, 'empresa') ..................... passed
+* def datos = fixture.datos ............................................... passed
+* set datos.password = password ........................................... passed
+* eval datos[campo] = existente[campo] .................................... passed
+* def antes = FixtureBridge.cantidades(runId) ............................. passed
+Given url apiUrl .......................................................... passed
+And path 'empresas' ....................................................... passed
+And request datos ......................................................... passed
+When method post .......................................................... passed
+Then status 422 ........................................................... passed
+And assert responseTime &lt; responseTimeLimit ............................... passed
+* def schema = read('classpath:schemas/validation-error.json') ............ passed
+And match response == schema .............................................. passed
+* def camposEsperados = [] ................................................ passed
+* eval camposEsperados.push(campo) ........................................ passed
+* match karate.keysOf(response.errors) == camposEsperados ................. passed
+* def mensajes = response.errors[campo] ................................... passed
+* match mensajes == '#[] #string' ......................................... passed
+* assert mensajes.length &gt; 0 .............................................. passed
+* def despues = FixtureBridge.cantidades(runId) ........................... passed
+* match despues == antes .................................................. passed
+</system-out></testcase>
+<testcase classname="features.auth.registro-empresa" name="Rechazar empresa con ruc duplicado" time="1.959925"><system-out>* url apiUrl .............................................................. passed
+* def System = Java.type('java.lang.System') .............................. passed
+* def FixtureBridge = Java.type('creo.FixtureBridge') ..................... passed
+* def password = System.getenv('KARATE_FIXTURE_PASSWORD') ................. passed
+* assert password != null &amp;&amp; password.length &gt;= 16 ........................ passed
+* def existente = call read('classpath:helpers/registrar-empresa.feature') . passed
+* def fixture = FixtureBridge.datos(runId, 'empresa') ..................... passed
+* def datos = fixture.datos ............................................... passed
+* set datos.password = password ........................................... passed
+* eval datos[campo] = existente[campo] .................................... passed
+* def antes = FixtureBridge.cantidades(runId) ............................. passed
+Given url apiUrl .......................................................... passed
+And path 'empresas' ....................................................... passed
+And request datos ......................................................... passed
+When method post .......................................................... passed
+Then status 422 ........................................................... passed
+And assert responseTime &lt; responseTimeLimit ............................... passed
+* def schema = read('classpath:schemas/validation-error.json') ............ passed
+And match response == schema .............................................. passed
+* def camposEsperados = [] ................................................ passed
+* eval camposEsperados.push(campo) ........................................ passed
+* match karate.keysOf(response.errors) == camposEsperados ................. passed
+* def mensajes = response.errors[campo] ................................... passed
+* match mensajes == '#[] #string' ......................................... passed
+* assert mensajes.length &gt; 0 .............................................. passed
+* def despues = FixtureBridge.cantidades(runId) ........................... passed
+* match despues == antes .................................................. passed
+</system-out></testcase>
+<testcase classname="features.auth.registro-empresa" name="Rechazar empresa con dato invalido en ruc" time="1.260426"><system-out>* url apiUrl .............................................................. passed
+* def System = Java.type('java.lang.System') .............................. passed
+* def FixtureBridge = Java.type('creo.FixtureBridge') ..................... passed
+* def password = System.getenv('KARATE_FIXTURE_PASSWORD') ................. passed
+* assert password != null &amp;&amp; password.length &gt;= 16 ........................ passed
+* def fixture = FixtureBridge.datos(runId, 'empresa') ..................... passed
+* def datos = fixture.datos ............................................... passed
+* set datos.password = password ........................................... passed
+* eval datos[campo] = valor ............................................... passed
+* def antes = FixtureBridge.cantidades(runId) ............................. passed
+Given url apiUrl .......................................................... passed
+And path 'empresas' ....................................................... passed
+And request datos ......................................................... passed
+When method post .......................................................... passed
+Then status 422 ........................................................... passed
+And assert responseTime &lt; responseTimeLimit ............................... passed
+* def schema = read('classpath:schemas/validation-error.json') ............ passed
+And match response == schema .............................................. passed
+* match karate.keysOf(response.errors) contains campo ..................... passed
+* def mensajes = response.errors[campo] ................................... passed
+* match mensajes == '#[] #string' ......................................... passed
+* assert mensajes.length &gt; 0 .............................................. passed
+* def despues = FixtureBridge.cantidades(runId) ........................... passed
+* match despues == antes .................................................. passed
+</system-out></testcase>
+<testcase classname="features.auth.registro-empresa" name="Rechazar empresa con dato invalido en ruc" time="1.313032"><system-out>* url apiUrl .............................................................. passed
+* def System = Java.type('java.lang.System') .............................. passed
+* def FixtureBridge = Java.type('creo.FixtureBridge') ..................... passed
+* def password = System.getenv('KARATE_FIXTURE_PASSWORD') ................. passed
+* assert password != null &amp;&amp; password.length &gt;= 16 ........................ passed
+* def fixture = FixtureBridge.datos(runId, 'empresa') ..................... passed
+* def datos = fixture.datos ............................................... passed
+* set datos.password = password ........................................... passed
+* eval datos[campo] = valor ............................................... passed
+* def antes = FixtureBridge.cantidades(runId) ............................. passed
+Given url apiUrl .......................................................... passed
+And path 'empresas' ....................................................... passed
+And request datos ......................................................... passed
+When method post .......................................................... passed
+Then status 422 ........................................................... passed
+And assert responseTime &lt; responseTimeLimit ............................... passed
+* def schema = read('classpath:schemas/validation-error.json') ............ passed
+And match response == schema .............................................. passed
+* match karate.keysOf(response.errors) contains campo ..................... passed
+* def mensajes = response.errors[campo] ................................... passed
+* match mensajes == '#[] #string' ......................................... passed
+* assert mensajes.length &gt; 0 .............................................. passed
+* def despues = FixtureBridge.cantidades(runId) ........................... passed
+* match despues == antes .................................................. passed
+</system-out></testcase>
+<testcase classname="features.auth.registro-empresa" name="Rechazar empresa con dato invalido en correo" time="1.207772"><system-out>* url apiUrl .............................................................. passed
+* def System = Java.type('java.lang.System') .............................. passed
+* def FixtureBridge = Java.type('creo.FixtureBridge') ..................... passed
+* def password = System.getenv('KARATE_FIXTURE_PASSWORD') ................. passed
+* assert password != null &amp;&amp; password.length &gt;= 16 ........................ passed
+* def fixture = FixtureBridge.datos(runId, 'empresa') ..................... passed
+* def datos = fixture.datos ............................................... passed
+* set datos.password = password ........................................... passed
+* eval datos[campo] = valor ............................................... passed
+* def antes = FixtureBridge.cantidades(runId) ............................. passed
+Given url apiUrl .......................................................... passed
+And path 'empresas' ....................................................... passed
+And request datos ......................................................... passed
+When method post .......................................................... passed
+Then status 422 ........................................................... passed
+And assert responseTime &lt; responseTimeLimit ............................... passed
+* def schema = read('classpath:schemas/validation-error.json') ............ passed
+And match response == schema .............................................. passed
+* match karate.keysOf(response.errors) contains campo ..................... passed
+* def mensajes = response.errors[campo] ................................... passed
+* match mensajes == '#[] #string' ......................................... passed
+* assert mensajes.length &gt; 0 .............................................. passed
+* def despues = FixtureBridge.cantidades(runId) ........................... passed
+* match despues == antes .................................................. passed
+</system-out></testcase>
+<testcase classname="features.auth.registro-empresa" name="Rechazar empresa con dato invalido en sector" time="1.406323"><system-out>* url apiUrl .............................................................. passed
+* def System = Java.type('java.lang.System') .............................. passed
+* def FixtureBridge = Java.type('creo.FixtureBridge') ..................... passed
+* def password = System.getenv('KARATE_FIXTURE_PASSWORD') ................. passed
+* assert password != null &amp;&amp; password.length &gt;= 16 ........................ passed
+* def fixture = FixtureBridge.datos(runId, 'empresa') ..................... passed
+* def datos = fixture.datos ............................................... passed
+* set datos.password = password ........................................... passed
+* eval datos[campo] = valor ............................................... passed
+* def antes = FixtureBridge.cantidades(runId) ............................. passed
+Given url apiUrl .......................................................... passed
+And path 'empresas' ....................................................... passed
+And request datos ......................................................... passed
+When method post .......................................................... passed
+Then status 422 ........................................................... passed
+And assert responseTime &lt; responseTimeLimit ............................... passed
+* def schema = read('classpath:schemas/validation-error.json') ............ passed
+And match response == schema .............................................. passed
+* match karate.keysOf(response.errors) contains campo ..................... passed
+* def mensajes = response.errors[campo] ................................... passed
+* match mensajes == '#[] #string' ......................................... passed
+* assert mensajes.length &gt; 0 .............................................. passed
+* def despues = FixtureBridge.cantidades(runId) ........................... passed
+* match despues == antes .................................................. passed
+</system-out></testcase>
+<testcase classname="features.auth.registro-empresa" name="Rechazar empresa con dato invalido en encargado_empresa" time="1.497856"><system-out>* url apiUrl .............................................................. passed
+* def System = Java.type('java.lang.System') .............................. passed
+* def FixtureBridge = Java.type('creo.FixtureBridge') ..................... passed
+* def password = System.getenv('KARATE_FIXTURE_PASSWORD') ................. passed
+* assert password != null &amp;&amp; password.length &gt;= 16 ........................ passed
+* def fixture = FixtureBridge.datos(runId, 'empresa') ..................... passed
+* def datos = fixture.datos ............................................... passed
+* set datos.password = password ........................................... passed
+* eval datos[campo] = valor ............................................... passed
+* def antes = FixtureBridge.cantidades(runId) ............................. passed
+Given url apiUrl .......................................................... passed
+And path 'empresas' ....................................................... passed
+And request datos ......................................................... passed
+When method post .......................................................... passed
+Then status 422 ........................................................... passed
+And assert responseTime &lt; responseTimeLimit ............................... passed
+* def schema = read('classpath:schemas/validation-error.json') ............ passed
+And match response == schema .............................................. passed
+* match karate.keysOf(response.errors) contains campo ..................... passed
+* def mensajes = response.errors[campo] ................................... passed
+* match mensajes == '#[] #string' ......................................... passed
+* assert mensajes.length &gt; 0 .............................................. passed
+* def despues = FixtureBridge.cantidades(runId) ........................... passed
+* match despues == antes .................................................. passed
+</system-out></testcase>
+<testcase classname="features.auth.registro-empresa" name="Rechazar empresa con dato invalido en razon_social" time="1.180644"><system-out>* url apiUrl .............................................................. passed
+* def System = Java.type('java.lang.System') .............................. passed
+* def FixtureBridge = Java.type('creo.FixtureBridge') ..................... passed
+* def password = System.getenv('KARATE_FIXTURE_PASSWORD') ................. passed
+* assert password != null &amp;&amp; password.length &gt;= 16 ........................ passed
+* def fixture = FixtureBridge.datos(runId, 'empresa') ..................... passed
+* def datos = fixture.datos ............................................... passed
+* set datos.password = password ........................................... passed
+* eval datos[campo] = valor ............................................... passed
+* def antes = FixtureBridge.cantidades(runId) ............................. passed
+Given url apiUrl .......................................................... passed
+And path 'empresas' ....................................................... passed
+And request datos ......................................................... passed
+When method post .......................................................... passed
+Then status 422 ........................................................... passed
+And assert responseTime &lt; responseTimeLimit ............................... passed
+* def schema = read('classpath:schemas/validation-error.json') ............ passed
+And match response == schema .............................................. passed
+* match karate.keysOf(response.errors) contains campo ..................... passed
+* def mensajes = response.errors[campo] ................................... passed
+* match mensajes == '#[] #string' ......................................... passed
+* assert mensajes.length &gt; 0 .............................................. passed
+* def despues = FixtureBridge.cantidades(runId) ........................... passed
+* match despues == antes .................................................. passed
+</system-out></testcase>
+<testcase classname="features.auth.registro-empresa" name="Rechazar empresa con dato invalido en sitio_web" time="1.346154"><system-out>* url apiUrl .............................................................. passed
+* def System = Java.type('java.lang.System') .............................. passed
+* def FixtureBridge = Java.type('creo.FixtureBridge') ..................... passed
+* def password = System.getenv('KARATE_FIXTURE_PASSWORD') ................. passed
+* assert password != null &amp;&amp; password.length &gt;= 16 ........................ passed
+* def fixture = FixtureBridge.datos(runId, 'empresa') ..................... passed
+* def datos = fixture.datos ............................................... passed
+* set datos.password = password ........................................... passed
+* eval datos[campo] = valor ............................................... passed
+* def antes = FixtureBridge.cantidades(runId) ............................. passed
+Given url apiUrl .......................................................... passed
+And path 'empresas' ....................................................... passed
+And request datos ......................................................... passed
+When method post .......................................................... passed
+Then status 422 ........................................................... passed
+And assert responseTime &lt; responseTimeLimit ............................... passed
+* def schema = read('classpath:schemas/validation-error.json') ............ passed
+And match response == schema .............................................. passed
+* match karate.keysOf(response.errors) contains campo ..................... passed
+* def mensajes = response.errors[campo] ................................... passed
+* match mensajes == '#[] #string' ......................................... passed
+* assert mensajes.length &gt; 0 .............................................. passed
+* def despues = FixtureBridge.cantidades(runId) ........................... passed
+* match despues == antes .................................................. passed
+</system-out></testcase>
+<testcase classname="features.auth.registro-empresa" name="Rechazar empresa con dato invalido en descripcion" time="1.253541"><system-out>* url apiUrl .............................................................. passed
+* def System = Java.type('java.lang.System') .............................. passed
+* def FixtureBridge = Java.type('creo.FixtureBridge') ..................... passed
+* def password = System.getenv('KARATE_FIXTURE_PASSWORD') ................. passed
+* assert password != null &amp;&amp; password.length &gt;= 16 ........................ passed
+* def fixture = FixtureBridge.datos(runId, 'empresa') ..................... passed
+* def datos = fixture.datos ............................................... passed
+* set datos.password = password ........................................... passed
+* eval datos[campo] = valor ............................................... passed
+* def antes = FixtureBridge.cantidades(runId) ............................. passed
+Given url apiUrl .......................................................... passed
+And path 'empresas' ....................................................... passed
+And request datos ......................................................... passed
+When method post .......................................................... passed
+Then status 422 ........................................................... passed
+And assert responseTime &lt; responseTimeLimit ............................... passed
+* def schema = read('classpath:schemas/validation-error.json') ............ passed
+And match response == schema .............................................. passed
+* match karate.keysOf(response.errors) contains campo ..................... passed
+* def mensajes = response.errors[campo] ................................... passed
+* match mensajes == '#[] #string' ......................................... passed
+* assert mensajes.length &gt; 0 .............................................. passed
+* def despues = FixtureBridge.cantidades(runId) ........................... passed
+* match despues == antes .................................................. passed
+</system-out></testcase>
+<testcase classname="features.auth.registro-empresa" name="Rechazar empresa con dato invalido en password" time="1.307408"><system-out>* url apiUrl .............................................................. passed
+* def System = Java.type('java.lang.System') .............................. passed
+* def FixtureBridge = Java.type('creo.FixtureBridge') ..................... passed
+* def password = System.getenv('KARATE_FIXTURE_PASSWORD') ................. passed
+* assert password != null &amp;&amp; password.length &gt;= 16 ........................ passed
+* def fixture = FixtureBridge.datos(runId, 'empresa') ..................... passed
+* def datos = fixture.datos ............................................... passed
+* set datos.password = password ........................................... passed
+* eval datos[campo] = valor ............................................... passed
+* def antes = FixtureBridge.cantidades(runId) ............................. passed
+Given url apiUrl .......................................................... passed
+And path 'empresas' ....................................................... passed
+And request datos ......................................................... passed
+When method post .......................................................... passed
+Then status 422 ........................................................... passed
+And assert responseTime &lt; responseTimeLimit ............................... passed
+* def schema = read('classpath:schemas/validation-error.json') ............ passed
+And match response == schema .............................................. passed
+* match karate.keysOf(response.errors) contains campo ..................... passed
+* def mensajes = response.errors[campo] ................................... passed
+* match mensajes == '#[] #string' ......................................... passed
+* assert mensajes.length &gt; 0 .............................................. passed
+* def despues = FixtureBridge.cantidades(runId) ........................... passed
+* match despues == antes .................................................. passed
+</system-out></testcase>
+</testsuite>

@@ -1,0 +1,187 @@
+PHPUnit 11.5.56 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.3.37
+Configuration: /var/www/html/phpunit.mysql.xml
+
+FFFFFFFFFFFFFFFFFFFFFFF.........F..                               35 / 35 (100%)
+
+Time: 00:01.412, Memory: 42.50 MB
+
+There were 24 failures:
+
+1) Tests\MySql\Qa06RegistroPerfilesMySqlTest::test_cp01_01_registro_candidato_valido
+Falta tipo de estudio
+Failed asserting that null is not null.
+
+/var/www/html/tests/MySql/Qa06RegistroPerfilesMySqlTest.php:130
+/var/www/html/tests/MySql/Qa06RegistroPerfilesMySqlTest.php:184
+
+2) Tests\MySql\Qa06RegistroPerfilesMySqlTest::test_cp01_02_duplicados_candidato with data set "correo" ('correo')
+Falta tipo de estudio
+Failed asserting that null is not null.
+
+/var/www/html/tests/MySql/Qa06RegistroPerfilesMySqlTest.php:130
+/var/www/html/tests/MySql/Qa06RegistroPerfilesMySqlTest.php:253
+
+3) Tests\MySql\Qa06RegistroPerfilesMySqlTest::test_cp01_02_duplicados_candidato with data set "dni" ('dni')
+Falta tipo de estudio
+Failed asserting that null is not null.
+
+/var/www/html/tests/MySql/Qa06RegistroPerfilesMySqlTest.php:130
+/var/www/html/tests/MySql/Qa06RegistroPerfilesMySqlTest.php:253
+
+4) Tests\MySql\Qa06RegistroPerfilesMySqlTest::test_cp01_02_duplicados_candidato with data set "celular" ('celular')
+Falta tipo de estudio
+Failed asserting that null is not null.
+
+/var/www/html/tests/MySql/Qa06RegistroPerfilesMySqlTest.php:130
+/var/www/html/tests/MySql/Qa06RegistroPerfilesMySqlTest.php:253
+
+5) Tests\MySql\Qa06RegistroPerfilesMySqlTest::test_cp01_03_datos_invalidos with data set "dni alfanumerico" ('dni', 'ABC12345')
+Falta tipo de estudio
+Failed asserting that null is not null.
+
+/var/www/html/tests/MySql/Qa06RegistroPerfilesMySqlTest.php:130
+/var/www/html/tests/MySql/Qa06RegistroPerfilesMySqlTest.php:294
+
+6) Tests\MySql\Qa06RegistroPerfilesMySqlTest::test_cp01_03_datos_invalidos with data set "dni corto" ('dni', '123')
+Falta tipo de estudio
+Failed asserting that null is not null.
+
+/var/www/html/tests/MySql/Qa06RegistroPerfilesMySqlTest.php:130
+/var/www/html/tests/MySql/Qa06RegistroPerfilesMySqlTest.php:294
+
+7) Tests\MySql\Qa06RegistroPerfilesMySqlTest::test_cp01_03_datos_invalidos with data set "celular corto" ('celular', '123')
+Falta tipo de estudio
+Failed asserting that null is not null.
+
+/var/www/html/tests/MySql/Qa06RegistroPerfilesMySqlTest.php:130
+/var/www/html/tests/MySql/Qa06RegistroPerfilesMySqlTest.php:294
+
+8) Tests\MySql\Qa06RegistroPerfilesMySqlTest::test_cp01_03_datos_invalidos with data set "correo invalido" ('correo', 'invalido@')
+Falta tipo de estudio
+Failed asserting that null is not null.
+
+/var/www/html/tests/MySql/Qa06RegistroPerfilesMySqlTest.php:130
+/var/www/html/tests/MySql/Qa06RegistroPerfilesMySqlTest.php:294
+
+9) Tests\MySql\Qa06RegistroPerfilesMySqlTest::test_cp01_03_datos_invalidos with data set "nombre vacio" ('nombre', '')
+Falta tipo de estudio
+Failed asserting that null is not null.
+
+/var/www/html/tests/MySql/Qa06RegistroPerfilesMySqlTest.php:130
+/var/www/html/tests/MySql/Qa06RegistroPerfilesMySqlTest.php:294
+
+10) Tests\MySql\Qa06RegistroPerfilesMySqlTest::test_cp01_03_datos_invalidos with data set "apellidos vacios" ('apellidos', '')
+Falta tipo de estudio
+Failed asserting that null is not null.
+
+/var/www/html/tests/MySql/Qa06RegistroPerfilesMySqlTest.php:130
+/var/www/html/tests/MySql/Qa06RegistroPerfilesMySqlTest.php:294
+
+11) Tests\MySql\Qa06RegistroPerfilesMySqlTest::test_cp01_03_datos_invalidos with data set "edad insuficiente" ('fecha_nacimiento', '2020-01-01')
+Falta tipo de estudio
+Failed asserting that null is not null.
+
+/var/www/html/tests/MySql/Qa06RegistroPerfilesMySqlTest.php:130
+/var/www/html/tests/MySql/Qa06RegistroPerfilesMySqlTest.php:294
+
+12) Tests\MySql\Qa06RegistroPerfilesMySqlTest::test_cp01_03_datos_invalidos with data set "genero invalido" ('genero', 'inexistente')
+Falta tipo de estudio
+Failed asserting that null is not null.
+
+/var/www/html/tests/MySql/Qa06RegistroPerfilesMySqlTest.php:130
+/var/www/html/tests/MySql/Qa06RegistroPerfilesMySqlTest.php:294
+
+13) Tests\MySql\Qa06RegistroPerfilesMySqlTest::test_cp01_03_datos_invalidos with data set "password insegura" ('password', 'abc')
+Falta tipo de estudio
+Failed asserting that null is not null.
+
+/var/www/html/tests/MySql/Qa06RegistroPerfilesMySqlTest.php:130
+/var/www/html/tests/MySql/Qa06RegistroPerfilesMySqlTest.php:294
+
+14) Tests\MySql\Qa06RegistroPerfilesMySqlTest::test_cp01_03_datos_invalidos with data set "sin estudios" ('estudios', [])
+Falta tipo de estudio
+Failed asserting that null is not null.
+
+/var/www/html/tests/MySql/Qa06RegistroPerfilesMySqlTest.php:130
+/var/www/html/tests/MySql/Qa06RegistroPerfilesMySqlTest.php:294
+
+15) Tests\MySql\Qa06RegistroPerfilesMySqlTest::test_cp01_03_datos_invalidos with data set "sin idiomas" ('idiomas', [])
+Falta tipo de estudio
+Failed asserting that null is not null.
+
+/var/www/html/tests/MySql/Qa06RegistroPerfilesMySqlTest.php:130
+/var/www/html/tests/MySql/Qa06RegistroPerfilesMySqlTest.php:294
+
+16) Tests\MySql\Qa06RegistroPerfilesMySqlTest::test_cp01_03_datos_invalidos with data set "sin habilidades" ('habilidades', [])
+Falta tipo de estudio
+Failed asserting that null is not null.
+
+/var/www/html/tests/MySql/Qa06RegistroPerfilesMySqlTest.php:130
+/var/www/html/tests/MySql/Qa06RegistroPerfilesMySqlTest.php:294
+
+17) Tests\MySql\Qa06RegistroPerfilesMySqlTest::test_cp01_03_datos_invalidos with data set "sin experiencia requerida" ('busca_primer_empleo', false)
+Falta tipo de estudio
+Failed asserting that null is not null.
+
+/var/www/html/tests/MySql/Qa06RegistroPerfilesMySqlTest.php:130
+/var/www/html/tests/MySql/Qa06RegistroPerfilesMySqlTest.php:294
+
+18) Tests\MySql\Qa06RegistroPerfilesMySqlTest::test_confirmacion_password_no_coincide
+Falta tipo de estudio
+Failed asserting that null is not null.
+
+/var/www/html/tests/MySql/Qa06RegistroPerfilesMySqlTest.php:130
+/var/www/html/tests/MySql/Qa06RegistroPerfilesMySqlTest.php:316
+
+19) Tests\MySql\Qa06RegistroPerfilesMySqlTest::test_catalogo_idiomas_no_admite_duplicados
+Falta tipo de estudio
+Failed asserting that null is not null.
+
+/var/www/html/tests/MySql/Qa06RegistroPerfilesMySqlTest.php:130
+/var/www/html/tests/MySql/Qa06RegistroPerfilesMySqlTest.php:330
+
+20) Tests\MySql\Qa06RegistroPerfilesMySqlTest::test_catalogo_habilidades_no_admite_duplicados
+Falta tipo de estudio
+Failed asserting that null is not null.
+
+/var/www/html/tests/MySql/Qa06RegistroPerfilesMySqlTest.php:130
+/var/www/html/tests/MySql/Qa06RegistroPerfilesMySqlTest.php:344
+
+21) Tests\MySql\Qa06RegistroPerfilesMySqlTest::test_cp02_01_registro_empresa_valido
+Expected response status code [201] but received 404.
+Failed asserting that 404 is identical to 201.
+
+/var/www/html/vendor/laravel/framework/src/Illuminate/Testing/TestResponseAssert.php:45
+/var/www/html/vendor/laravel/framework/src/Illuminate/Testing/TestResponse.php:175
+/var/www/html/vendor/laravel/framework/src/Illuminate/Testing/Concerns/AssertsStatusCodes.php:26
+/var/www/html/tests/MySql/Qa06RegistroPerfilesMySqlTest.php:364
+
+22) Tests\MySql\Qa06RegistroPerfilesMySqlTest::test_cp02_02_duplicados_empresa with data set "correo" ('correo')
+Expected response status code [201] but received 404.
+Failed asserting that 404 is identical to 201.
+
+/var/www/html/vendor/laravel/framework/src/Illuminate/Testing/TestResponseAssert.php:45
+/var/www/html/vendor/laravel/framework/src/Illuminate/Testing/TestResponse.php:175
+/var/www/html/vendor/laravel/framework/src/Illuminate/Testing/Concerns/AssertsStatusCodes.php:26
+/var/www/html/tests/MySql/Qa06RegistroPerfilesMySqlTest.php:415
+
+23) Tests\MySql\Qa06RegistroPerfilesMySqlTest::test_cp02_02_duplicados_empresa with data set "ruc" ('ruc')
+Expected response status code [201] but received 404.
+Failed asserting that 404 is identical to 201.
+
+/var/www/html/vendor/laravel/framework/src/Illuminate/Testing/TestResponseAssert.php:45
+/var/www/html/vendor/laravel/framework/src/Illuminate/Testing/TestResponse.php:175
+/var/www/html/vendor/laravel/framework/src/Illuminate/Testing/Concerns/AssertsStatusCodes.php:26
+/var/www/html/tests/MySql/Qa06RegistroPerfilesMySqlTest.php:415
+
+24) Tests\MySql\Qa06RegistroPerfilesMySqlTest::test_precognition_candidato_no_persiste
+Falta tipo de estudio
+Failed asserting that null is not null.
+
+/var/www/html/tests/MySql/Qa06RegistroPerfilesMySqlTest.php:130
+/var/www/html/tests/MySql/Qa06RegistroPerfilesMySqlTest.php:465
+
+FAILURES!
+Tests: 35, Assertions: 244, Failures: 24.

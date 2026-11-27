@@ -1,0 +1,108 @@
+name: Backend QA - PHPUnit y Karate
+
+on:
+  pull_request:
+    branches:
+      - develop
+      - main
+
+  push:
+    branches:
+      - develop
+      - main
+
+  workflow_dispatch:
+    inputs:
+      modo_karate:
+        description: Modo de ejecucion Karate
+        type: choice
+        required: true
+        default: full
+        options:
+          - full
+          - demo
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backend-qa-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend-qa:
+
+    name: PHP, MySQL y Karate
+
+    runs-on: ubuntu-24.04
+
+    timeout-minutes: 45
+
+    env:
+      COMPOSE_PROJECT_NAME: creo-ci-${{ github.run_id }}-${{ github.run_attempt }}
+      QA_CI_REPORT_DIR: ${{ github.workspace }}/ci-reportes
+      KARATE_MODE: ${{ inputs.modo_karate || 'full' }}
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Configurar Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: qa/karate/pom.xml
+
+      - name: Verificar herramientas
+        run: |
+          docker --version
+          docker compose version
+          java -version
+          mvn -version
+          python3 --version
+
+      - name: Preparar carpeta de artefactos
+        run: |
+          mkdir -p "$QA_CI_REPORT_DIR"
+          git rev-parse HEAD > "$QA_CI_REPORT_DIR/commit.txt"
+
+      - name: Validar scripts
+        run: |
+          bash -n qa/ci/bootstrap.sh
+          bash -n qa/ci/run-phpunit.sh
+          bash -n qa/ci/run-karate.sh
+          python3 -m py_compile qa/ci/sanitize-junit.py
+
+      - name: Preparar API y MySQL
+        id: bootstrap
+        run: qa/ci/bootstrap.sh
+
+      - name: Ejecutar PHPUnit
+        id: phpunit
+        run: qa/ci/run-phpunit.sh
+
+      - name: Ejecutar Karate
+        if: ${{ !cancelled() && steps.bootstrap.outcome == 'success' }}
+        run: qa/ci/run-karate.sh "$KARATE_MODE"
+
+      - name: Publicar evidencias sanitizadas
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-qa-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ci-reportes/
+          retention-days: 14
+          if-no-files-found: error
+
+      - name: Eliminar entorno efimero
+        if: always()
+        run: |
+          if [[ -f .env ]]; then
+            docker compose down --volumes --remove-orphans
+            rm -f .env
+          fi

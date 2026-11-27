@@ -1,0 +1,47 @@
+
+   INFO  Seeding database.
+
+  Database\Seeders\RolSeeder ......................................... RUNNING
+  Database\Seeders\RolSeeder ..................................... 247 ms DONE
+
+  Database\Seeders\PaisSeeder ........................................ RUNNING
+  Database\Seeders\PaisSeeder ..................................... 16 ms DONE
+
+  Database\Seeders\AreaEstudioSeeder ................................. RUNNING
+  Database\Seeders\AreaEstudioSeeder .............................. 15 ms DONE
+
+  Database\Seeders\TipoEstudioSeeder ................................. RUNNING
+  Database\Seeders\TipoEstudioSeeder .............................. 14 ms DONE
+
+  Database\Seeders\IdiomaSeeder ...................................... RUNNING
+  Database\Seeders\IdiomaSeeder ................................... 16 ms DONE
+
+  Database\Seeders\InstitucionSeeder ................................. RUNNING
+  Database\Seeders\InstitucionSeeder .............................. 31 ms DONE
+
+  Database\Seeders\PuestoSeeder ...................................... RUNNING
+  Database\Seeders\PuestoSeeder ................................... 27 ms DONE
+
+  Database\Seeders\OrganizacionSeeder ................................ RUNNING
+  Database\Seeders\OrganizacionSeeder ............................. 25 ms DONE
+
+  Database\Seeders\HabilidadSeeder ................................... RUNNING
+  Database\Seeders\HabilidadSeeder ............................... 151 ms DONE
+
+  Database\Seeders\CarreraSeeder ..................................... RUNNING
+  Database\Seeders\CarreraSeeder .................................. 62 ms DONE
+
+  Database\Seeders\EstadoPostulacionSeeder ........................... RUNNING
+  Database\Seeders\EstadoPostulacionSeeder ........................ 12 ms DONE
+
+  Database\Seeders\MotivoRechazoSeeder ............................... RUNNING
+  Database\Seeders\MotivoRechazoSeeder ............................. 5 ms DONE
+
+  Database\Seeders\QaSeeder .......................................... RUNNING
+  Database\Seeders\RolSeeder ......................................... RUNNING
+  Database\Seeders\RolSeeder ....................................... 3 ms DONE
+
+Fixtures QA preparados correctamente.
+  Database\Seeders\QaSeeder .................................... 2,026 ms DONE
+
+Catalogos y cuentas QA preparados. No se realizo una restauracion completa.

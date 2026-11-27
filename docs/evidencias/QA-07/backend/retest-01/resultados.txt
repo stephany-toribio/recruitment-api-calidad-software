@@ -1,0 +1,3 @@
+BusquedaVacantesMySqlTest: PASS
+DetalleVacanteMySqlTest: PASS
+DisponibilidadVacanteMySqlTest: PASS

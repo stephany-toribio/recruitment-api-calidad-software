@@ -15,6 +15,12 @@
       "enabled": true
     },
     {
+      "key": "token_candidato",
+      "value": "",
+      "type": "secret",
+      "enabled": true
+    },
+    {
       "key": "usuario_id",
       "value": "1",
       "type": "default",
@@ -41,6 +47,144 @@
     {
       "key": "habilidad_id",
       "value": "1",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "seg_correo",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "seg_dni",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "seg_candidato_id",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "token_seg_a",
+      "value": "",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "token_seg_b",
+      "value": "",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "token_seg_c",
+      "value": "",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "token_seg_alterado",
+      "value": "",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "token_seg_mezclado",
+      "value": "",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "token_seg_sin_id",
+      "value": "",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "admin_correo",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "admin_password",
+      "value": "",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "token_admin",
+      "value": "",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "area_prueba_id",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "habilidad_prueba_id",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "nombre_area_prueba",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "nombre_habilidad_prueba",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "habilidad_docencia_id",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "area_docencia_id",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "rec_correo",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "rec_dni",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "rec_mensaje_neutro",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "codigo_recuperacion",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "reset_token",
+      "value": "",
       "type": "default",
       "enabled": true
     }

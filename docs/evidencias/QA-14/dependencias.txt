@@ -1,0 +1,109 @@
+[INFO] Scanning for projects...
+[INFO]
+[INFO] --------------------< pe.creo.qa:creo-karate-tests >--------------------
+[INFO] Building CREO+ API Quality Tests 1.0.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO]
+[INFO] --- dependency:3.7.0:resolve (default-cli) @ creo-karate-tests ---
+[INFO]
+[INFO] The following files have been resolved:
+[INFO]    io.karatelabs:karate-junit5:jar:1.5.2:test -- module karate.junit5 (auto)
+[INFO]    io.karatelabs:karate-core:jar:1.5.2:test -- module karate.core (auto)
+[INFO]    org.graalvm.js:js-scriptengine:jar:24.0.0:test -- module org.graalvm.js.scriptengine
+[INFO]    org.graalvm.polyglot:polyglot:jar:24.0.0:test -- module org.graalvm.polyglot
+[INFO]    org.graalvm.sdk:collections:jar:24.0.0:test -- module org.graalvm.collections
+[INFO]    org.graalvm.sdk:nativeimage:jar:24.0.0:test -- module org.graalvm.nativeimage
+[INFO]    org.graalvm.sdk:word:jar:24.0.0:test -- module org.graalvm.word
+[INFO]    org.graalvm.js:js-language:jar:24.0.0:test -- module org.graalvm.js
+[INFO]    org.graalvm.regex:regex:jar:24.0.0:test -- module com.oracle.truffle.regex
+[INFO]    org.graalvm.truffle:truffle-api:jar:24.0.0:test -- module org.graalvm.truffle
+[INFO]    org.graalvm.shadowed:icu4j:jar:24.0.0:test -- module org.graalvm.shadowed.icu4j
+[INFO]    org.thymeleaf:thymeleaf:jar:3.1.2.RELEASE:test -- module thymeleaf [auto]
+[INFO]    ognl:ognl:jar:3.3.4:test -- module ognl [auto]
+[INFO]    org.javassist:javassist:jar:3.29.0-GA:test -- module javassist (auto)
+[INFO]    org.attoparser:attoparser:jar:2.0.7.RELEASE:test -- module attoparser [auto]
+[INFO]    org.unbescape:unbescape:jar:1.1.6.RELEASE:test -- module unbescape [auto]
+[INFO]    com.linecorp.armeria:armeria:jar:1.33.4:test -- module com.linecorp.armeria [auto]
+[INFO]    com.fasterxml.jackson.core:jackson-core:jar:2.19.2:test -- module com.fasterxml.jackson.core
+[INFO]    com.fasterxml.jackson.core:jackson-annotations:jar:2.19.2:test -- module com.fasterxml.jackson.annotation
+[INFO]    com.fasterxml.jackson.core:jackson-databind:jar:2.19.2:test -- module com.fasterxml.jackson.databind
+[INFO]    com.fasterxml.jackson.datatype:jackson-datatype-jdk8:jar:2.19.2:test -- module com.fasterxml.jackson.datatype.jdk8
+[INFO]    com.fasterxml.jackson.datatype:jackson-datatype-jsr310:jar:2.19.2:test -- module com.fasterxml.jackson.datatype.jsr310
+[INFO]    io.micrometer:micrometer-core:jar:1.15.2:test -- module micrometer.core [auto]
+[INFO]    io.micrometer:micrometer-commons:jar:1.15.2:test -- module micrometer.commons [auto]
+[INFO]    io.micrometer:micrometer-observation:jar:1.15.2:test -- module micrometer.observation [auto]
+[INFO]    org.hdrhistogram:HdrHistogram:jar:2.2.2:test -- module HdrHistogram (auto)
+[INFO]    org.latencyutils:LatencyUtils:jar:2.0.3:test -- module LatencyUtils (auto)
+[INFO]    io.micrometer:context-propagation:jar:1.1.3:test -- module context.propagation [auto]
+[INFO]    io.netty:netty-transport:jar:4.2.6.Final:test -- module io.netty.transport
+[INFO]    io.netty:netty-common:jar:4.2.6.Final:test -- module io.netty.common
+[INFO]    io.netty:netty-buffer:jar:4.2.6.Final:test -- module io.netty.buffer
+[INFO]    io.netty:netty-resolver:jar:4.2.6.Final:test -- module io.netty.resolver
+[INFO]    io.netty:netty-codec-haproxy:jar:4.2.6.Final:test -- module io.netty.codec.haproxy
+[INFO]    io.netty:netty-codec-base:jar:4.2.6.Final:test -- module io.netty.codec
+[INFO]    io.netty:netty-codec-http2:jar:4.2.6.Final:test -- module io.netty.codec.http2
+[INFO]    io.netty:netty-handler:jar:4.2.6.Final:test -- module io.netty.handler
+[INFO]    io.netty:netty-codec-http:jar:4.2.6.Final:test -- module io.netty.codec.http
+[INFO]    io.netty:netty-codec-compression:jar:4.2.6.Final:test -- module io.netty.codec.compression
+[INFO]    io.netty:netty-resolver-dns:jar:4.2.6.Final:test -- module io.netty.resolver.dns
+[INFO]    io.netty:netty-codec-dns:jar:4.2.6.Final:test -- module io.netty.codec.dns
+[INFO]    io.netty:netty-transport-native-unix-common:jar:linux-x86_64:4.2.6.Final:test -- module io.netty.transport.unix.common
+[INFO]    io.netty:netty-transport-native-unix-common:jar:linux-aarch_64:4.2.6.Final:test -- module io.netty.transport.unix.common
+[INFO]    io.netty:netty-transport-native-unix-common:jar:osx-x86_64:4.2.6.Final:test -- module io.netty.transport.unix.common
+[INFO]    io.netty:netty-transport-native-unix-common:jar:osx-aarch_64:4.2.6.Final:test -- module io.netty.transport.unix.common
+[INFO]    org.reactivestreams:reactive-streams:jar:1.0.4:test -- module org.reactivestreams [auto]
+[INFO]    com.google.code.findbugs:jsr305:jar:3.0.2:test -- module jsr305 (auto)
+[INFO]    io.netty:netty-handler-proxy:jar:4.2.6.Final:test -- module io.netty.handler.proxy
+[INFO]    io.netty:netty-codec-socks:jar:4.2.6.Final:test -- module io.netty.codec.socks
+[INFO]    io.netty:netty-transport-native-epoll:jar:linux-x86_64:4.2.6.Final:test -- module io.netty.transport.epoll.linux.x86_64
+[INFO]    io.netty:netty-transport-native-unix-common:jar:4.2.6.Final:test -- module io.netty.transport.unix.common
+[INFO]    io.netty:netty-transport-classes-epoll:jar:4.2.6.Final:test -- module io.netty.transport.classes.epoll
+[INFO]    io.netty:netty-transport-native-epoll:jar:linux-aarch_64:4.2.6.Final:test -- module io.netty.transport.epoll.linux.aarch_64
+[INFO]    io.netty:netty-transport-native-kqueue:jar:osx-x86_64:4.2.6.Final:test -- module io.netty.transport.kqueue.osx.x86_64
+[INFO]    io.netty:netty-transport-classes-kqueue:jar:4.2.6.Final:test -- module io.netty.transport.classes.kqueue
+[INFO]    io.netty:netty-resolver-dns-native-macos:jar:osx-x86_64:4.2.6.Final:test -- module io.netty.resolver.dns.macos.osx.x86_64
+[INFO]    io.netty:netty-resolver-dns-classes-macos:jar:4.2.6.Final:test -- module io.netty.resolver.dns.classes.macos
+[INFO]    io.netty:netty-transport-native-kqueue:jar:osx-aarch_64:4.2.6.Final:test -- module io.netty.transport.kqueue.osx.aarch_64
+[INFO]    io.netty:netty-resolver-dns-native-macos:jar:osx-aarch_64:4.2.6.Final:test -- module io.netty.resolver.dns.macos.osx.aarch_64
+[INFO]    io.netty:netty-tcnative-boringssl-static:jar:linux-x86_64:2.0.73.Final:test -- module io.netty.internal.tcnative.openssl.linux.x86_64
+[INFO]    io.netty:netty-tcnative-classes:jar:2.0.73.Final:test -- module io.netty.tcnative.classes.openssl
+[INFO]    io.netty:netty-tcnative-boringssl-static:jar:linux-aarch_64:2.0.73.Final:test -- module io.netty.internal.tcnative.openssl.linux.aarch_64
+[INFO]    io.netty:netty-tcnative-boringssl-static:jar:osx-x86_64:2.0.73.Final:test -- module io.netty.internal.tcnative.openssl.osx.x86_64
+[INFO]    io.netty:netty-tcnative-boringssl-static:jar:osx-aarch_64:2.0.73.Final:test -- module io.netty.internal.tcnative.openssl.osx.aarch_64
+[INFO]    io.netty:netty-tcnative-boringssl-static:jar:windows-x86_64:2.0.73.Final:test -- module io.netty.internal.tcnative.openssl.windows.x86_64
+[INFO]    com.aayushatharva.brotli4j:brotli4j:jar:1.18.0:test -- module com.aayushatharva.brotli4j
+[INFO]    com.aayushatharva.brotli4j:service:jar:1.18.0:test -- module com.aayushatharva.brotli4j.service
+[INFO]    com.aayushatharva.brotli4j:native-linux-x86_64:jar:1.18.0:test -- module com.aayushatharva.brotli4j.linux.x86_64
+[INFO]    org.apache.httpcomponents:httpclient:jar:4.5.14:test -- module org.apache.httpcomponents.httpclient [auto]
+[INFO]    org.apache.httpcomponents:httpcore:jar:4.4.16:test -- module org.apache.httpcomponents.httpcore [auto]
+[INFO]    commons-codec:commons-codec:jar:1.16.1:test -- module org.apache.commons.codec
+[INFO]    ch.qos.logback:logback-classic:jar:1.5.20:test -- module ch.qos.logback.classic
+[INFO]    ch.qos.logback:logback-core:jar:1.5.20:test -- module ch.qos.logback.core
+[INFO]    org.slf4j:jcl-over-slf4j:jar:2.0.17:test -- module org.apache.commons.logging
+[INFO]    org.slf4j:slf4j-api:jar:2.0.17:test -- module org.slf4j
+[INFO]    org.antlr:antlr4-runtime:jar:4.13.1:test -- module org.antlr.antlr4.runtime [auto]
+[INFO]    com.jayway.jsonpath:json-path:jar:2.9.0:test -- module json.path [auto]
+[INFO]    net.minidev:json-smart:jar:2.5.2:test -- module json.smart (auto)
+[INFO]    net.minidev:accessors-smart:jar:2.5.2:test -- module accessors.smart (auto)
+[INFO]    org.ow2.asm:asm:jar:9.7.1:test -- module org.objectweb.asm
+[INFO]    org.yaml:snakeyaml:jar:2.3:test -- module org.yaml.snakeyaml
+[INFO]    de.siegmar:fastcsv:jar:3.4.0:test -- module de.siegmar.fastcsv
+[INFO]    info.picocli:picocli:jar:4.7.6:test -- module info.picocli
+[INFO]    io.github.classgraph:classgraph:jar:4.8.181:test -- module classgraph (auto)
+[INFO]    io.github.t12y:resemble:jar:1.1.0:test -- module resemble (auto)
+[INFO]    io.github.t12y:ssim:jar:1.0.0:test -- module ssim (auto)
+[INFO]    org.brotli:dec:jar:0.1.2:test -- module dec (auto)
+[INFO]    org.junit.jupiter:junit-jupiter-api:jar:5.11.4:test -- module org.junit.jupiter.api
+[INFO]    org.opentest4j:opentest4j:jar:1.3.0:test -- module org.opentest4j
+[INFO]    org.junit.platform:junit-platform-commons:jar:1.11.4:test -- module org.junit.platform.commons
+[INFO]    org.apiguardian:apiguardian-api:jar:1.1.2:test -- module org.apiguardian.api
+[INFO]    org.junit.jupiter:junit-jupiter-engine:jar:5.11.4:test -- module org.junit.jupiter.engine
+[INFO]    org.junit.platform:junit-platform-engine:jar:1.11.4:test -- module org.junit.platform.engine
+[INFO]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  57.678 s
+[INFO] Finished at: 2026-11-25T08:13:15-05:00
+[INFO] ------------------------------------------------------------------------

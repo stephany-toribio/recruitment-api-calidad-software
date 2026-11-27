@@ -1,0 +1,63 @@
+[INFO] Scanning for projects...
+[INFO]
+[INFO] --------------------< pe.creo.qa:creo-karate-tests >--------------------
+[INFO] Building CREO+ API Quality Tests 1.0.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO]
+[INFO] --- clean:3.2.0:clean (default-clean) @ creo-karate-tests ---
+[INFO] Deleting /home/steph/projects/recruitment-api-calidad-software/qa/karate/target
+[INFO]
+[INFO] --- resources:3.3.1:resources (default-resources) @ creo-karate-tests ---
+[INFO] skip non existing resourceDirectory /home/steph/projects/recruitment-api-calidad-software/qa/karate/src/main/resources
+[INFO]
+[INFO] --- compiler:3.13.0:compile (default-compile) @ creo-karate-tests ---
+[INFO] No sources to compile
+[INFO]
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ creo-karate-tests ---
+[INFO] Copying 8 resources from src/test/resources to target/test-classes
+[INFO]
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ creo-karate-tests ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 3 source files with javac [debug release 21] to target/test-classes
+[INFO]
+[INFO] --- surefire:3.5.2:test (default-test) @ creo-karate-tests ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[WARNING] System property [karate.env] overwritten by user properties from Maven session
+[INFO]
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running creo.SensitiveLogModifierTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.169 s -- in creo.SensitiveLogModifierTest
+[INFO] Running creo.SmokeTest
+08:18:09.286 INFO  com.intuit.karate.Runner - using system property 'karate.env': local
+---------------------------------------------------------
+feature: classpath:features/smoke/api-smoke.feature
+scenarios:  3 | passed:  3 | failed:  0 | time: 0.3583
+---------------------------------------------------------
+
+08:18:13.141 INFO  com.intuit.karate.Suite - <<pass>> feature 1 of 1 (0 remaining) classpath:features/smoke/api-smoke.feature
+Karate version: 1.5.2 | env: local
+======================================================
+elapsed:   3.87 | threads:    1 | thread time: 0.36
+features:     1 | skipped:    0 | efficiency: 0.09
+scenarios:    3 | passed:     3 | failed: 0
+======================================================
+
+HTML report: (paste into browser to view) | Karate version: 1.5.2 | env: local
+file:///home/steph/projects/recruitment-api-calidad-software/qa/karate/target/karate-reports/karate-summary.html
+===================================================================
+
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.433 s -- in creo.SmokeTest
+[INFO]
+[INFO] Results:
+[INFO]
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0
+[INFO]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  8.460 s
+[INFO] Finished at: 2026-11-25T08:18:13-05:00
+[INFO] ------------------------------------------------------------------------

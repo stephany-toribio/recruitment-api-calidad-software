@@ -1,0 +1,9 @@
+{
+  "success": false,
+  "message": "#string",
+  "error_code": "VALIDATION_ERROR",
+  "errors": {
+    "correo": ["#string"],
+    "password": ["#string"]
+  }
+}

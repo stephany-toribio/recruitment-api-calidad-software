@@ -1,0 +1,387 @@
+===== RAMA =====
+feature/QA-15-karate-autenticacion
+===== RUTAS DE REGISTRO =====
+
+   ERROR  Your application doesn't have any routes matching the given criteria.
+
+===== RUTAS DE AUTENTICACION =====
+
+  POST      api/v1/auth/forgot-password Api\V1\RecuperacionPasswordController…
+  POST      api/v1/auth/login .................... Api\V1\AuthController@login
+  POST      api/v1/auth/logout .................. Api\V1\AuthController@logout
+  GET|HEAD  api/v1/auth/me .......................... Api\V1\AuthController@me
+  POST      api/v1/auth/reset-password Api\V1\RecuperacionPasswordController@…
+  GET|HEAD  api/v1/auth/usuarios/me ............... Api\V1\AuthController@show
+  PUT       api/v1/auth/usuarios/me/password Api\V1\AuthController@cambiarPas…
+  POST      api/v1/auth/verify-reset-code Api\V1\RecuperacionPasswordControll…
+
+                                                            Showing [8] routes
+
+===== REQUESTS DE REGISTRO =====
+app/Http/Requests/Candidatos/RegistrarCandidatoRequest.php
+app/Http/Requests/Auth/RegisterRequest.php
+app/Http/Requests/Auth/LoginRequest.php
+app/Http/Requests/Empresas/RegistrarEmpresaRequest.php
+app/Http/Requests/Vacantes/RegistrarVacanteRequest.php
+===== CONTROLADORES RELACIONADOS =====
+app/Http/Controllers/Api/V1/AuthController.php:18:    public function login(
+===== MODELOS =====
+<?php
+
+namespace App\Models;
+
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Laravel\Sanctum\HasApiTokens;
+
+class Usuario extends Authenticatable
+{
+    use HasApiTokens, HasFactory;
+
+    protected $table = 'usuarios';
+
+    protected $fillable = [
+        'correo',
+        'password',
+        'rol_id',
+        'estado_cuenta',
+        'intentos_fallidos',
+        'bloqueado_hasta',
+        'motivo_suspension',
+        'fecha_suspension',
+    ];
+
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'password' => 'hashed',
+            'bloqueado_hasta' => 'datetime',
+            'fecha_suspension' => 'datetime',
+        ];
+    }
+
+    public function rol(): BelongsTo
+    {
+        return $this->belongsTo(Rol::class, 'rol_id');
+    }
+
+    public function candidato(): HasOne
+    {
+        return $this->hasOne(Candidato::class, 'usuario_id');
+    }
+
+    public function empresa(): HasOne
+    {
+        return $this->hasOne(Empresa::class, 'usuario_id');
+    }
+}===== SERVICIO AUTH =====
+<?php
+
+namespace App\Services\Auth;
+
+use App\Models\Usuario;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Hash;
+
+class AuthService
+{
+    public function autenticar(string $correo, string $password): array
+    {
+        $usuario = Usuario::where('correo', $correo)
+            ->with('rol')
+            ->first();
+
+        if (!$usuario) {
+            return [
+                'ok' => false,
+                'codigo' => 401,
+                'mensaje' => 'Credenciales incorrectas.',
+            ];
+        }
+
+        if ($usuario->bloqueado_hasta && $usuario->bloqueado_hasta->isFuture()) {
+            return [
+                'ok' => false,
+                'codigo' => 429,
+                'mensaje' => 'Cuenta bloqueada temporalmente. Intente más tarde.',
+            ];
+        }
+
+        if ($usuario->bloqueado_hasta && $usuario->bloqueado_hasta->isPast()) {
+            $usuario->update([
+                'intentos_fallidos' => 0,
+                'bloqueado_hasta' => null,
+            ]);
+        }
+
+        if (!Hash::check($password, $usuario->password)) {
+            $usuario->increment('intentos_fallidos');
+
+            $usuario->refresh();
+
+            $intentosFallidos = $usuario->intentos_fallidos;
+            $intentosRestantes = max(0, 5 - $intentosFallidos);
+
+            if ($usuario->intentos_fallidos >= 5) {
+                $usuario->update([
+                    'bloqueado_hasta' => Carbon::now()->addMinutes(15),
+                ]);
+
+                return [
+                    'ok' => false,
+                    'codigo' => 429,
+                    'mensaje' => 'Cuenta bloqueada temporalmente. Intente más tarde.',
+                    'errores' => [
+                        'intentos_fallidos' => $intentosFallidos,
+                        'intentos_restantes' => 0,
+                        'bloqueado_hasta' => $usuario->bloqueado_hasta,
+                    ],
+                ];
+            }
+
+            return [
+                'ok' => false,
+                'codigo' => 401,
+                'mensaje' => 'Credenciales incorrectas.',
+                'errores' => [
+                    'intentos_fallidos' => $intentosFallidos,
+                    'intentos_restantes' => $intentosRestantes,
+                ],
+            ];
+        }
+
+        if ($usuario->estado_cuenta === 'suspendido') {
+            return [
+                'ok' => false,
+                'codigo' => 403,
+                'mensaje' => 'Su cuenta se encuentra suspendida. Comuníquese con el administrador.',
+            ];
+        }
+
+        $usuario->update([
+            'intentos_fallidos' => 0,
+            'bloqueado_hasta' => null,
+        ]);
+
+        $token = $usuario->createToken('auth_token')->plainTextToken;
+
+        return [
+            'ok' => true,
+            'codigo' => 200,
+            'usuario' => $usuario,
+            'token' => $token,
+        ];
+    }
+}===== CASOS MYSQL EXISTENTES =====
+213:    public function test_cp01_01_registro_candidato_valido(): void
+281:    public function test_cp01_02_duplicados_candidato(
+321:    public function test_cp01_03_datos_invalidos(
+345:    public function test_confirmacion_password_no_coincide(): void
+359:    public function test_catalogo_idiomas_no_admite_duplicados(): void
+373:    public function test_catalogo_habilidades_no_admite_duplicados(): void
+387:    public function test_cp02_01_registro_empresa_valido(): void
+440:    public function test_cp02_02_duplicados_empresa(
+478:    public function test_cp02_03_datos_invalidos(
+494:    public function test_precognition_candidato_no_persiste(): void
+517:    public function test_precognition_candidato_invalido(): void
+535:    public function test_precognition_empresa_no_persiste(): void
+602:    public function test_empresa_consulta_perfil_propio(): void
+616:    public function test_empresa_actualiza_y_persiste_perfil(): void
+643:    public function test_empresa_no_utiliza_ruc_ajeno(): void
+665:    public function test_empresa_ignora_identificadores_ajenos(): void
+704:    public function test_perfiles_rechazan_roles_incompatibles(): void
+729:    public function test_perfiles_requieren_autenticacion(): void
+744:    public function test_candidato_registrado_consulta_perfil_completo(): void
+760:    public function test_candidato_actualiza_datos_sin_perder_relaciones(): void
+789:    public function test_candidato_no_utiliza_dni_ni_celular_ajeno(): void
+812:    public function test_correo_es_unico_entre_roles(): void
+828:    public function test_registro_ignora_rol_administrador_inyectado(): void
+846:    public function test_candidato_rechaza_catalogo_inexistente(): void
+860:    public function test_candidato_rechaza_mas_de_30_habilidades(): void
+881:    public function test_base_datos_garantiza_unicidad(): void
+===== CASOS CANONICOS =====
+### CP-01: Registro de Candidato
+- **CP-01-01 (Positivo - Alta válida)**
+  - **Objetivo**: Verificar el alta exitosa de un candidato con datos válidos y únicos.
+  - **Tipo**: Funcional / Positiva (Karate, Selenium).
+  - **Actor**: Visitante anónimo.
+  - **Precondiciones**: Base de datos de QA inicializada; correo y DNI no registrados previamente.
+  - **Datos**: Correo `candidato.nuevo@qa.example.test`, DNI `00000099`, celular `900000099`, contraseña `QA_FIXTURE_PASSWORD`, nombre `Candidato`, apellidos `Nuevo QA`.
+  - **Pasos**: Enviar `POST /api/v1/candidatos` con payload completo.
+  - **Resultado esperado**: HTTP 201 Created; objeto candidato con `id` asignado y mensaje de éxito.
+  - **Comprobación de persistencia**: Fila en tabla `usuarios` (`rol_id` de candidato) y tabla `candidatos` con DNI correspondiente; contraseña hasheada en DB.
+  - **Dependencias**: QA-02, QA-06, QA-15. | **Estado inicial**: `PENDIENTE`.
+
+- **CP-01-02 (Negativo - Correo o DNI Duplicado)**
+  - **Objetivo**: Impedir el registro cuando el correo o DNI ya existen en el sistema.
+  - **Tipo**: Funcional / Negativa (Karate).
+  - **Actor**: Visitante anónimo.
+  - **Precondiciones**: `USR-CND-01` (`candidato1@qa.example.test`, DNI `00000001`) ya registrado.
+  - **Datos**: Body con correo `candidato1@qa.example.test` o DNI `00000001`.
+  - **Pasos**: Enviar `POST /api/v1/candidatos`.
+  - **Resultado esperado**: HTTP 422 Unprocessable Entity; error de validación en campo `correo` o `dni`.
+  - **Comprobación de persistencia**: El recuento de filas en `usuarios` y `candidatos` no sufre cambios; sin altas parciales.
+  - **Dependencias**: QA-02, QA-15. | **Estado inicial**: `PENDIENTE`.
+
+- **CP-01-03 (Negativo - Formato Inválido)**
+  - **Objetivo**: Validar el rechazo de DNI alfanumérico, celular corto o correo malformado.
+  - **Tipo**: Validación / Negativa (Karate, Selenium).
+  - **Actor**: Visitante anónimo.
+  - **Precondiciones**: Ninguna.
+  - **Datos**: DNI `ABC12345`, celular `123`, correo `invalido@`.
+  - **Pasos**: Enviar `POST /api/v1/candidatos`.
+  - **Resultado esperado**: HTTP 422 Unprocessable Entity; mensajes de error contractuales por campo.
+  - **Comprobación de persistencia**: Sin nuevos registros en base de datos.
+  - **Dependencias**: QA-06, QA-15. | **Estado inicial**: `PENDIENTE`.
+
+---
+
+### CP-02: Registro de Empresa
+- **CP-02-01 (Positivo - Alta válida)**
+  - **Objetivo**: Verificar el alta exitosa de una empresa con RUC válido y razón social.
+  - **Tipo**: Funcional / Positiva (Karate, Selenium).
+  - **Actor**: Visitante anónimo.
+  - **Precondiciones**: RUC `20000000099` y correo no registrados previamente.
+  - **Datos**: `empresa.nueva@qa.example.test`, RUC `20000000099`, Razón Social `Empresa Nueva QA SAC`, contraseña `QA_FIXTURE_PASSWORD`.
+  - **Pasos**: Enviar `POST /api/v1/empresas` con payload completo.
+  - **Resultado esperado**: HTTP 201 Created; objeto empresa devuelto con ID y rol asignado.
+  - **Comprobación de persistencia**: Fila en `usuarios` y fila en `empresas` vinculada por `usuario_id`.
+  - **Dependencias**: QA-02, QA-06, QA-15. | **Estado inicial**: `PENDIENTE`.
+
+- **CP-02-02 (Negativo - RUC Duplicado)**
+  - **Objetivo**: Rechazar duplicidad de RUC en la base de datos.
+  - **Tipo**: Validación / Negativa (Karate).
+  - **Actor**: Visitante anónimo.
+  - **Precondiciones**: `USR-EMP-01` (`empresa1@qa.example.test`, RUC `20000000001`) existente.
+  - **Datos**: RUC `20000000001` con correo diferente `otra@qa.example.test`.
+  - **Pasos**: Enviar `POST /api/v1/empresas`.
+  - **Resultado esperado**: HTTP 422 Unprocessable Entity; error en atributo `ruc`.
+  - **Comprobación de persistencia**: Ninguna fila creada.
+  - **Dependencias**: QA-15. | **Estado inicial**: `PENDIENTE`.
+
+- **CP-02-03 (Negativo - RUC Inválido)**
+  - **Objetivo**: Rechazar RUC que no cumpla con longitud de 11 dígitos numéricos.
+  - **Tipo**: Validación / Negativa (Karate).
+  - **Actor**: Visitante anónimo.
+  - **Datos**: RUC `12345` o `2000000000A`.
+  - **Pasos**: Enviar `POST /api/v1/empresas`.
+  - **Resultado esperado**: HTTP 422 Unprocessable Entity.
+  - **Comprobación de persistencia**: Sin cambios en BD.
+  - **Dependencias**: QA-15. | **Estado inicial**: `PENDIENTE`.
+
+---
+
+### CP-03: Inicio de Sesión de los Tres Roles
+- **CP-03-01 (Positivo - Candidato)**
+  - **Objetivo**: Autenticar candidato y obtener token Bearer Sanctum.
+  - **Tipo**: Funcional / Positiva (Karate, Selenium, Appium).
+  - **Actor**: Candidato activo (`USR-CND-01`).
+  - **Precondiciones**: Cuenta activa preparada en `QaSeeder`.
+  - **Datos**: `candidato1@qa.example.test`, contraseña `QA_FIXTURE_PASSWORD`.
+  - **Pasos**: `POST /api/v1/auth/login`.
+  - **Resultado esperado**: HTTP 200 OK; token devuelto; rol devuelto `candidato`.
+  - **Comprobación de persistencia**: Fila generada en `personal_access_tokens`.
+  - **Dependencias**: QA-05, QA-15, QA-19, QA-22. | **Estado inicial**: `PENDIENTE`.
+
+- **CP-03-02 (Positivo - Empresa)**
+  - **Objetivo**: Autenticar empresa y verificar token y rol corporativo.
+  - **Tipo**: Funcional / Positiva (Karate, Selenium).
+  - **Actor**: Empresa activa (`USR-EMP-01`).
+  - **Precondiciones**: Cuenta empresa activa en `QaSeeder`.
+  - **Datos**: `empresa1@qa.example.test`, contraseña `QA_FIXTURE_PASSWORD`.
+  - **Pasos**: `POST /api/v1/auth/login`.
+  - **Resultado esperado**: HTTP 200 OK; rol devuelto `empresa`.
+  - **Comprobación de persistencia**: Token en DB; redirección UI autorizada.
+  - **Dependencias**: QA-05, QA-15, QA-20. | **Estado inicial**: `PENDIENTE`.
+
+- **CP-03-03 (Positivo - Administrador)**
+  - **Objetivo**: Autenticar administrador para moderación.
+  - **Tipo**: Funcional / Positiva (Karate, Selenium).
+  - **Actor**: Administrador (`USR-ADM-01`).
+  - **Precondiciones**: Cuenta admin activa en `QaSeeder`.
+  - **Datos**: `admin@qa.example.test`, contraseña `QA_FIXTURE_PASSWORD`.
+  - **Pasos**: `POST /api/v1/auth/login`.
+  - **Resultado esperado**: HTTP 200 OK; rol devuelto `admin`.
+  - **Comprobación de persistencia**: Token en `personal_access_tokens`.
+  - **Dependencias**: QA-05, QA-15, QA-20. | **Estado inicial**: `PENDIENTE`.
+
+---
+
+### CP-04: Credenciales Incorrectas, Bloqueo y Suspensión
+- **CP-04-01 (Negativo - Password Errónea)**
+  - **Objetivo**: Rechazar login ante contraseña errónea e incrementar contador de fallos.
+  - **Tipo**: Seguridad / Negativa (Karate, Selenium).
+  - **Actor**: Candidato (`USR-CND-01`).
+  - **Precondiciones**: `USR-CND-01` activo con `intentos_fallidos = 0`.
+  - **Datos**: `candidato1@qa.example.test`, contraseña `PasswordIncorrecta123!`.
+  - **Pasos**: `POST /api/v1/auth/login`.
+  - **Resultado esperado**: HTTP 401. success=false; mensaje de credenciales incorrectas; errors.intentos_fallidos=1 e errors.intentos_restantes=4 cuando el contador inicial es cero. No se emite token.
+  - **Comprobación de persistencia**: Incremento del contador de intentos fallidos. No se crea ningún token.
+  - **Dependencias**: QA-05, QA-15. | **Estado inicial**: `PENDIENTE`.
+
+- **CP-04-02 (Negativo - Cuenta Bloqueada Temporalmente)**
+  - **Objetivo**: Rechazar login cuando se supera el límite de intentos y la cuenta queda bloqueada.
+  - **Tipo**: Seguridad / Negativa (Karate).
+  - **Actor**: Candidato con bloqueo temporal.
+  - **Precondiciones**: Usuario con `bloqueado_hasta > NOW()`.
+  - **Datos**: Credenciales correctas de usuario bloqueado.
+  - **Pasos**: `POST /api/v1/auth/login`.
+  - **Resultado esperado**: HTTP 429 durante el bloqueo temporal, incluso con contraseña correcta. El quinto fallo activa un bloqueo de quince minutos. No se emite token.
+  - **Comprobación de persistencia**: El quinto fallo establece bloqueado_hasta. Durante el bloqueo no se incrementan los intentos ni se generan tokens. Al vencer el plazo se permite un nuevo login válido.
+  - **Dependencias**: QA-05, QA-15. | **Estado inicial**: `PENDIENTE`.
+
+- **CP-04-03 (Negativo - Cuenta Suspendida Administrativamente)**
+  - **Objetivo**: Rechazar acceso a usuario con estado `suspendido`.
+  - **Tipo**: Seguridad / Negativa (Karate, Selenium).
+  - **Actor**: Candidato suspendido (`USR-CND-03`).
+  - **Precondiciones**: Usuario con `estado_cuenta = 'suspendido'` en `QaSeeder`.
+  - **Datos**: `suspendido@qa.example.test`, contraseña `QA_FIXTURE_PASSWORD`.
+  - **Pasos**: `POST /api/v1/auth/login`.
+  - **Resultado esperado**: HTTP 403 Forbidden; mensaje contractual indicando cuenta suspendida.
+  - **Comprobación de persistencia**: No se genera token en BD.
+  - **Dependencias**: QA-05, QA-15. | **Estado inicial**: `PENDIENTE`.
+
+---
+
+### CP-05: Cierre de Sesión y Revocación de Tokens
+- **CP-05-01 (Positivo - Logout)**
+  - **Objetivo**: Cerrar sesión válidamente y revocar el token activo en el backend.
+  - **Tipo**: Funcional / Positiva (Karate, Selenium, Appium).
+  - **Actor**: Candidato autenticado (`USR-CND-01`).
+  - **Precondiciones**: Token Bearer activo.
+  - **Pasos**: `POST /api/v1/auth/logout` con header `Authorization: Bearer <token>`.
+  - **Resultado esperado**: HTTP 200 OK; mensaje de logout exitoso.
+  - **Comprobación de persistencia**: El registro del token es eliminado de `personal_access_tokens`.
+  - **Dependencias**: QA-05, QA-15, QA-23. | **Estado inicial**: `PENDIENTE`.
+
+- **CP-05-02 (Negativo - Token Revocado)**
+  - **Objetivo**: Impedir consumo de rutas protegidas tras haber hecho logout.
+  - **Tipo**: Seguridad / Negativa (Karate).
+  - **Actor**: Candidato deslogueado.
+  - **Precondiciones**: Token utilizado previamente en CP-05-01.
+  - **Pasos**: `GET /api/v1/auth/me` con el token revocado.
+  - **Resultado esperado**: HTTP 401 Unauthorized.
+  - **Comprobación de persistencia**: Sin cambios en BD.
+  - **Dependencias**: QA-05, QA-15. | **Estado inicial**: `PENDIENTE`.
+
+- **CP-05-03 (Negativo - Token Malformado)**
+  - **Objetivo**: Impedir acceso con cabecera de autenticación corrupta o incompleta.
+  - **Tipo**: Seguridad / Negativa (Karate).
+  - **Actor**: Visitante anónimo.
+  - **Pasos**: `GET /api/v1/auth/me` con header `Authorization: Bearer token_falso_invalido`.
+  - **Resultado esperado**: HTTP 401 Unauthorized.
+  - **Comprobación de persistencia**: Sin mutaciones.
+  - **Dependencias**: QA-05, QA-15. | **Estado inicial**: `PENDIENTE`.
+
+---
+
+## 3. Bloque 2: Perfiles, Vacantes, Moderación y Pagos (RF-03, RF-04, RF-05, RNF-01)
+
+### CP-06: Perfil Propio y Control de Pertenencia

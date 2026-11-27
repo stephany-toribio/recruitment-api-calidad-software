@@ -1,0 +1,10 @@
+{
+  "expected": [
+    {
+      "user_id": 121,
+      "job_id": 9397,
+      "app_id": 9208,
+      "vu_id": "postulacion-0"
+    }
+  ]
+}

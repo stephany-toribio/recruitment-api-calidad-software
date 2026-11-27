@@ -1,0 +1,27 @@
+<testsuite failures="0" name="features/smoke/api-smoke.feature" skipped="0" tests="3" time="0.584768"><testcase classname="features.smoke.api-smoke" name="Disponibilidad mediante helper reutilizable" time="0.364143"><system-out>* url apiUrl .............................................................. passed
+* def health = call read('classpath:helpers/health.feature') .............. passed
+* match health.healthStatus == 200 ........................................ passed
+* assert health.healthTime &lt; responseTimeLimit ............................ passed
+* match runId == '#uuid' .................................................. passed
+</system-out></testcase>
+<testcase classname="features.smoke.api-smoke" name="Recurso protegido sin autenticacion" time="0.105471"><system-out>* url apiUrl .............................................................. passed
+Given path 'auth', 'me' ................................................... passed
+When method get ........................................................... passed
+Then status 401 ........................................................... passed
+And match response.success == false ....................................... passed
+And match response.message == '#string' ................................... passed
+And match response.error_code == 'UNAUTHENTICATED' ........................ passed
+And assert responseTime &lt; responseTimeLimit ............................... passed
+</system-out></testcase>
+<testcase classname="features.smoke.api-smoke" name="Login sin campos obligatorios" time="0.115155"><system-out>* url apiUrl .............................................................. passed
+Given path 'auth', 'login' ................................................ passed
+And request {} ............................................................ passed
+When method post .......................................................... passed
+Then status 422 ........................................................... passed
+And match response.success == false ....................................... passed
+And match response.message == '#string' ................................... passed
+And match response.errors.correo == '#[] #string' ......................... passed
+And match response.errors.password == '#[] #string' ....................... passed
+And assert responseTime &lt; responseTimeLimit ............................... passed
+</system-out></testcase>
+</testsuite>

@@ -2,8 +2,8 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Rules\PasswordSegura;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rules\Password;
 
 class CambiarPasswordRequest extends FormRequest
 {
@@ -16,7 +16,7 @@ class CambiarPasswordRequest extends FormRequest
     {
         return [
             'password_actual'             => ['required', 'string'],
-            'password_nuevo'              => ['required', 'confirmed', Password::min(8)],
+            'password_nuevo'              => ['required', 'confirmed', new PasswordSegura()],
             'password_nuevo_confirmation' => ['required', 'string'],
         ];
     }
@@ -27,7 +27,6 @@ class CambiarPasswordRequest extends FormRequest
             'password_actual.required'             => 'Debes ingresar tu contraseña actual.',
             'password_nuevo.required'              => 'La nueva contraseña es obligatoria.',
             'password_nuevo.confirmed'             => 'La confirmación de la nueva contraseña no coincide.',
-            'password_nuevo.min'                   => 'La nueva contraseña debe tener al menos 8 caracteres.',
             'password_nuevo_confirmation.required' => 'Debes confirmar la nueva contraseña.',
         ];
     }

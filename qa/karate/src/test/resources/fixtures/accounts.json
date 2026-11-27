@@ -1,0 +1,32 @@
+{
+  "admin": {
+    "correo": "admin@qa.example.test",
+    "rol": "admin",
+    "estado": "activo"
+  },
+  "empresa1": {
+    "correo": "empresa1@qa.example.test",
+    "rol": "empresa",
+    "estado": "activo"
+  },
+  "empresa2": {
+    "correo": "empresa2@qa.example.test",
+    "rol": "empresa",
+    "estado": "activo"
+  },
+  "candidato1": {
+    "correo": "candidato1@qa.example.test",
+    "rol": "candidato",
+    "estado": "activo"
+  },
+  "candidato2": {
+    "correo": "candidato2@qa.example.test",
+    "rol": "candidato",
+    "estado": "activo"
+  },
+  "suspendido": {
+    "correo": "suspendido@qa.example.test",
+    "rol": "candidato",
+    "estado": "suspendido"
+  }
+}

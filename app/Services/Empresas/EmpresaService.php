@@ -26,10 +26,12 @@ class EmpresaService
 
             $empresa = Empresa::create([
                 'usuario_id' => $usuario->id,
+                'encargado_empresa' => $datos['encargado_empresa'],
                 'razon_social' => $datos['razon_social'],
+                'sector' => $datos['sector'],
                 'descripcion' => $datos['descripcion'] ?? null,
                 'ruc' => $datos['ruc'],
-                'sitio_web' => $datos['sitio_web'],
+                'sitio_web' => $datos['sitio_web'] ?? null,
             ]);
 
             return $empresa->load('usuario');
@@ -51,9 +53,11 @@ class EmpresaService
             ->firstOrFail();
 
         $empresa->update([
+            'encargado_empresa' => $datos['encargado_empresa'],
             'razon_social' => $datos['razon_social'],
+            'sector' => $datos['sector'],
             'ruc' => $datos['ruc'],
-            'sitio_web' => $datos['sitio_web'],
+            'sitio_web' => $datos['sitio_web'] ?? null,
             'descripcion' => $datos['descripcion'] ?? null,
         ]);
 

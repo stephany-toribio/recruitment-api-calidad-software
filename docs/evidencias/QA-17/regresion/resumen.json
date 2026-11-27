@@ -1,0 +1,56 @@
+{
+  "retest": {
+    "total": 1,
+    "aprobados": 1,
+    "fallidos": 0,
+    "run_id": "5eab3e67-9d70-45a6-9e73-f198d49e5067",
+    "tiempo_junit": 16.23,
+    "secretos": "PASS",
+    "limpieza": "PASS"
+  },
+  "full-01": {
+    "total": 32,
+    "aprobados": 32,
+    "fallidos": 0,
+    "run_id": "714fa559-3d5c-4fca-ba57-8eeac6d9a05a",
+    "tiempo_junit": 432.1,
+    "secretos": "PASS",
+    "limpieza": "PASS"
+  },
+  "full-02": {
+    "total": 32,
+    "aprobados": 32,
+    "fallidos": 0,
+    "run_id": "971f85f2-3e6f-492c-80d1-3b3e028225e1",
+    "tiempo_junit": 448.4,
+    "secretos": "PASS",
+    "limpieza": "PASS"
+  },
+  "demo-01": {
+    "total": 5,
+    "aprobados": 5,
+    "fallidos": 0,
+    "run_id": "86f4a367-0f54-4603-8e22-3baaa76185e2",
+    "tiempo_junit": 71.81,
+    "secretos": "PASS",
+    "limpieza": "PASS"
+  },
+  "demo-02": {
+    "total": 5,
+    "aprobados": 5,
+    "fallidos": 0,
+    "run_id": "2d491c5a-06f0-4572-a854-6f88aad3db9e",
+    "tiempo_junit": 68.65,
+    "secretos": "PASS",
+    "limpieza": "PASS"
+  },
+  "qa16": {
+    "total": 34,
+    "aprobados": 34,
+    "fallidos": 0,
+    "run_id": "569e1713-033d-4258-82d8-b1accd6baafc",
+    "tiempo_junit": 374.0,
+    "secretos": "PASS",
+    "limpieza": "PASS"
+  }
+}

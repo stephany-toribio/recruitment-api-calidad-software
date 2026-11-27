@@ -1,0 +1,73 @@
+<testsuite failures="0" name="features/auth/login.feature" skipped="0" tests="3" time="6.885084"><testcase classname="features.auth.login" name="Login valido de candidato" time="2.669359"><system-out>* def System = Java.type('java.lang.System') .............................. passed
+* def FixtureBridge = Java.type('creo.FixtureBridge') ..................... passed
+* def password = System.getenv('KARATE_FIXTURE_PASSWORD') ................. passed
+* def candidato = call read('classpath:helpers/registrar-candidato.feature') . passed
+* def correo = candidato.correo ........................................... passed
+* def antes = FixtureBridge.consultar(runId, correo, password) ............ passed
+* match antes.tokens == 0 ................................................. passed
+* def sesion = call read('classpath:helpers/login.feature') { correo: '#(correo)', rol: 'candidato' } . passed
+* def despues = FixtureBridge.consultar(runId, correo, password) .......... passed
+* match despues.tokens == 1 ............................................... passed
+* match despues.rol == 'candidato' ........................................ passed
+* match despues.usuario_id == sesion.usuarioId ............................ passed
+* match despues.intentos_fallidos == 0 .................................... passed
+Given url apiUrl .......................................................... passed
+And path 'auth', 'me' ..................................................... passed
+And header Authorization = 'Bearer ' + sesion.token ....................... passed
+When method get ........................................................... passed
+Then status 200 ........................................................... passed
+And assert responseTime &lt; responseTimeLimit ............................... passed
+* def schema = read('classpath:schemas/auth-me.json') ..................... passed
+And match response == schema .............................................. passed
+And match response.data.id == sesion.usuarioId ............................ passed
+And match response.data.correo == correo .................................. passed
+And match response.data.rol == 'candidato' ................................ passed
+</system-out></testcase>
+<testcase classname="features.auth.login" name="Login valido de empresa" time="2.638788"><system-out>* def System = Java.type('java.lang.System') .............................. passed
+* def FixtureBridge = Java.type('creo.FixtureBridge') ..................... passed
+* def password = System.getenv('KARATE_FIXTURE_PASSWORD') ................. passed
+* def empresa = call read('classpath:helpers/registrar-empresa.feature') .. passed
+* def correo = empresa.correo ............................................. passed
+* def antes = FixtureBridge.consultar(runId, correo, password) ............ passed
+* match antes.tokens == 0 ................................................. passed
+* def sesion = call read('classpath:helpers/login.feature') { correo: '#(correo)', rol: 'empresa' } . passed
+* def despues = FixtureBridge.consultar(runId, correo, password) .......... passed
+* match despues.tokens == 1 ............................................... passed
+* match despues.rol == 'empresa' .......................................... passed
+* match despues.usuario_id == sesion.usuarioId ............................ passed
+Given url apiUrl .......................................................... passed
+And path 'auth', 'me' ..................................................... passed
+And header Authorization = 'Bearer ' + sesion.token ....................... passed
+When method get ........................................................... passed
+Then status 200 ........................................................... passed
+And assert responseTime &lt; responseTimeLimit ............................... passed
+* def schema = read('classpath:schemas/auth-me.json') ..................... passed
+And match response == schema .............................................. passed
+And match response.data.id == sesion.usuarioId ............................ passed
+And match response.data.correo == correo .................................. passed
+And match response.data.rol == 'empresa' .................................. passed
+</system-out></testcase>
+<testcase classname="features.auth.login" name="Login valido de administrador" time="1.576936"><system-out>* def System = Java.type('java.lang.System') .............................. passed
+* def FixtureBridge = Java.type('creo.FixtureBridge') ..................... passed
+* def password = System.getenv('KARATE_FIXTURE_PASSWORD') ................. passed
+* def admin = FixtureBridge.crearAdmin(runId, password) ................... passed
+* assert admin.success == true ............................................ passed
+* def correo = admin.correo ............................................... passed
+* def sesion = call read('classpath:helpers/login.feature') { correo: '#(correo)', rol: 'admin' } . passed
+* def db = FixtureBridge.consultar(runId, correo, password) ............... passed
+* match db.tokens == 1 .................................................... passed
+* match db.rol == 'admin' ................................................. passed
+* match db.usuario_id == admin.usuario_id ................................. passed
+Given url apiUrl .......................................................... passed
+And path 'auth', 'me' ..................................................... passed
+And header Authorization = 'Bearer ' + sesion.token ....................... passed
+When method get ........................................................... passed
+Then status 200 ........................................................... passed
+And assert responseTime &lt; responseTimeLimit ............................... passed
+* def schema = read('classpath:schemas/auth-me.json') ..................... passed
+And match response == schema .............................................. passed
+And match response.data.id == admin.usuario_id ............................ passed
+And match response.data.correo == correo .................................. passed
+And match response.data.rol == 'admin' .................................... passed
+</system-out></testcase>
+</testsuite>

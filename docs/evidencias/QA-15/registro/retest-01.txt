@@ -1,0 +1,17 @@
+===== QA-15 =====
+Modo: full
+Run ID: 4c7eb6f4-c3da-4a47-af53-ff5631c4d2d5
+===== EJECUCION KARATE =====
+Exit code Maven: 0
+PASS: Escaneo preventivo de secretos
+scenarios:  1 | passed:  1 | failed:  0 | time: 2.1593
+scenarios:  1 | passed:  1 | failed:  0 | time: 1.6668
+scenarios:    2 | passed:     2 | failed: 0
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 6.953 s -- in creo.AuthTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+PASS: Ejecucion funcional QA-15
+Fixtures eliminados: 2
+Fixtures restantes: 0
+PASS: Limpieza QA-15
+Reportes privados: /tmp/tmp.PmZjuPeYXn

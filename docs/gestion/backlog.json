@@ -1,0 +1,1657 @@
+{
+  "version": 2,
+  "master": {
+    "repo": "stephany-toribio/recruitment-api-calidad-software",
+    "number": 3,
+    "url": "https://github.com/stephany-toribio/recruitment-api-calidad-software/issues/3"
+  },
+  "epics": [
+    {
+      "id": "E01",
+      "title": "Preparación, alcance y entorno reproducible",
+      "role": "R3",
+      "goal": "Disponer de una base verificable, datos aislados y un entorno de QA accesible desde Android.",
+      "issue": {
+        "repo": "stephany-toribio/recruitment-api-calidad-software",
+        "number": 4,
+        "url": "https://github.com/stephany-toribio/recruitment-api-calidad-software/issues/4"
+      }
+    },
+    {
+      "id": "E02",
+      "title": "Flujo de negocio, permisos e integridad",
+      "role": "R1",
+      "goal": "Verificar y corregir el recorrido de registro, publicación, postulación y decisión sin rehacer lo que ya funciona.",
+      "issue": {
+        "repo": "stephany-toribio/recruitment-api-calidad-software",
+        "number": 5,
+        "url": "https://github.com/stephany-toribio/recruitment-api-calidad-software/issues/5"
+      }
+    },
+    {
+      "id": "E03",
+      "title": "PWA, APK Android y experiencia móvil",
+      "role": "R2",
+      "goal": "Entregar PWA y APK Android mediante Capacitor con instalación, actualización y recuperación diferenciadas.",
+      "issue": {
+        "repo": "stephany-toribio/recruitment-api-calidad-software",
+        "number": 6,
+        "url": "https://github.com/stephany-toribio/recruitment-api-calidad-software/issues/6"
+      }
+    },
+    {
+      "id": "E04",
+      "title": "Automatización API con Karate",
+      "role": "R1",
+      "goal": "Validar contratos JSON, estados HTTP, tiempos, variables dinámicas y reutilización mediante call.",
+      "issue": {
+        "repo": "stephany-toribio/recruitment-api-calidad-software",
+        "number": 7,
+        "url": "https://github.com/stephany-toribio/recruitment-api-calidad-software/issues/7"
+      }
+    },
+    {
+      "id": "E05",
+      "title": "Automatización web con Selenium",
+      "role": "R2",
+      "goal": "Automatizar flujos críticos con selectores robustos y esperas explícitas o fluidas.",
+      "issue": {
+        "repo": "stephany-toribio/recruitment-api-calidad-software",
+        "number": 8,
+        "url": "https://github.com/stephany-toribio/recruitment-api-calidad-software/issues/8"
+      }
+    },
+    {
+      "id": "E06",
+      "title": "Automatización Android con Appium",
+      "role": "R3",
+      "goal": "Validar APK, capabilities, contextos, gestos e interacciones nativas y flujo end-to-end.",
+      "issue": {
+        "repo": "stephany-toribio/recruitment-api-calidad-software",
+        "number": 9,
+        "url": "https://github.com/stephany-toribio/recruitment-api-calidad-software/issues/9"
+      }
+    },
+    {
+      "id": "E07",
+      "title": "Rendimiento y concurrencia con JMeter",
+      "role": "R3",
+      "goal": "Ejecutar cargas realistas con Thread Groups, CSV, listeners, assertions y dashboard HTML.",
+      "issue": {
+        "repo": "stephany-toribio/recruitment-api-calidad-software",
+        "number": 10,
+        "url": "https://github.com/stephany-toribio/recruitment-api-calidad-software/issues/10"
+      }
+    },
+    {
+      "id": "E08",
+      "title": "CI, trazabilidad, evidencias y entrega",
+      "role": "R3",
+      "goal": "Acreditar trazabilidad Jira, regresión, reportes de las cuatro herramientas y entrega final con APK.",
+      "issue": {
+        "repo": "stephany-toribio/recruitment-api-calidad-software",
+        "number": 11,
+        "url": "https://github.com/stephany-toribio/recruitment-api-calidad-software/issues/11"
+      }
+    }
+  ],
+  "roles": {
+    "R1": {
+      "name": "API y Karate",
+      "reviewer": "R2"
+    },
+    "R2": {
+      "name": "Web, PWA y Selenium",
+      "reviewer": "R3"
+    },
+    "R3": {
+      "name": "Integración, Appium y JMeter",
+      "reviewer": "R1"
+    }
+  },
+  "stages": {
+    "M0": "Alcance y línea base",
+    "M1": "Flujo de negocio estable",
+    "M2": "PWA, APK y entorno QA",
+    "M3": "API automatizada",
+    "M4": "Web y Android automatizados",
+    "M5": "Rendimiento, regresión y entrega"
+  },
+  "gates": {
+    "M0": "Alcance actualizado, entorno reproducible, línea base, matrices CP/RUB y preparación de trazabilidad Jira.",
+    "M1": "Registro, permisos, publicación, postulación, retiro, decisiones e historial verificados sin defectos graves abiertos.",
+    "M2": "PWA instalable, APK generado e instalado, comportamiento sin red y entorno QA accesible.",
+    "M3": "Karate con esquemas JSON, códigos HTTP, tiempos, variables dinámicas y call ejecutado con reportes.",
+    "M4": "Selenium y Appium ejecutados, selectores robustos, esperas, APK, gestos nativos y flujos end-to-end.",
+    "M5": "JMeter con CSV, assertions y HTML; integridad, regresión, Jira, evidencias y release con APK."
+  },
+  "requirements": [
+    [
+      "RF-01",
+      "Registro real de candidatos y empresas, validación y unicidad"
+    ],
+    [
+      "RF-02",
+      "Autenticación, roles, sesión, bloqueo/suspensión y logout"
+    ],
+    [
+      "RF-03",
+      "Consulta y actualización del perfil propio"
+    ],
+    [
+      "RF-04",
+      "Registro y gestión de vacantes de la empresa propietaria"
+    ],
+    [
+      "RF-05",
+      "Aprobación/no aprobación administrativa y pago simulado"
+    ],
+    [
+      "RF-06",
+      "Búsqueda, detalle y reglas de disponibilidad"
+    ],
+    [
+      "RF-07",
+      "Postulación persistente y prevención de duplicados"
+    ],
+    [
+      "RF-08",
+      "Revisión, entrevista, contratación/rechazo y cupos"
+    ],
+    [
+      "RF-09",
+      "Seguimiento y retiro propio en estados permitidos"
+    ],
+    [
+      "RF-10",
+      "Historial de decisiones, fechas y motivos"
+    ],
+    [
+      "PWA-01",
+      "PWA y APK instalables y apertura en Android"
+    ],
+    [
+      "PWA-02",
+      "Caché pública web, comportamiento offline y escrituras solo en línea en PWA y APK"
+    ],
+    [
+      "PWA-03",
+      "Actualización, reapertura y recuperación diferenciadas de PWA y APK"
+    ],
+    [
+      "PWA-04",
+      "Diseño móvil, accesibilidad, selectores estables e interacción nativa en APK"
+    ],
+    [
+      "RNF-01",
+      "Autorización del servidor y protección de sesiones/datos"
+    ],
+    [
+      "RNF-02",
+      "Integridad transaccional y concurrencia"
+    ],
+    [
+      "RNF-03",
+      "Rendimiento bajo carga controlada"
+    ],
+    [
+      "RNF-04",
+      "Reproducibilidad, CI y trazabilidad de la entrega"
+    ]
+  ],
+  "cases": [
+    {
+      "id": "CP-01",
+      "requirements": "RF-01",
+      "scenario": "Registro de candidato válido y datos inválidos o repetidos",
+      "expected": "Persistencia del perfil y errores por campo; sin registros parciales",
+      "tools": "Karate, Selenium",
+      "tasks": [
+        "QA-06",
+        "QA-15",
+        "QA-19"
+      ]
+    },
+    {
+      "id": "CP-02",
+      "requirements": "RF-01",
+      "scenario": "Registro de empresa y RUC/correo duplicados",
+      "expected": "Alta válida y rechazo de datos inválidos según contrato",
+      "tools": "Karate, Selenium",
+      "tasks": [
+        "QA-06",
+        "QA-15"
+      ]
+    },
+    {
+      "id": "CP-03",
+      "requirements": "RF-02",
+      "scenario": "Login de candidato, empresa y administrador",
+      "expected": "Token y rol del servidor; navegación al área autorizada",
+      "tools": "Karate, Selenium, Appium",
+      "tasks": [
+        "QA-05",
+        "QA-15",
+        "QA-19",
+        "QA-22"
+      ]
+    },
+    {
+      "id": "CP-04",
+      "requirements": "RF-02, RNF-01",
+      "scenario": "Credenciales incorrectas, bloqueo y cuenta suspendida",
+      "expected": "Rechazo y mensaje del contrato; acceso no concedido",
+      "tools": "Karate, Selenium",
+      "tasks": [
+        "QA-05",
+        "QA-15"
+      ]
+    },
+    {
+      "id": "CP-05",
+      "requirements": "RF-02, RNF-01",
+      "scenario": "Logout y reutilización de token revocado/inválido",
+      "expected": "Revocación en API y limpieza de sesión; ruta protegida rechazada",
+      "tools": "Karate, Selenium, Appium",
+      "tasks": [
+        "QA-05",
+        "QA-15",
+        "QA-23"
+      ]
+    },
+    {
+      "id": "CP-06",
+      "requirements": "RF-03, RNF-01",
+      "scenario": "Consulta/edición propia y acceso a perfil ajeno",
+      "expected": "Persisten datos permitidos; autorización del servidor en todos los casos",
+      "tools": "Karate, Selenium",
+      "tasks": [
+        "QA-05",
+        "QA-06",
+        "QA-17"
+      ]
+    },
+    {
+      "id": "CP-07",
+      "requirements": "RF-04",
+      "scenario": "Creación de vacante con campos y fechas válidos/incorrectos",
+      "expected": "Validación, propiedad y persistencia sin publicación prematura",
+      "tools": "Karate, Selenium",
+      "tasks": [
+        "QA-07",
+        "QA-16",
+        "QA-20"
+      ]
+    },
+    {
+      "id": "CP-08",
+      "requirements": "RF-05, RNF-01",
+      "scenario": "Aprobación/no aprobación y rol incorrecto",
+      "expected": "Decisión del administrador y rechazo del actor no autorizado",
+      "tools": "Karate, Selenium",
+      "tasks": [
+        "QA-07",
+        "QA-16",
+        "QA-20"
+      ]
+    },
+    {
+      "id": "CP-09",
+      "requirements": "RF-05",
+      "scenario": "Pago simulado válido, inválido o duplicado",
+      "expected": "Se registra solo el intento permitido; no existe cobro bancario real",
+      "tools": "Karate, Selenium",
+      "tasks": [
+        "QA-07",
+        "QA-16",
+        "QA-20"
+      ]
+    },
+    {
+      "id": "CP-10",
+      "requirements": "RF-06",
+      "scenario": "Vacante sin aprobar/pagar, pausada, vencida, eliminada o completa",
+      "expected": "No admite nuevas postulaciones; listado y detalle aplican las reglas previstas",
+      "tools": "Karate",
+      "tasks": [
+        "QA-07",
+        "QA-17"
+      ]
+    },
+    {
+      "id": "CP-11",
+      "requirements": "RF-06",
+      "scenario": "Búsqueda, filtros y detalle de vacante disponible",
+      "expected": "Resultados coherentes y datos de la API visibles",
+      "tools": "Karate, Selenium, Appium",
+      "tasks": [
+        "QA-07",
+        "QA-19",
+        "QA-22"
+      ]
+    },
+    {
+      "id": "CP-12",
+      "requirements": "RF-07",
+      "scenario": "Primera postulación de candidato autenticado",
+      "expected": "Una creación en recibido, asociada al candidato del token",
+      "tools": "Karate, Selenium, Appium",
+      "tasks": [
+        "QA-08",
+        "QA-16",
+        "QA-19",
+        "QA-22"
+      ]
+    },
+    {
+      "id": "CP-13",
+      "requirements": "RF-07, RNF-02",
+      "scenario": "Postulación duplicada secuencial y carrera del mismo candidato",
+      "expected": "Una sola fila; en la carrera, una respuesta 201 y otra 409",
+      "tools": "Karate, PHPUnit/MySQL, JMeter",
+      "tasks": [
+        "QA-08",
+        "QA-17",
+        "QA-25"
+      ]
+    },
+    {
+      "id": "CP-14",
+      "requirements": "RF-07, RNF-02",
+      "scenario": "Postulaciones simultáneas de candidatos diferentes",
+      "expected": "Se admiten si la vacante está disponible; el cupo no limita postulantes",
+      "tools": "PHPUnit/MySQL, JMeter",
+      "tasks": [
+        "QA-08",
+        "QA-25"
+      ]
+    },
+    {
+      "id": "CP-15",
+      "requirements": "RNF-01",
+      "scenario": "Token ausente, rol incorrecto y recursos de otra empresa/candidato",
+      "expected": "401/403 o respuesta del contrato sin mutaciones ni exposición indebida",
+      "tools": "Karate, Selenium",
+      "tasks": [
+        "QA-05",
+        "QA-17",
+        "QA-20"
+      ]
+    },
+    {
+      "id": "CP-16",
+      "requirements": "RF-08",
+      "scenario": "Recibido→En revisión→Entrevista→Contratado",
+      "expected": "Solo transiciones permitidas, cupo respetado y UI sincronizada",
+      "tools": "Karate, Selenium",
+      "tasks": [
+        "QA-09",
+        "QA-16",
+        "QA-20"
+      ]
+    },
+    {
+      "id": "CP-17",
+      "requirements": "RF-08",
+      "scenario": "Rechazo desde revisión/entrevista con motivo válido o ausente",
+      "expected": "Motivo validado y resultado persistente con historial",
+      "tools": "Karate, Selenium",
+      "tasks": [
+        "QA-09",
+        "QA-16",
+        "QA-20"
+      ]
+    },
+    {
+      "id": "CP-18",
+      "requirements": "RF-08",
+      "scenario": "Salto de estado, estado final y postulación retirada",
+      "expected": "Operación rechazada; no se altera estado ni historial",
+      "tools": "Karate",
+      "tasks": [
+        "QA-09",
+        "QA-17"
+      ]
+    },
+    {
+      "id": "CP-19",
+      "requirements": "RF-08, RNF-02",
+      "scenario": "Contrataciones concurrentes al último puesto",
+      "expected": "No se supera numero_vacantes y se informa el conflicto",
+      "tools": "PHPUnit/MySQL, JMeter",
+      "tasks": [
+        "QA-09",
+        "QA-25"
+      ]
+    },
+    {
+      "id": "CP-20",
+      "requirements": "RF-09",
+      "scenario": "Retiro propio, retiro ajeno o estado no permitido",
+      "expected": "Marca de retiro solo cuando corresponde; no permite repostular al mismo empleo",
+      "tools": "Karate, Selenium",
+      "tasks": [
+        "QA-08",
+        "QA-17",
+        "QA-19"
+      ]
+    },
+    {
+      "id": "CP-21",
+      "requirements": "RF-09",
+      "scenario": "Mis postulaciones y consulta de su vacante histórica",
+      "expected": "El candidato conserva seguimiento propio ante cambios de la vacante",
+      "tools": "Karate, Selenium",
+      "tasks": [
+        "QA-08",
+        "QA-09",
+        "QA-16"
+      ]
+    },
+    {
+      "id": "CP-22",
+      "requirements": "RF-10",
+      "scenario": "Consulta de historial tras decisiones y retiro",
+      "expected": "Movimientos, fechas y motivo cuando corresponde; sin pérdida de registros",
+      "tools": "Karate, Selenium",
+      "tasks": [
+        "QA-09",
+        "QA-16",
+        "QA-20"
+      ]
+    },
+    {
+      "id": "CP-23",
+      "requirements": "RF-01 a RF-10",
+      "scenario": "Recorrido integrado de los tres roles en web",
+      "expected": "El resultado final visible coincide con la API y la base",
+      "tools": "Selenium",
+      "tasks": [
+        "QA-19",
+        "QA-20",
+        "QA-30"
+      ]
+    },
+    {
+      "id": "CP-24",
+      "requirements": "PWA-01",
+      "scenario": "Instalación y apertura de PWA y APK Android",
+      "expected": "PWA standalone y APK instalable con verificaciones diferenciadas",
+      "tools": "Android, Appium",
+      "tasks": [
+        "QA-10",
+        "QA-21",
+        "QA-22"
+      ]
+    },
+    {
+      "id": "CP-25",
+      "requirements": "PWA-04",
+      "scenario": "Pantallas PWA y APK, orientación, teclado y foco",
+      "expected": "Acciones accesibles y sin desbordamientos que bloqueen el recorrido",
+      "tools": "Selenium, Appium",
+      "tasks": [
+        "QA-12",
+        "QA-22"
+      ]
+    },
+    {
+      "id": "CP-26",
+      "requirements": "PWA-02, RNF-01",
+      "scenario": "Comportamiento offline de PWA y APK",
+      "expected": "Vista offline; sin exposición de datos privados ni almacenamiento inseguro de tokens; caché SW verificada en PWA",
+      "tools": "Android/DevTools, Appium",
+      "tasks": [
+        "QA-11",
+        "QA-23"
+      ]
+    },
+    {
+      "id": "CP-27",
+      "requirements": "PWA-02, RF-07",
+      "scenario": "Corte de red antes/durante una escritura y recuperación",
+      "expected": "Sin éxito ficticio, cola automática ni duplicación; resultado incierto se consulta",
+      "tools": "Appium, API",
+      "tasks": [
+        "QA-11",
+        "QA-22",
+        "QA-23"
+      ]
+    },
+    {
+      "id": "CP-28",
+      "requirements": "PWA-03",
+      "scenario": "Actualización diferenciada de PWA y APK",
+      "expected": "Nueva versión usable, recuperación y formularios sin pérdida silenciosa",
+      "tools": "Android, Appium",
+      "tasks": [
+        "QA-11",
+        "QA-23",
+        "QA-10"
+      ]
+    },
+    {
+      "id": "CP-29",
+      "requirements": "PWA-01, PWA-04, RF-02, RF-06, RF-07",
+      "scenario": "Login, búsqueda, detalle y postulación desde APK Android",
+      "expected": "Appium con swipe, tap, interacción nativa, contextos y persistencia demostrada",
+      "tools": "Appium",
+      "tasks": [
+        "QA-21",
+        "QA-22"
+      ]
+    },
+    {
+      "id": "CP-30",
+      "requirements": "PWA-02, PWA-03, RF-02",
+      "scenario": "Sesión inválida, logout y reapertura de PWA y APK",
+      "expected": "Reautenticación y mensajes coherentes; datos privados no expuestos",
+      "tools": "Appium",
+      "tasks": [
+        "QA-23"
+      ]
+    },
+    {
+      "id": "CP-31",
+      "requirements": "RNF-03",
+      "scenario": "Carga de búsqueda/listado/detalle",
+      "expected": "p95, throughput y errores medidos frente al objetivo aprobado",
+      "tools": "JMeter",
+      "tasks": [
+        "QA-24",
+        "QA-25",
+        "QA-26"
+      ]
+    },
+    {
+      "id": "CP-32",
+      "requirements": "RF-02, RNF-03",
+      "scenario": "Login concurrente con credenciales únicas",
+      "expected": "Correlación correcta de tokens, respuestas y tiempos",
+      "tools": "JMeter",
+      "tasks": [
+        "QA-24",
+        "QA-25",
+        "QA-26"
+      ]
+    },
+    {
+      "id": "CP-33",
+      "requirements": "RF-07, RF-08, RNF-02, RNF-03",
+      "scenario": "Carga de postulaciones y decisiones",
+      "expected": "Sin pérdida, duplicación ni sobrecontratación; integridad verificada al finalizar",
+      "tools": "JMeter, PHPUnit/MySQL",
+      "tasks": [
+        "QA-24",
+        "QA-25",
+        "QA-26"
+      ]
+    },
+    {
+      "id": "CP-34",
+      "requirements": "RNF-04",
+      "scenario": "Reproducción desde copia limpia, CI y trazabilidad Jira",
+      "expected": "Comandos repetibles, reportes, tickets vinculados y evidencia sin secretos",
+      "tools": "CI, Karate, Selenium, Appium, JMeter",
+      "tasks": [
+        "QA-27",
+        "QA-28",
+        "QA-30",
+        "QA-31",
+        "QA-29"
+      ]
+    }
+  ],
+  "tasks": [
+    {
+      "id": "QA-02",
+      "title": "Reproducir API y preparar base y datos aislados",
+      "repo": "backend",
+      "epic": "E01",
+      "stage": "M0",
+      "role": "R1",
+      "pts": 3,
+      "priority": "P0",
+      "depends": [
+        "QA-01"
+      ],
+      "accept": [
+        "Levantar una copia limpia con Composer, Docker y migraciones siguiendo el README; registrar versiones y commit.",
+        "Separar esta copia del portal original: nombres de proyecto/servicios, puertos y bases sin colisiones.",
+        "Preparar datos ficticios de administrador, dos empresas y candidatos, con creación y limpieza repetibles.",
+        "Ejecutar Unit/Feature con SQLite y configurar por separado la base MySQL portalempleoshu04testing, sus permisos y migraciones.",
+        "Conservar o actualizar de forma coordinada las protecciones que impiden probar o limpiar una base ajena; registrar resultados reales y los fallos."
+      ],
+      "evidence": [
+        "Comandos reproducibles",
+        "Versiones y configuración sin secretos",
+        "Resultados Unit/Feature/MySQL",
+        "Catálogo de datos de QA"
+      ],
+      "issue": {
+        "repo": "stephany-toribio/recruitment-api-calidad-software",
+        "number": 12,
+        "url": "https://github.com/stephany-toribio/recruitment-api-calidad-software/issues/12"
+      }
+    },
+    {
+      "id": "QA-03",
+      "title": "Compilar frontend y separar configuración local y de QA",
+      "repo": "frontend",
+      "epic": "E01",
+      "stage": "M0",
+      "role": "R2",
+      "pts": 2,
+      "priority": "P0",
+      "depends": [
+        "QA-01"
+      ],
+      "accept": [
+        "Ejecutar npm ci y npm run build con Node.js 22.x; registrar resultado y corregir fallos reproducidos.",
+        "Configurar las URL local y de producción/QA sin depender de las ramas deploy eliminadas.",
+        "Comprobar que el artefacto de QA usa la API de esta copia y una dirección accesible desde Android, sin localhost del dispositivo.",
+        "Confirmar carga de rutas profundas, CORS y contrato de errores con la API; documentar la configuración.",
+        "Preparar una configuración Angular reutilizable por Capacitor, sin depender de localhost dentro de Android.",
+        "Documentar la configuración del origen WebView y las comprobaciones CORS que se validarán en QA-13."
+      ],
+      "evidence": [
+        "Log de compilación",
+        "Configuración por entorno",
+        "Prueba de conectividad y rutas profundas"
+      ],
+      "issue": {
+        "repo": "stephany-toribio/web-app-calidad-software",
+        "number": 3,
+        "url": "https://github.com/stephany-toribio/web-app-calidad-software/issues/3"
+      }
+    },
+    {
+      "id": "QA-04",
+      "title": "Definir matriz de requisitos, riesgos, casos y datos de prueba",
+      "repo": "backend",
+      "epic": "E01",
+      "stage": "M0",
+      "role": "R3",
+      "pts": 3,
+      "priority": "P0",
+      "depends": [
+        "QA-01"
+      ],
+      "accept": [
+        "Relacionar cada requisito RF/RNF/PWA de los README con casos positivos, negativos y su herramienta.",
+        "Definir identificadores de casos y datos ficticios, incluyendo usuarios de distinta propiedad y vacantes en cada condición.",
+        "Priorizar permisos, duplicados, contratación concurrente, historial y pérdida de conexión.",
+        "Definir resultados esperados y precondiciones; distinguir pendiente, ejecutado, aprobado y defectuoso.",
+        "Versionar la matriz y el registro de riesgos con responsable por rol y mitigación.",
+        "Mantener los 111 escenarios, 24 controles RUB y 15 riesgos relacionados y sin identificadores duplicados.",
+        "Incorporar los casos del APK y la trazabilidad Jira; distinguir diseño, ejecución y evidencia real."
+      ],
+      "evidence": [
+        "Matriz de trazabilidad",
+        "Catálogo de casos y datos",
+        "Registro de riesgos"
+      ],
+      "issue": {
+        "repo": "stephany-toribio/recruitment-api-calidad-software",
+        "number": 13,
+        "url": "https://github.com/stephany-toribio/recruitment-api-calidad-software/issues/13"
+      }
+    },
+    {
+      "id": "QA-05",
+      "title": "Verificar autenticación, sesiones y permisos de los tres roles",
+      "repo": "backend",
+      "epic": "E02",
+      "stage": "M1",
+      "role": "R1",
+      "pts": 3,
+      "priority": "P0",
+      "depends": [
+        "QA-02"
+      ],
+      "accept": [
+        "Probar credenciales válidas e inválidas, validación y bloqueo temporal según el contrato vigente.",
+        "Verificar usuario/candidato/empresa/admin desde la API, sin confiar en el rol almacenado en el navegador.",
+        "Comprobar 401 sin token o con token inválido y 403 para rol o propiedad incorrectos.",
+        "Verificar cierre de sesión y revocación del token, suspensión de cuenta y manejo del frontend.",
+        "Corregir solo fallos reproducidos y añadir regresiones relevantes."
+      ],
+      "evidence": [
+        "Casos de autenticación y autorización",
+        "Resultados de regresión",
+        "PR de corrección cuando corresponda"
+      ],
+      "issue": {
+        "repo": "stephany-toribio/recruitment-api-calidad-software",
+        "number": 14,
+        "url": "https://github.com/stephany-toribio/recruitment-api-calidad-software/issues/14"
+      }
+    },
+    {
+      "id": "QA-06",
+      "title": "Estabilizar registro y perfiles de candidato y empresa",
+      "repo": "frontend",
+      "epic": "E02",
+      "stage": "M1",
+      "role": "R2",
+      "pts": 3,
+      "priority": "P1",
+      "depends": [
+        "QA-02",
+        "QA-03"
+      ],
+      "accept": [
+        "Completar ambos registros contra la API real y comprobar persistencia al volver a consultar.",
+        "Probar campos obligatorios, formatos y duplicados de correo/DNI/RUC según el contrato.",
+        "Verificar pasos del candidato, catálogos, mensajes por campo y conservación de datos ante errores.",
+        "Consultar y actualizar el perfil propio; impedir editar perfiles ajenos y evitar dobles envíos de formularios."
+      ],
+      "evidence": [
+        "Casos web y API vinculados",
+        "Capturas de validación",
+        "Verificación de persistencia"
+      ],
+      "issue": {
+        "repo": "stephany-toribio/web-app-calidad-software",
+        "number": 4,
+        "url": "https://github.com/stephany-toribio/web-app-calidad-software/issues/4"
+      }
+    },
+    {
+      "id": "QA-07",
+      "title": "Validar publicación, moderación, pago simulado y disponibilidad",
+      "repo": "backend",
+      "epic": "E02",
+      "stage": "M1",
+      "role": "R1",
+      "pts": 5,
+      "priority": "P0",
+      "depends": [
+        "QA-02",
+        "QA-05"
+      ],
+      "accept": [
+        "Registrar vacante como empresa y aprobar/no aprobar como administrador con propiedad y rol correctos.",
+        "Validar los datos del pago simulado y rechazar pagos duplicados; no integrar una pasarela real.",
+        "Comprobar visibilidad solo con aprobación vigente, pago exitoso, empresa activa, vigencia y puestos disponibles.",
+        "Probar vacantes pausadas, finalizadas, eliminadas, vencidas y con todos los puestos contratados.",
+        "Registrar contratos y resultados y corregir inconsistencias entre listado, detalle y publicación."
+      ],
+      "evidence": [
+        "Matriz de estados de vacante",
+        "Casos positivos y negativos",
+        "Resultados API y regresiones"
+      ],
+      "issue": {
+        "repo": "stephany-toribio/recruitment-api-calidad-software",
+        "number": 15,
+        "url": "https://github.com/stephany-toribio/recruitment-api-calidad-software/issues/15"
+      }
+    },
+    {
+      "id": "QA-08",
+      "title": "Verificar postulación, duplicados, retiro y concurrencia",
+      "repo": "backend",
+      "epic": "E02",
+      "stage": "M1",
+      "role": "R1",
+      "pts": 5,
+      "priority": "P0",
+      "depends": [
+        "QA-05",
+        "QA-07"
+      ],
+      "accept": [
+        "Registrar postulación desde el candidato del token; el body contiene vacante_id.",
+        "Verificar recibido inicial y persistencia; una segunda postulación al mismo empleo devuelve el conflicto previsto.",
+        "Reproducir la carrera del mismo candidato con una sola creación: una respuesta 201 y otra 409.",
+        "Permitir postulaciones de candidatos diferentes mientras la vacante esté disponible; el cupo limita contrataciones, no el número de postulantes.",
+        "Verificar retiro propio solo desde estados permitidos y conservar historial/último estado; el retiro no habilita una segunda postulación.",
+        "Rechazar recursos ajenos o no disponibles y conservar la integridad ante fallos."
+      ],
+      "evidence": [
+        "Resultados MySQL y concurrencia",
+        "Casos HTTP de postulación/retiro",
+        "Consulta de integridad posterior"
+      ],
+      "issue": {
+        "repo": "stephany-toribio/recruitment-api-calidad-software",
+        "number": 16,
+        "url": "https://github.com/stephany-toribio/recruitment-api-calidad-software/issues/16"
+      }
+    },
+    {
+      "id": "QA-09",
+      "title": "Validar Kanban, decisiones, cupos e historial de extremo a extremo",
+      "repo": "frontend",
+      "epic": "E02",
+      "stage": "M1",
+      "role": "R2",
+      "pts": 5,
+      "priority": "P0",
+      "depends": [
+        "QA-05",
+        "QA-07",
+        "QA-08"
+      ],
+      "accept": [
+        "Mostrar postulaciones solo a la empresa propietaria de la vacante.",
+        "Permitir recibido→en_revision→entrevista y entrevista→contratado; rechazar desde en_revision o entrevista con motivo.",
+        "Impedir saltos, operaciones sobre retiradas y modificaciones de estados finales; reflejar mensajes de conflicto.",
+        "Verificar que contrataciones simultáneas no excedan numero_vacantes y que la UI se sincronice con la respuesta del servidor.",
+        "Comprobar el resultado visto por el candidato y el historial persistente con fecha y motivo cuando corresponda."
+      ],
+      "evidence": [
+        "Casos del flujo completo",
+        "Evidencia UI/API/historial",
+        "Regresión de cupos y permisos"
+      ],
+      "issue": {
+        "repo": "stephany-toribio/web-app-calidad-software",
+        "number": 5,
+        "url": "https://github.com/stephany-toribio/web-app-calidad-software/issues/5"
+      }
+    },
+    {
+      "id": "QA-10",
+      "title": "Implementar PWA, Capacitor y generación de APK Android",
+      "repo": "frontend",
+      "epic": "E03",
+      "stage": "M2",
+      "role": "R2",
+      "pts": 3,
+      "priority": "P1",
+      "depends": [
+        "QA-03",
+        "QA-13"
+      ],
+      "accept": [
+        "Versionar manifiesto con nombre, short_name, start_url, scope, colores y display standalone.",
+        "Proveer iconos válidos de 192 y 512 píxeles y recurso maskable cuando corresponda.",
+        "Configurar la integración PWA compatible con Angular 19 y verificar la compilación de producción.",
+        "Instalar y abrir la PWA desde el lanzador de Android bajo HTTPS; registrar dispositivo y modo standalone.",
+        "Verificar que las rutas y enlaces permanezcan dentro del alcance previsto.",
+        "Configurar Capacitor y Android con versiones compatibles.",
+        "Generar, instalar y abrir un APK identificado por versión y hash.",
+        "Versionar el proyecto Android y el procedimiento de compilación.",
+        "La implementación de Capacitor puede comenzar en paralelo con QA-13, pero su aceptación completa requiere un entorno QA bajo HTTPS."
+      ],
+      "evidence": [
+        "Manifiesto e iconos",
+        "Compilación de producción",
+        "Capturas de instalación y lanzamiento Android"
+      ],
+      "issue": {
+        "repo": "stephany-toribio/web-app-calidad-software",
+        "number": 6,
+        "url": "https://github.com/stephany-toribio/web-app-calidad-software/issues/6"
+      }
+    },
+    {
+      "id": "QA-11",
+      "title": "Implementar actualización, caché y comportamiento sin conexión",
+      "repo": "frontend",
+      "epic": "E03",
+      "stage": "M2",
+      "role": "R2",
+      "pts": 3,
+      "priority": "P0",
+      "depends": [
+        "QA-10"
+      ],
+      "accept": [
+        "Cachear recursos estáticos y una vista de falta de conexión; excluir tokens, perfiles y respuestas API privadas de la caché del service worker.",
+        "Explicar la falta de conexión sin mostrar datos o confirmaciones de éxito inventados.",
+        "Deshabilitar o fallar explícitamente postulaciones, pagos y cambios de estado sin red; no encolar escrituras para reenvío automático.",
+        "Verificar actualización de una versión anterior a una nueva, recuperación y aviso sin perder silenciosamente formularios.",
+        "Comprobar recarga y navegación después de recuperar conexión.",
+        "Diferenciar el service worker de la PWA de los recursos empaquetados en el APK.",
+        "Verificar que el APK maneja pérdida de red sin escrituras automáticas ni exposición de datos privados."
+      ],
+      "evidence": [
+        "Configuración del service worker",
+        "Casos offline/online",
+        "Evidencia de actualización entre dos builds"
+      ],
+      "issue": {
+        "repo": "stephany-toribio/web-app-calidad-software",
+        "number": 7,
+        "url": "https://github.com/stephany-toribio/web-app-calidad-software/issues/7"
+      }
+    },
+    {
+      "id": "QA-12",
+      "title": "Ajustar diseño móvil, accesibilidad y selectores de prueba",
+      "repo": "frontend",
+      "epic": "E03",
+      "stage": "M2",
+      "role": "R2",
+      "pts": 3,
+      "priority": "P1",
+      "depends": [
+        "QA-06",
+        "QA-10"
+      ],
+      "accept": [
+        "Recorrer registro, login, búsqueda, detalle, postulación y Kanban en escritorio y Android.",
+        "Verificar al menos vistas de 360×800 y 412×915, orientación y teclado virtual sin ocultar acciones principales.",
+        "Corregir desbordamientos y asegurar etiquetas accesibles, foco, navegación con teclado y mensajes asociados al campo.",
+        "Usar identificadores estables para Selenium y Appium sin ligar las pruebas a posiciones o clases de estilo.",
+        "Evitar cambios visuales amplios que no respondan a un defecto del alcance.",
+        "Incorporar selectores estables para Selenium y Appium.",
+        "Implementar una interacción nativa funcional para Android, con confirmación y cancelación verificables.",
+        "Proveer una interacción funcional con controles Android realmente nativos que permita demostrar swipe y tap mediante Appium."
+      ],
+      "evidence": [
+        "Lista de pantallas y tamaños",
+        "Capturas móvil/escritorio",
+        "Convención de selectores"
+      ],
+      "issue": {
+        "repo": "stephany-toribio/web-app-calidad-software",
+        "number": 8,
+        "url": "https://github.com/stephany-toribio/web-app-calidad-software/issues/8"
+      }
+    },
+    {
+      "id": "QA-13",
+      "title": "Preparar despliegue de QA con HTTPS y datos reproducibles",
+      "repo": "backend",
+      "epic": "E01",
+      "stage": "M2",
+      "role": "R3",
+      "pts": 3,
+      "priority": "P0",
+      "depends": [
+        "QA-02",
+        "QA-03"
+      ],
+      "accept": [
+        "Publicar frontend y API de esta copia en un entorno QA identificado y coordinado.",
+        "Verificar HTTPS, CORS, rutas profundas, URL de API y conectividad desde Android.",
+        "Separar base y credenciales del proyecto original; no exponer secretos en frontend, logs o evidencias.",
+        "Documentar carga/restauración de datos ficticios, respaldo y retorno a una versión anterior.",
+        "Registrar commits desplegados y ejecutar una comprobación breve del flujo.",
+        "Verificar HTTPS y preparar la configuración CORS para el origen WebView previsto; la comprobación desde el APK instalado corresponde a QA-21.",
+        "Comprobar CORS y origen WebView según la configuración real, sin desactivar globalmente las protecciones de seguridad."
+      ],
+      "evidence": [
+        "Inventario del entorno QA",
+        "Guía de despliegue y recuperación",
+        "Comprobación de integración Android/API"
+      ],
+      "issue": {
+        "repo": "stephany-toribio/recruitment-api-calidad-software",
+        "number": 17,
+        "url": "https://github.com/stephany-toribio/recruitment-api-calidad-software/issues/17"
+      }
+    },
+    {
+      "id": "QA-14",
+      "title": "Preparar runner Karate, configuración y fixtures",
+      "repo": "backend",
+      "epic": "E04",
+      "stage": "M3",
+      "role": "R1",
+      "pts": 2,
+      "priority": "P1",
+      "depends": [
+        "QA-02",
+        "QA-04"
+      ],
+      "accept": [
+        "Versionar proyecto Java/Maven con versiones compatibles, runner y configuración por entorno.",
+        "Parametrizar baseUrl y credenciales de QA, sin tokens ni secretos en el repositorio.",
+        "Preparar datos y limpieza por ejecución, reutilizables y restringidos al ambiente QA.",
+        "Generar reporte con comando reproducible y fallo del proceso cuando un escenario falla.",
+        "Versionar helpers reutilizables mediante call y configuración de variables dinámicas y datos por ejecución.",
+        "Demostrar reutilización con un escenario de comprobación."
+      ],
+      "evidence": [
+        "qa/karate con runner y configuración",
+        "Guía de ejecución",
+        "Reporte de un escenario de comprobación"
+      ],
+      "issue": {
+        "repo": "stephany-toribio/recruitment-api-calidad-software",
+        "number": 18,
+        "url": "https://github.com/stephany-toribio/recruitment-api-calidad-software/issues/18"
+      }
+    },
+    {
+      "id": "QA-15",
+      "title": "Automatizar registros, autenticación y validaciones con Karate",
+      "repo": "backend",
+      "epic": "E04",
+      "stage": "M3",
+      "role": "R1",
+      "pts": 3,
+      "priority": "P1",
+      "depends": [
+        "QA-05",
+        "QA-06",
+        "QA-14"
+      ],
+      "accept": [
+        "Automatizar registros válidos de candidato y empresa y login/logout con tokens reales.",
+        "Usar Scenario Outline con datos variados para validaciones y duplicados.",
+        "Comprobar códigos HTTP, estructura JSON, campos relevantes y persistencia.",
+        "Verificar cuenta bloqueada/suspendida y revocación del token según contrato; guardar resultados.",
+        "Validar exhaustivamente esquemas JSON, tipos, campos obligatorios, códigos HTTP y estructuras de error.",
+        "Incorporar aserciones de tiempos con umbrales documentados y datos parametrizados."
+      ],
+      "evidence": [
+        "Features parametrizados",
+        "Datos ficticios por ejecución",
+        "Reporte Karate de los casos"
+      ],
+      "issue": {
+        "repo": "stephany-toribio/recruitment-api-calidad-software",
+        "number": 19,
+        "url": "https://github.com/stephany-toribio/recruitment-api-calidad-software/issues/19"
+      }
+    },
+    {
+      "id": "QA-16",
+      "title": "Automatizar flujo de vacante, postulación y decisión con Karate",
+      "repo": "backend",
+      "epic": "E04",
+      "stage": "M3",
+      "role": "R1",
+      "pts": 5,
+      "priority": "P0",
+      "depends": [
+        "QA-07",
+        "QA-08",
+        "QA-09",
+        "QA-14"
+      ],
+      "accept": [
+        "Completar el escenario con empresa, administrador y candidato: crear, aprobar, pagar, buscar y postular.",
+        "Avanzar por estados permitidos y verificar contratación y rechazo con motivo en casos independientes.",
+        "Consultar historial y resultado del candidato con los identificadores devueltos por la API.",
+        "Preparar todas las condiciones de publicación y confirmar cambios persistentes sin depender de IDs fijos.",
+        "Reutilizar features mediante call y encadenar tokens e identificadores obtenidos dinámicamente.",
+        "Validar esquemas, estados HTTP, tiempos y persistencia durante el flujo integral."
+      ],
+      "evidence": [
+        "Features del flujo integral",
+        "Comprobaciones de historial y estados",
+        "Reporte con trazabilidad RF"
+      ],
+      "issue": {
+        "repo": "stephany-toribio/recruitment-api-calidad-software",
+        "number": 20,
+        "url": "https://github.com/stephany-toribio/recruitment-api-calidad-software/issues/20"
+      }
+    },
+    {
+      "id": "QA-17",
+      "title": "Automatizar autorización, conflictos y errores con Karate",
+      "repo": "backend",
+      "epic": "E04",
+      "stage": "M3",
+      "role": "R3",
+      "pts": 3,
+      "priority": "P0",
+      "depends": [
+        "QA-05",
+        "QA-08",
+        "QA-09",
+        "QA-14"
+      ],
+      "accept": [
+        "Probar token ausente/inválido, rol incorrecto y acceso a recursos de otro candidato o empresa.",
+        "Probar postulación repetida, retiro no permitido, cupo cubierto y transiciones inválidas.",
+        "Verificar códigos y errores del contrato y ausencia de escrituras ante rechazo.",
+        "Relacionar escenarios con los casos de concurrencia MySQL, sin presentar secuencias HTTP como prueba de simultaneidad.",
+        "Validar esquemas JSON y códigos de error según el contrato confirmado, además de ausencia de mutaciones indebidas."
+      ],
+      "evidence": [
+        "Features negativos",
+        "Reporte Karate",
+        "Comparación de datos antes/después"
+      ],
+      "issue": {
+        "repo": "stephany-toribio/recruitment-api-calidad-software",
+        "number": 21,
+        "url": "https://github.com/stephany-toribio/recruitment-api-calidad-software/issues/21"
+      }
+    },
+    {
+      "id": "QA-18",
+      "title": "Preparar Selenium con Page Objects y evidencias",
+      "repo": "frontend",
+      "epic": "E05",
+      "stage": "M4",
+      "role": "R2",
+      "pts": 2,
+      "priority": "P1",
+      "depends": [
+        "QA-03",
+        "QA-04"
+      ],
+      "accept": [
+        "Versionar runner, configuración por entorno y versiones compatibles del navegador/driver.",
+        "Implementar Page Objects y esperas explícitas con selectores estables.",
+        "Capturar evidencia y diagnóstico ante fallos; ejecutar sin pausas fijas como sincronización principal.",
+        "Separar fixtures y credenciales y registrar el comando y reporte.",
+        "Evitar XPath absolutos y selectores dependientes de posiciones o clases dinámicas.",
+        "Usar esperas explícitas o fluidas, sin pausas estáticas como sincronización principal."
+      ],
+      "evidence": [
+        "qa/selenium",
+        "Page Objects y configuración",
+        "Reporte y captura de un fallo controlado"
+      ],
+      "issue": {
+        "repo": "stephany-toribio/web-app-calidad-software",
+        "number": 9,
+        "url": "https://github.com/stephany-toribio/web-app-calidad-software/issues/9"
+      }
+    },
+    {
+      "id": "QA-19",
+      "title": "Automatizar el recorrido web del candidato con Selenium",
+      "repo": "frontend",
+      "epic": "E05",
+      "stage": "M4",
+      "role": "R2",
+      "pts": 3,
+      "priority": "P0",
+      "depends": [
+        "QA-06",
+        "QA-08",
+        "QA-12",
+        "QA-18"
+      ],
+      "accept": [
+        "Crear o preparar candidato ficticio, iniciar sesión, buscar, consultar detalle y postular.",
+        "Comprobar confirmación, persistencia y aparición en Mis postulaciones.",
+        "Probar validación del registro y prevención de un segundo envío/postulación.",
+        "Guardar resultado y capturas y limpiar solo los datos de la ejecución.",
+        "Ejecutar repetidamente los flujos E2E del candidato y documentar cualquier resultado intermitente."
+      ],
+      "evidence": [
+        "Escenarios Selenium de candidato",
+        "Capturas y reporte",
+        "Vínculos a requisitos y datos"
+      ],
+      "issue": {
+        "repo": "stephany-toribio/web-app-calidad-software",
+        "number": 10,
+        "url": "https://github.com/stephany-toribio/web-app-calidad-software/issues/10"
+      }
+    },
+    {
+      "id": "QA-20",
+      "title": "Automatizar moderación y decisiones de empresa con Selenium",
+      "repo": "frontend",
+      "epic": "E05",
+      "stage": "M4",
+      "role": "R3",
+      "pts": 3,
+      "priority": "P0",
+      "depends": [
+        "QA-07",
+        "QA-09",
+        "QA-12",
+        "QA-18"
+      ],
+      "accept": [
+        "Preparar empresa/admin/candidato y completar aprobación, pago simulado y revisión empresarial.",
+        "Avanzar a entrevista y contratar; ejecutar rechazo con motivo en una postulación distinta.",
+        "Comprobar resultado visible al candidato y correspondencia con historial de la API.",
+        "Verificar navegación no autorizada y manejo de conflictos con esperas explícitas.",
+        "Ejecutar repetidamente los flujos críticos de empresa y administrador con evidencia de persistencia."
+      ],
+      "evidence": [
+        "Escenarios Selenium de empresa/admin",
+        "Reporte y capturas",
+        "Comprobación del historial"
+      ],
+      "issue": {
+        "repo": "stephany-toribio/web-app-calidad-software",
+        "number": 11,
+        "url": "https://github.com/stephany-toribio/web-app-calidad-software/issues/11"
+      }
+    },
+    {
+      "id": "QA-21",
+      "title": "Preparar Appium y Android con capacidades reproducibles",
+      "repo": "frontend",
+      "epic": "E06",
+      "stage": "M4",
+      "role": "R3",
+      "pts": 3,
+      "priority": "P1",
+      "depends": [
+        "QA-04",
+        "QA-13",
+        "QA-10"
+      ],
+      "accept": [
+        "Documentar Android/emulador, Appium, driver UiAutomator2, Chrome y Chromedriver compatibles.",
+        "Versionar capabilities y configuración por entorno sin identificadores secretos del dispositivo.",
+        "Verificar conexión al servidor y distinguir contexto nativo de contexto web.",
+        "Definir y comprobar el método de apertura de la PWA instalada y su contexto automatizable.",
+        "Generar diagnóstico de un fallo controlado y comando reproducible.",
+        "Configurar Android SDK, Appium, UiAutomator2 y capabilities reproducibles sobre el APK.",
+        "Demostrar disponibilidad y conmutación de contextos NATIVE_APP y WebView con evidencia.",
+        "Verificar conectividad real entre el APK instalado y la API QA bajo HTTPS, incluyendo CORS."
+      ],
+      "evidence": [
+        "qa/appium y capabilities",
+        "Inventario de versiones",
+        "Prueba de apertura y contexto Android"
+      ],
+      "issue": {
+        "repo": "stephany-toribio/web-app-calidad-software",
+        "number": 12,
+        "url": "https://github.com/stephany-toribio/web-app-calidad-software/issues/12"
+      }
+    },
+    {
+      "id": "QA-22",
+      "title": "Automatizar APK Android, gestos nativos y postulación end-to-end",
+      "repo": "frontend",
+      "epic": "E06",
+      "stage": "M4",
+      "role": "R3",
+      "pts": 5,
+      "priority": "P0",
+      "depends": [
+        "QA-08",
+        "QA-10",
+        "QA-11",
+        "QA-12",
+        "QA-13",
+        "QA-21"
+      ],
+      "accept": [
+        "Verificar instalación y lanzamiento de la PWA en emulador o dispositivo Android real.",
+        "Ejecutar con Appium login, búsqueda, detalle y postulación con datos ficticios.",
+        "Registrar el modo de apertura y el contexto usado; no sustituir esta evidencia por la vista móvil del escritorio.",
+        "Confirmar persistencia y prevención de duplicados; obtener capturas y reporte.",
+        "Si el contexto de la PWA no permite automatizar el flujo, resolver o registrar el bloqueo sin marcar el caso como aprobado.",
+        "Automatizar el flujo completo de postulación sobre APK.",
+        "Demostrar swipe y tap, incluyendo interacción con controles realmente nativos.",
+        "Comprobar que cancelar la confirmación no crea registros y confirmar crea una única postulación.",
+        "Verificar persistencia y generar un reporte E2E reproducible.",
+        "Demostrar swipe y tap sobre controles nativos identificados en NATIVE_APP; distinguir estos gestos de las interacciones sobre HTML en WebView."
+      ],
+      "evidence": [
+        "Prueba Appium del flujo completo",
+        "Capturas de PWA instalada y ejecución",
+        "Reporte y persistencia API"
+      ],
+      "issue": {
+        "repo": "stephany-toribio/web-app-calidad-software",
+        "number": 13,
+        "url": "https://github.com/stephany-toribio/web-app-calidad-software/issues/13"
+      }
+    },
+    {
+      "id": "QA-23",
+      "title": "Probar sesión, actualización y falta de red en PWA y APK",
+      "repo": "frontend",
+      "epic": "E06",
+      "stage": "M4",
+      "role": "R2",
+      "pts": 3,
+      "priority": "P1",
+      "depends": [
+        "QA-11",
+        "QA-21",
+        "QA-22"
+      ],
+      "accept": [
+        "Automatizar o instrumentar la pérdida y recuperación de conexión durante consulta y envío.",
+        "Comprobar que no aparece una postulación exitosa sin confirmación del servidor ni se reenvía automáticamente.",
+        "Verificar cierre de sesión, token inválido y apertura posterior de la PWA.",
+        "Actualizar entre dos versiones instaladas y comprobar navegación, sesión y recuperación.",
+        "Documentar con precisión cualquier paso manual de red/instalación y el resultado automatizado.",
+        "Validar sesión, cierre, reapertura y actualización del APK entre versiones compatibles.",
+        "Probar pérdida y recuperación de conexión con resultados coherentes y sin duplicados."
+      ],
+      "evidence": [
+        "Casos Appium de resiliencia",
+        "Evidencia offline/actualización",
+        "Reporte de sesión y datos"
+      ],
+      "issue": {
+        "repo": "stephany-toribio/web-app-calidad-software",
+        "number": 14,
+        "url": "https://github.com/stephany-toribio/web-app-calidad-software/issues/14"
+      }
+    },
+    {
+      "id": "QA-24",
+      "title": "Diseñar cargas, CSV y objetivos de rendimiento con JMeter",
+      "repo": "backend",
+      "epic": "E07",
+      "stage": "M5",
+      "role": "R3",
+      "pts": 3,
+      "priority": "P1",
+      "depends": [
+        "QA-02",
+        "QA-04"
+      ],
+      "accept": [
+        "Definir modelos de carga de consulta, login y postulación y su mezcla de operaciones.",
+        "Preparar credenciales únicas en CSV y correlación de tokens/IDs; no compartir cuentas accidentalmente.",
+        "Definir una línea base y objetivo inicial a validar: 25 usuarios virtuales, p95 de lecturas ≤2 s y escrituras/login ≤3 s, errores inesperados <1% y cero pérdida/duplicación de datos.",
+        "Separar resultados 4xx esperados de errores inesperados y documentar recursos, ramp-up, duración y pausas.",
+        "Plantear exploración de 10/25/50 usuarios solo en QA aislado, con condiciones de parada; revisar los objetivos tras medir la línea base.",
+        "Configurar Thread Groups con carga realista, ramp-up, duración y timers cuando corresponda.",
+        "Implementar CSV Data Set Config, correlación dinámica y listeners adecuados.",
+        "Preparar suficientes cuentas independientes para cada perfil de carga aprobado."
+      ],
+      "evidence": [
+        "Diseño de carga y criterios",
+        "CSV ficticio y variables",
+        "Plan JMX inicial y modelo de resultados"
+      ],
+      "issue": {
+        "repo": "stephany-toribio/recruitment-api-calidad-software",
+        "number": 22,
+        "url": "https://github.com/stephany-toribio/recruitment-api-calidad-software/issues/22"
+      }
+    },
+    {
+      "id": "QA-25",
+      "title": "Ejecutar cargas y concurrencia controlada con JMeter",
+      "repo": "backend",
+      "epic": "E07",
+      "stage": "M5",
+      "role": "R3",
+      "pts": 5,
+      "priority": "P0",
+      "depends": [
+        "QA-08",
+        "QA-09",
+        "QA-13",
+        "QA-24"
+      ],
+      "accept": [
+        "Ejecutar planes JMX en modo no gráfico, con assertions de respuesta y duración según los criterios definidos.",
+        "Correlacionar tokens y vacantes y controlar duplicados intencionales en escenarios separados.",
+        "Registrar p50/p95/p99, throughput, errores, tamaño de muestra, recursos y configuración.",
+        "Comprobar integridad de postulaciones, cupos e historial tras la carga.",
+        "Generar JTL y reporte HTML y registrar fallos o límites del entorno, sin convertir objetivos en resultados.",
+        "Incorporar Response Assertion y Duration Assertion con criterios de aceptación documentados.",
+        "Ejecutar JMeter en modo no gráfico y generar JTL y reporte HTML de los resultados reales."
+      ],
+      "evidence": [
+        "Planes JMX y CSV de QA",
+        "JTL y reporte HTML",
+        "Resultados e integridad posterior"
+      ],
+      "issue": {
+        "repo": "stephany-toribio/recruitment-api-calidad-software",
+        "number": 23,
+        "url": "https://github.com/stephany-toribio/recruitment-api-calidad-software/issues/23"
+      }
+    },
+    {
+      "id": "QA-26",
+      "title": "Analizar rendimiento y corregir cuellos de botella demostrados",
+      "repo": "backend",
+      "epic": "E07",
+      "stage": "M5",
+      "role": "R1",
+      "pts": 3,
+      "priority": "P1",
+      "depends": [
+        "QA-25"
+      ],
+      "accept": [
+        "Identificar operaciones que incumplen objetivos mediante evidencia de consultas, bloqueos y recursos.",
+        "Corregir solo problemas reproducidos, preservando reglas de concurrencia e integridad.",
+        "Repetir la carga comparable y presentar antes/después y sus límites.",
+        "Si los objetivos se cumplen sin correcciones, cerrar con diagnóstico y evidencia que justifique no modificar código."
+      ],
+      "evidence": [
+        "Diagnóstico de rendimiento",
+        "PR y regresiones si corresponden",
+        "Comparación de ejecuciones"
+      ],
+      "issue": {
+        "repo": "stephany-toribio/recruitment-api-calidad-software",
+        "number": 24,
+        "url": "https://github.com/stephany-toribio/recruitment-api-calidad-software/issues/24"
+      }
+    },
+    {
+      "id": "QA-27",
+      "title": "Configurar CI de API, PHPUnit, MySQL y Karate",
+      "repo": "backend",
+      "epic": "E08",
+      "stage": "M5",
+      "role": "R1",
+      "pts": 3,
+      "priority": "P1",
+      "depends": [
+        "QA-14",
+        "QA-15",
+        "QA-16",
+        "QA-17"
+      ],
+      "accept": [
+        "Ejecutar comprobaciones de PHP y las suites adecuadas en PR sin usar la base de la aplicación publicada.",
+        "Preparar servicio MySQL efímero y fixtures para la suite aislada y procesos de concurrencia.",
+        "Incorporar Karate con la API de prueba disponible y fallo de pipeline cuando fallen casos.",
+        "Publicar reportes como artefactos sin tokens ni credenciales; documentar ejecución local equivalente."
+      ],
+      "evidence": [
+        "Workflow CI",
+        "Ejecución con resultados",
+        "Artefactos sanitizados"
+      ],
+      "issue": {
+        "repo": "stephany-toribio/recruitment-api-calidad-software",
+        "number": 25,
+        "url": "https://github.com/stephany-toribio/recruitment-api-calidad-software/issues/25"
+      }
+    },
+    {
+      "id": "QA-28",
+      "title": "Configurar CI de frontend y regresión web",
+      "repo": "frontend",
+      "epic": "E08",
+      "stage": "M5",
+      "role": "R2",
+      "pts": 3,
+      "priority": "P1",
+      "depends": [
+        "QA-18",
+        "QA-19",
+        "QA-20"
+      ],
+      "accept": [
+        "Ejecutar npm ci y build de producción en PR con versiones fijadas.",
+        "Ejecutar Selenium contra un entorno controlado con datos reproducibles y API correspondiente.",
+        "Conservar reportes y capturas de fallos y distinguir compilación de pruebas funcionales.",
+        "Verificar que el artefacto publicado corresponde al commit aprobado y a su configuración de QA."
+      ],
+      "evidence": [
+        "Workflow frontend",
+        "Build y regresión Selenium",
+        "Artefactos de fallo"
+      ],
+      "issue": {
+        "repo": "stephany-toribio/web-app-calidad-software",
+        "number": 15,
+        "url": "https://github.com/stephany-toribio/web-app-calidad-software/issues/15"
+      }
+    },
+    {
+      "id": "QA-29",
+      "title": "Mantener trazabilidad en Jira y ciclo de defectos",
+      "repo": "backend",
+      "epic": "E08",
+      "stage": "M0",
+      "role": "R3",
+      "pts": 3,
+      "priority": "P1",
+      "depends": [
+        "QA-04"
+      ],
+      "accept": [
+        "Definir severidad, prioridad, responsable, pasos, esperado/obtenido y ambiente de cada defecto.",
+        "Registrar retest y regresión, con reapertura cuando falle; evitar cerrar un defecto solo por tener un commit.",
+        "Mantener vista de avance por hito, bloqueos, carga por rol y riesgos sin duplicar estados contradictorios.",
+        "Utilizar Jira obligatoriamente para trazabilidad académica.",
+        "Vincular todos los escenarios automatizados de las cuatro herramientas con tickets reales.",
+        "Relacionar requisito, CP, RUB, issue GitHub, script, commit/build, reporte y resultado.",
+        "Registrar defectos, correcciones y retests cuando existan."
+      ],
+      "evidence": [
+        "Matriz enlazada",
+        "Plantilla de defecto",
+        "Vista de seguimiento y decisiones"
+      ],
+      "issue": {
+        "repo": "stephany-toribio/recruitment-api-calidad-software",
+        "number": 26,
+        "url": "https://github.com/stephany-toribio/recruitment-api-calidad-software/issues/26"
+      }
+    },
+    {
+      "id": "QA-30",
+      "title": "Ejecutar regresión integrada y cerrar criterios de entrega",
+      "repo": "backend",
+      "epic": "E08",
+      "stage": "M5",
+      "role": "R3",
+      "pts": 3,
+      "priority": "P0",
+      "depends": [
+        "QA-16",
+        "QA-17",
+        "QA-19",
+        "QA-20",
+        "QA-22",
+        "QA-23",
+        "QA-25",
+        "QA-26",
+        "QA-27",
+        "QA-28"
+      ],
+      "accept": [
+        "Ejecutar el flujo completo en una versión coordinada de frontend/API y en Android.",
+        "Completar todos los casos P0/P1 trazados a requisitos; informar aprobados, fallidos y bloqueados.",
+        "Resolver y repetir los defectos Sev1/Sev2; documentar los menores y su impacto.",
+        "Comprobar instalación/actualización PWA, integridad tras concurrencia e historial.",
+        "Conservar un paquete de evidencias con versiones, fechas, ambiente y datos utilizados.",
+        "Incluir la regresión del APK y los flujos móviles en las verificaciones integradas.",
+        "Comprobar que las cuatro herramientas y la trazabilidad Jira cuentan con evidencia verificable."
+      ],
+      "evidence": [
+        "Matriz de resultados final",
+        "Regresión y retests",
+        "Paquete de evidencias de las cuatro herramientas"
+      ],
+      "issue": {
+        "repo": "stephany-toribio/recruitment-api-calidad-software",
+        "number": 27,
+        "url": "https://github.com/stephany-toribio/recruitment-api-calidad-software/issues/27"
+      }
+    },
+    {
+      "id": "QA-31",
+      "title": "Preparar informe, manual y demostración de la entrega",
+      "repo": "backend",
+      "epic": "E08",
+      "stage": "M5",
+      "role": "R1",
+      "pts": 3,
+      "priority": "P1",
+      "depends": [
+        "QA-29",
+        "QA-30"
+      ],
+      "accept": [
+        "Documentar problema, alcance delimitado, arquitectura, decisiones y método de pruebas.",
+        "Presentar resultados reales de Karate/JMeter/Selenium/Appium con enlaces y limitaciones.",
+        "Preparar manual de instalación, ejecución y recuperación de datos y un guion de demostración por rol.",
+        "Demostrar flujo de aprobación y decisión, caso negativo, concurrencia y PWA Android.",
+        "Repartir la exposición entre las tres personas y verificar que otra persona reproduzca los pasos.",
+        "Consolidar la matriz de cumplimiento de los 24 controles RUB con evidencias reales.",
+        "Documentar los cinco criterios académicos, resultados, riesgos y limitaciones sin inventar calificaciones."
+      ],
+      "evidence": [
+        "Informe y manual",
+        "Guion y datos de demostración",
+        "Índice de evidencias"
+      ],
+      "issue": {
+        "repo": "stephany-toribio/recruitment-api-calidad-software",
+        "number": 28,
+        "url": "https://github.com/stephany-toribio/recruitment-api-calidad-software/issues/28"
+      }
+    },
+    {
+      "id": "QA-32",
+      "title": "Preparar release coordinada y cierre del proyecto",
+      "repo": "frontend",
+      "epic": "E08",
+      "stage": "M5",
+      "role": "R2",
+      "pts": 3,
+      "priority": "P1",
+      "depends": [
+        "QA-13",
+        "QA-30",
+        "QA-31"
+      ],
+      "accept": [
+        "Revisar y aprobar PR de release hacia main en ambos repositorios tras superar los criterios de entrega.",
+        "Registrar versiones/tags y los commits coordinados de frontend/API y sus artefactos.",
+        "Validar instalación y actualización de la PWA publicada y prueba breve del flujo.",
+        "Cerrar issues solo con evidencia, dejar riesgos residuales y retrospectiva del equipo.",
+        "Eliminar únicamente ramas temporales ya integradas; mantener main y develop y documentar recuperación.",
+        "Entregar APK instalable identificado por versión, commit, configuración QA y hash SHA-256.",
+        "Documentar instalación, compatibilidad, procedimiento de compilación y verificación final."
+      ],
+      "evidence": [
+        "Release y commits coordinados",
+        "Comprobación posterior",
+        "Retrospectiva y cierre"
+      ],
+      "issue": {
+        "repo": "stephany-toribio/web-app-calidad-software",
+        "number": 16,
+        "url": "https://github.com/stephany-toribio/web-app-calidad-software/issues/16"
+      }
+    }
+  ],
+  "relativeEffort": {
+    "R1": 35,
+    "R2": 33,
+    "R3": 34
+  },
+  "nominalAssignees": {
+    "R1": "stephany-toribio",
+    "R2": "aquinoestoyxd",
+    "R3": "luisvalenzuela25"
+  },
+  "calendarDates": null,
+  "academicQuality": {
+    "targetGrade": 20,
+    "plannedRequirements": 18,
+    "plannedCaseFamilies": 34,
+    "plannedScenarios": 111,
+    "rubricControls": 24,
+    "registeredRisks": 15,
+    "androidDelivery": "APK híbrido mediante Capacitor",
+    "pwaDelivery": true,
+    "traceabilityPlatform": "Jira",
+    "technicalManagement": "GitHub Projects",
+    "rubricDocument": "docs/RUBRICA_EVALUACION.md",
+    "rubricMatrix": "docs/qa/MATRIZ_RUBRICA.md",
+    "executionStatus": "Pendiente de acreditación",
+    "effortStatus": "Estimaciones originales pendientes de revisión"
+  }
+}

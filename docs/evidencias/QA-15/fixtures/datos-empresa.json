@@ -1,0 +1,12 @@
+{
+    "success": true,
+    "datos": {
+        "correo": "karate-6dd7b706-dacb-4317-bc1c-eb0070529be5-bb353ebf8fbde3d8@qa.example.test",
+        "encargado_empresa": "Responsable ficticio QA15",
+        "razon_social": "Empresa ficticia QA15",
+        "sector": "Tecnolog\u00eda e Inform\u00e1tica",
+        "ruc": "20432898051",
+        "sitio_web": "https://empresa.example.test",
+        "descripcion": "Datos sinteticos de automatizacion."
+    }
+}

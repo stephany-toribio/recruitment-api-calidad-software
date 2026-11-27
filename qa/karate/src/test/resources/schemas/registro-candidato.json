@@ -1,0 +1,60 @@
+{
+  "success": true,
+  "message": "#string",
+  "data": {
+    "id": "#number",
+    "usuario_id": "#number",
+    "correo": "#string",
+    "nombre": "#string",
+    "apellidos": "#string",
+    "dni": "#string",
+    "fecha_nacimiento": "#string",
+    "celular": "#string",
+    "genero": "#string",
+    "busca_primer_empleo": "#boolean",
+    "estudios": [
+      {
+        "id": "#number",
+        "tipo_estudio": {
+          "id": "#number",
+          "nombre": "#string"
+        },
+        "area_estudio": {
+          "id": "#number",
+          "nombre": "#string"
+        },
+        "pais": "#null",
+        "institucion": "#null",
+        "carrera": "#null",
+        "estado": "#null",
+        "ciclo_actual": "#null",
+        "fecha_inicio": "#null",
+        "fecha_fin": "#null"
+      }
+    ],
+    "idiomas": [
+      {
+        "id": "#number",
+        "idioma": {
+          "id": "#number",
+          "nombre": "#string"
+        },
+        "nivel_escrito": "nativo",
+        "nivel_oral": "nativo"
+      }
+    ],
+    "experiencias": [],
+    "habilidades": [
+      {
+        "id": "#number",
+        "nombre": "#string",
+        "tipo_habilidad": "blanda",
+        "activo": true,
+        "area_estudio": "#null",
+        "created_at": "#string",
+        "updated_at": "#string"
+      }
+    ],
+    "creado_en": "#string"
+  }
+}

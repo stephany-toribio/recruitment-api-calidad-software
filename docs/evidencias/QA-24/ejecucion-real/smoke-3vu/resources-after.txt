@@ -1,0 +1,3 @@
+﻿CONTAINER ID   NAME                       CPU %     MEM USAGE / LIMIT     MEM %     NET I/O          BLOCK I/O       PIDS
+1d235615d135   calidad_software-app-1     9.33%     65.35MiB / 7.427GiB   0.86%     1.09MB / 653kB   43MB / 0B       2
+48c182c13ab6   calidad_software-mysql-1   1.23%     526.5MiB / 7.427GiB   6.92%     9.21MB / 25MB    679MB / 948MB   46

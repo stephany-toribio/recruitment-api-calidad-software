@@ -1,0 +1,11 @@
+{
+  "success": true,
+  "message": "Usuario autenticado",
+  "data": {
+    "id": "#number",
+    "correo": "#string",
+    "rol": "#string",
+    "estado_cuenta": "activo",
+    "creado_en": "#string"
+  }
+}

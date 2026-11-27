@@ -12,6 +12,9 @@ class Candidato extends Model
 {
     use HasFactory;
 
+    // Edad mínima para registrarse (la misma que valida el front en el registro)
+    public const EDAD_MINIMA = 17;
+
     protected $table= 'candidatos';
 
     protected $fillable = [
@@ -21,12 +24,13 @@ class Candidato extends Model
         'dni',
         'fecha_nacimiento',
         'genero',
-        'disponibilidad',
+        'busca_primer_empleo',
         'celular',
-    ]; 
+    ];
 
     protected $casts = [
-        'fecha_nacimiento' => 'date'
+        'fecha_nacimiento'    => 'date',
+        'busca_primer_empleo' => 'boolean',
     ];
 
     //Relacion con usuario
@@ -43,16 +47,33 @@ class Candidato extends Model
 
     }
 
-    //Relacion con carreras
-    public function carreras(): HasMany
+    //Relacion con estudios (candidato_estudios)
+    public function estudios(): HasMany
     {
-        return $this->hasMany(CandidatoCarrera::class, 'candidato_id');
+        return $this->hasMany(CandidatoEstudio::class, 'candidato_id');
+    }
+
+    //Relacion con idiomas (candidato_idiomas)
+    public function idiomas(): HasMany
+    {
+        return $this->hasMany(CandidatoIdioma::class, 'candidato_id');
+    }
+
+    //Relacion con experiencias laborales
+    public function experiencias(): HasMany
+    {
+        return $this->hasMany(ExperienciaLaboral::class, 'candidato_id');
     }
 
     //Relacion con postulacion
     public function postulaciones():HasMany
     {
-        return $this->hasMany(Postulacion::class, 'candidato_id'); 
+        return $this->hasMany(Postulacion::class, 'candidato_id');
+    }
+
+    public function vacantesGuardadas(): HasMany
+    {
+        return $this->hasMany(VacanteGuardada::class, 'candidato_id');
     }
 
 };

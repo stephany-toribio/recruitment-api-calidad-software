@@ -1,0 +1,26 @@
+===== BASELINE QA-17 =====
+7b32fca Merge pull request #42 from stephany-toribio/feature/QA-16-karate-flujo-negocio
+===== DOCKER =====
+NAME                       IMAGE                  COMMAND                  SERVICE   CREATED        STATUS                  PORTS
+calidad_software-app-1     calidad_software-app   "docker-php-entrypoi…"   app       23 hours ago   Up 23 hours             127.0.0.1:8002->8000/tcp
+calidad_software-mysql-1   mysql:8.0              "docker-entrypoint.s…"   mysql     23 hours ago   Up 23 hours (healthy)   127.0.0.1:3307->3306/tcp
+===== HEALTH CHECK =====
+HTTP 200
+===== MYSQL =====
+array:3 [
+  "database" => "portal_empleos_calidad_qa"
+  "karate_residuales" => 0
+  "cuentas_qa" => 6
+] // vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:1
+===== JAVA Y MAVEN =====
+openjdk version "21.0.13.0.3" 2026-10-24
+OpenJDK Runtime Environment (build 21.0.13.0.3+1-1-26.04.1-Ubuntu)
+OpenJDK 64-Bit Server VM (build 21.0.13.0.3+1-1-26.04.1-Ubuntu, mixed mode, sharing)
+[1mApache Maven 3.9.12[m
+Maven home: /usr/share/maven
+Java version: 21.0.13.0.3, vendor: Ubuntu, runtime: /usr/lib/jvm/java-21-openjdk-amd64
+Default locale: en, platform encoding: UTF-8
+OS name: "linux", version: "6.6.114.1-microsoft-standard-wsl2", arch: "amd64", family: "unix"
+===== FIXTURES =====
+No syntax errors detected in qa/karate/scripts/fixture-qa16.php
+No syntax errors detected in qa/karate/scripts/fixture-qa15.php

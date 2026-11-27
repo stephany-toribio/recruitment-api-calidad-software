@@ -1,0 +1,67 @@
+<testsuite failures="0" name="features/auth/bloqueo-suspension.feature" skipped="0" tests="2" time="9.183185"><testcase classname="features.auth.bloqueo-suspension" name="Password incorrecta incrementa contador sin emitir token" time="3.061273"><system-out>* def System = Java.type('java.lang.System') .............................. passed
+* def FixtureBridge = Java.type('creo.FixtureBridge') ..................... passed
+* def password = System.getenv('KARATE_FIXTURE_PASSWORD') ................. passed
+* def candidato = call read('classpath:helpers/registrar-candidato.feature') . passed
+* def correo = candidato.correo ........................................... passed
+* def antes = FixtureBridge.consultar(runId, correo, password) ............ passed
+* match antes.intentos_fallidos == 0 ...................................... passed
+* match antes.tokens == 0 ................................................. passed
+* def fallo = call read('classpath:helpers/login-fallido.feature') { correo: '#(correo)', intento: 1 } . passed
+* def db = FixtureBridge.consultar(runId, correo, password) ............... passed
+* match db.intentos_fallidos == 1 ......................................... passed
+* match db.tokens == 0 .................................................... passed
+* match db.bloqueado == false ............................................. passed
+</system-out></testcase>
+<testcase classname="features.auth.bloqueo-suspension" name="Cinco fallos generan bloqueo y posterior recuperacion" time="6.121912"><system-out>* def System = Java.type('java.lang.System') .............................. passed
+* def FixtureBridge = Java.type('creo.FixtureBridge') ..................... passed
+* def password = System.getenv('KARATE_FIXTURE_PASSWORD') ................. passed
+* def candidato = call read('classpath:helpers/registrar-candidato.feature') . passed
+* def correo = candidato.correo ........................................... passed
+* def antes = FixtureBridge.consultar(runId, correo, password) ............ passed
+* match antes.intentos_fallidos == 0 ...................................... passed
+* match antes.tokens == 0 ................................................. passed
+* match antes.bloqueado == false .......................................... passed
+* def fallo1 = call read('classpath:helpers/login-fallido.feature') { correo: '#(correo)', intento: 1 } . passed
+* def fallo2 = call read('classpath:helpers/login-fallido.feature') { correo: '#(correo)', intento: 2 } . passed
+* def fallo3 = call read('classpath:helpers/login-fallido.feature') { correo: '#(correo)', intento: 3 } . passed
+* def fallo4 = call read('classpath:helpers/login-fallido.feature') { correo: '#(correo)', intento: 4 } . passed
+* def inicioBloqueo = java.lang.System.currentTimeMillis() ................ passed
+Given url apiUrl .......................................................... passed
+And path 'auth', 'login' .................................................. passed
+And request { correo: '#(correo)', password: 'Incorrecta#2026' } .......... passed
+When method post .......................................................... passed
+Then status 429 ........................................................... passed
+And assert responseTime &lt; responseTimeLimit ............................... passed
+* def schema = read('classpath:schemas/login-bloqueo-inicial.json') ....... passed
+And match response == schema .............................................. passed
+* def db = FixtureBridge.consultar(runId, correo, password) ............... passed
+* match db.intentos_fallidos == 5 ......................................... passed
+* match db.tokens == 0 .................................................... passed
+* match db.bloqueado == true .............................................. passed
+* def finBloqueo = Date.parse(db.bloqueado_hasta) ......................... passed
+* def duracion = finBloqueo - inicioBloqueo ............................... passed
+* assert duracion &gt;= 895000 &amp;&amp; duracion &lt;= 905000 ......................... passed
+Given url apiUrl .......................................................... passed
+And path 'auth', 'login' .................................................. passed
+And request { correo: '#(correo)', password: '#(password)' } .............. passed
+When method post .......................................................... passed
+Then status 429 ........................................................... passed
+And assert responseTime &lt; responseTimeLimit ............................... passed
+* def schemaBloqueado = read('classpath:schemas/login-bloqueado.json') .... passed
+And match response == schemaBloqueado ..................................... passed
+* def durante = FixtureBridge.consultar(runId, correo, password) .......... passed
+* match durante.intentos_fallidos == 5 .................................... passed
+* match durante.tokens == 0 ............................................... passed
+* match durante.bloqueado_hasta == db.bloqueado_hasta ..................... passed
+* def expirado = FixtureBridge.expirarBloqueo(runId, correo) .............. passed
+* match expirado.success == true .......................................... passed
+* match expirado.bloqueado == false ....................................... passed
+* match expirado.intentos_fallidos == 5 ................................... passed
+* def sesion = call read('classpath:helpers/login.feature') { correo: '#(correo)', rol: 'candidato' } . passed
+* def recuperado = FixtureBridge.consultar(runId, correo, password) ....... passed
+* match recuperado.intentos_fallidos == 0 ................................. passed
+* match recuperado.bloqueado == false ..................................... passed
+* match recuperado.bloqueado_hasta == null ................................ passed
+* match recuperado.tokens == 1 ............................................ passed
+</system-out></testcase>
+</testsuite>

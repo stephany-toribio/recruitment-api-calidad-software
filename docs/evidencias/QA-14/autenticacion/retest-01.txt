@@ -1,0 +1,17 @@
+===== PREPARAR FIXTURE =====
+PASS: Usuario temporal creado
+===== KARATE =====
+Exit code Maven: 0
+===== COMPROBAR EXPOSICION DE SECRETOS =====
+PASS: Sin password temporal ni tokens reconocibles en reportes privados
+===== VERIFICAR ESCENARIOS =====
+Escenarios Karate: 4
+Aprobados: 4
+Fallidos: 0
+Maven: BUILD SUCCESS
+Revision automatica de secretos: PASS
+
+===== LIMPIEZA =====
+PASS: Fixture temporal eliminado
+PASS: Ciclo completo de preparacion, prueba y limpieza
+Reportes privados: /tmp/tmp.BixmPW2mi3

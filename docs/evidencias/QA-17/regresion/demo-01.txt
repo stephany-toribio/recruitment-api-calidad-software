@@ -1,0 +1,35 @@
+===== PREFLIGHT QA-17 =====
+No syntax errors detected in qa/karate/scripts/fixture-qa16.php
+No syntax errors detected in qa/karate/scripts/fixture-qa15.php
+PASS: Preflight QA-17
+===== QA-17 =====
+Modo: demo
+Run ID: 86f4a367-0f54-4603-8e22-3baaa76185e2
+===== EJECUCION KARATE =====
+feature: classpath:features/security/autorizacion.feature
+scenarios:  2 | passed:  2 | failed:  0 | time: 13.0605
+feature: classpath:features/security/duplicados.feature
+scenarios:  1 | passed:  1 | failed:  0 | time: 15.6113
+feature: classpath:features/security/retiros.feature
+scenarios:  1 | passed:  1 | failed:  0 | time: 20.0008
+feature: classpath:features/security/transiciones-invalidas.feature
+scenarios:  1 | passed:  1 | failed:  0 | time: 16.4305
+scenarios:    5 | passed:     5 | failed: 0
+[INFO] BUILD SUCCESS
+Exit code Maven: 0
+PASS: Escaneo preventivo de secretos
+scenarios:  2 | passed:  2 | failed:  0 | time: 13.0605
+scenarios:  1 | passed:  1 | failed:  0 | time: 15.6113
+scenarios:  1 | passed:  1 | failed:  0 | time: 20.0008
+scenarios:  1 | passed:  1 | failed:  0 | time: 16.4305
+scenarios:    5 | passed:     5 | failed: 0
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 71.81 s -- in creo.SecurityTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+PASS: Ejecucion funcional QA-17
+Entidades eliminadas: {'historial_postulaciones': 1, 'notificaciones_postulacion': 0, 'postulaciones': 3, 'vacantes_guardadas': 0, 'pagos_vacante': 4, 'revisiones_vacante': 4, 'empleo_habilidades': 20, 'empleos': 4, 'candidato_estudios': 3, 'candidato_habilidades': 3, 'candidato_idiomas': 3, 'personal_access_tokens': 12, 'password_reset_tokens': 0, 'candidatos': 3, 'empresas': 5, 'usuarios': 12}
+PASS: Sin residuos funcionales
+Fixtures eliminados: 12
+Fixtures restantes: 0
+PASS: Limpieza QA-17
+Reportes privados: /tmp/tmp.6b9rkja8xF

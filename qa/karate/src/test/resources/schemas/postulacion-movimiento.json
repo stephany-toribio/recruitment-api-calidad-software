@@ -1,0 +1,12 @@
+{
+  "success": true,
+  "message": "Postulación actualizada.",
+  "data": {
+    "id": "#number",
+    "estado": {
+      "codigo": "#string",
+      "nombre": "#string"
+    },
+    "motivo_rechazo": "##string"
+  }
+}

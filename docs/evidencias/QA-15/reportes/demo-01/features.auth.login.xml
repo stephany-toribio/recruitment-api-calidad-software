@@ -1,0 +1,26 @@
+<testsuite failures="0" name="features/auth/login.feature" skipped="0" tests="1" time="2.523902"><testcase classname="features.auth.login" name="Login valido de candidato" time="2.523902"><system-out>* def System = Java.type('java.lang.System') .............................. passed
+* def FixtureBridge = Java.type('creo.FixtureBridge') ..................... passed
+* def password = System.getenv('KARATE_FIXTURE_PASSWORD') ................. passed
+* def candidato = call read('classpath:helpers/registrar-candidato.feature') . passed
+* def correo = candidato.correo ........................................... passed
+* def antes = FixtureBridge.consultar(runId, correo, password) ............ passed
+* match antes.tokens == 0 ................................................. passed
+* def sesion = call read('classpath:helpers/login.feature') { correo: '#(correo)', rol: 'candidato' } . passed
+* def despues = FixtureBridge.consultar(runId, correo, password) .......... passed
+* match despues.tokens == 1 ............................................... passed
+* match despues.rol == 'candidato' ........................................ passed
+* match despues.usuario_id == sesion.usuarioId ............................ passed
+* match despues.intentos_fallidos == 0 .................................... passed
+Given url apiUrl .......................................................... passed
+And path 'auth', 'me' ..................................................... passed
+And header Authorization = 'Bearer ' + sesion.token ....................... passed
+When method get ........................................................... passed
+Then status 200 ........................................................... passed
+And assert responseTime &lt; responseTimeLimit ............................... passed
+* def schema = read('classpath:schemas/auth-me.json') ..................... passed
+And match response == schema .............................................. passed
+And match response.data.id == sesion.usuarioId ............................ passed
+And match response.data.correo == correo .................................. passed
+And match response.data.rol == 'candidato' ................................ passed
+</system-out></testcase>
+</testsuite>

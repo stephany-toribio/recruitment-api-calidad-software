@@ -1,0 +1,16 @@
+de56715ccdf376d4e4f758578ab4af31cd920e8d9ae80e2587babe714ed20c55  ./INCIDENCIAS.md
+068f71f518a0004b565b3c160587445a506617e70f911a82768d7b1b8b59c03f  ./RESULTADOS.md
+ff92bfe1c7312ae27ed7b5f5693edb44435b5781877c59abcba94c7b24d8d02d  ./reportes/QA-14.json
+a5b16432cb9d718ba38781030b2f56ea11cb86385fb1791a8912be69db43c881  ./reportes/QA-15.json
+93693dbc7833811b28e364318ecc7f95888363c2175aba0afd8da628f0f2827a  ./reportes/QA-16.json
+116ede889388b6b4d1a247c1ff53d214509c765c7e33b609723503da551b4eee  ./reportes/QA-17.json
+91e056fe4bfc89e7f52e099293def179762993aa2c8769fa96cb3d9431d52999  ./reportes/commit.txt
+f7366f957005210ffc7ce036de70eadb23951b3886cd4ecb97b8c3a523064bf5  ./reportes/karate/QA-14/TEST-creo.SensitiveLogModifierTest.xml
+74eb2f6112710a7a74644c5ee88463dbbc06b629f1209543f52e3ff2207321af  ./reportes/karate/QA-14/TEST-creo.SmokeTest.xml
+670f22950d57a7b453684e26c01477472397bbe070cd4fcf62f886244846b121  ./reportes/karate/QA-15/TEST-creo.AuthTest.xml
+e5b685b9d4e47ecc91b0f52f42ecea4d93dff9fc5492a7bad9d867a6b078c667  ./reportes/karate/QA-16/TEST-creo.BusinessTest.xml
+c630bbe37847e82458d15c0c0f9e1ac2decd9c693343b4b704bdd932b94e7fe9  ./reportes/karate/QA-17/TEST-creo.SecurityTest.xml
+ccdeabb653ee7173ec93faafcfc765135b6f575a04df119a0ffdf7368901466a  ./reportes/phpunit/Feature.xml
+03589155405983ec806e854c4b3b307351f0768bce3731852c029cb77a962201  ./reportes/phpunit/MySql.xml
+8ebf1273df46fdae8affb8a6a6edea8a7577cff4323e3dbd7823ae1a277619be  ./reportes/phpunit/Unit.xml
+fb4e761ff592de784064384aef138168c6cf0091c93a3ebc275e04a205938cc9  ./reportes/resumen.json

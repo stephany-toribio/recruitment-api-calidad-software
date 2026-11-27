@@ -1,0 +1,9 @@
+{
+  "id": "#number",
+  "estado": {
+    "codigo": "#string",
+    "nombre": "#string"
+  },
+  "motivo_rechazo": "##string",
+  "fecha_cambio": "#string"
+}

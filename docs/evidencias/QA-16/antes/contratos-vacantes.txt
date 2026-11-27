@@ -1,0 +1,747 @@
+===== REGISTRAR VACANTE REQUEST =====
+<?php
+
+namespace App\Http\Requests\Vacantes;
+
+use App\Models\Empleo;
+use App\Rules\HabilidadSeleccionable;
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+
+class RegistrarVacanteRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $datos = $this->all();
+
+        foreach (['titulo', 'descripcion', 'ubicacion'] as $campo) {
+            if (
+                array_key_exists($campo, $datos)
+                && is_string($datos[$campo])
+            ) {
+                $datos[$campo] = trim($datos[$campo]);
+            }
+        }
+
+        if (
+            array_key_exists('ubicacion', $datos)
+            && $datos['ubicacion'] === ''
+        ) {
+            $datos['ubicacion'] = null;
+        }
+
+        // Requisitos y beneficios: se recortan los espacios y se descartan las filas vacías
+        foreach (['requisitos', 'beneficios'] as $lista) {
+            if (array_key_exists($lista, $datos) && is_array($datos[$lista])) {
+                $datos[$lista] = array_values(array_filter(
+                    array_map(
+                        fn ($item) => is_string($item) ? trim($item) : $item,
+                        $datos[$lista]
+                    ),
+                    fn ($item) => $item !== ''
+                ));
+            }
+        }
+
+        $this->replace($datos);
+    }
+
+    public function rules(): array
+    {
+        return [
+            'titulo' => [
+                'bail',
+                'required',
+                'string',
+                'max:100',
+                'not_regex:/^\s*$/u',
+            ],
+
+            'descripcion' => [
+                'bail',
+                'required',
+                'string',
+                'min:50',
+                'not_regex:/^\s*$/u',
+            ],
+
+            'nivel_puesto_id' => [
+                'bail',
+                'required',
+                'integer',
+                'min:1',
+                Rule::exists('niveles_puesto', 'id')
+                    ->whereNull('candidato_id')
+                    ->where('estado', 'activo'),
+            ],
+
+            'area_estudio_id' => [
+                'bail',
+                'required',
+                'integer',
+                'min:1',
+                Rule::exists('areas_estudio', 'id')
+                    ->where('activo', true),
+            ],
+
+            'tipo_empleo' => [
+                'bail',
+                'required',
+                'string',
+                Rule::in(['presencial', 'remoto', 'hibrido']),
+            ],
+
+            'ubicacion' => [
+                'bail',
+                Rule::requiredIf(
+                    fn () => in_array(
+                        $this->input('tipo_empleo'),
+                        ['presencial', 'hibrido'],
+                        true
+                    )
+                ),
+                'nullable',
+                'string',
+                'max:255',
+                'not_regex:/^\s*$/u',
+            ],
+
+            'salario_min' => [
+                'bail',
+                'required_with:salario_max',
+                'nullable',
+                'numeric',
+                'gt:0',
+                'decimal:0,2',
+                'max:99999999.99',
+            ],
+
+            'salario_max' => [
+                'bail',
+                'required_with:salario_min',
+                'nullable',
+                'numeric',
+                'gt:0',
+                'decimal:0,2',
+                'gte:salario_min',
+                'max:99999999.99',
+            ],
+
+            'fecha_inicio_vigencia' => [
+                'bail',
+                'required',
+                'date_format:Y-m-d',
+                'after_or_equal:'.now(Empleo::ZONA_VIGENCIA)
+                    ->toDateString(),
+            ],
+
+            'fecha_fin_vigencia' => [
+                'bail',
+                'required',
+                'date_format:Y-m-d',
+                'after:fecha_inicio_vigencia',
+            ],
+
+            'max_contrataciones' => [
+                'bail',
+                'required',
+                'integer',
+                'min:1',
+                'max:65535',
+            ],
+
+            'habilidades' => [
+                'bail',
+                'required',
+                'array',
+                'list',
+                'min:5',
+                'max:10',
+            ],
+
+            'habilidades.*' => [
+                'bail',
+                'required',
+                'array:habilidad_id,requisito',
+            ],
+
+            'habilidades.*.habilidad_id' => [
+                'bail',
+                'required',
+                'integer',
+                'min:1',
+                'distinct',
+                new HabilidadSeleccionable,
+            ],
+
+            'habilidades.*.requisito' => [
+                'bail',
+                'required',
+                'string',
+                Rule::in(['must_have', 'nice_to_have']),
+            ],
+
+            'requisitos' => [
+                'bail',
+                'nullable',
+                'array',
+                'list',
+                'max:10',
+            ],
+
+            'requisitos.*' => [
+                'bail',
+                'required',
+                'string',
+                'max:200',
+                'distinct:ignore_case',
+            ],
+
+            'beneficios' => [
+                'bail',
+                'nullable',
+                'array',
+                'list',
+                'max:10',
+            ],
+
+            'beneficios.*' => [
+                'bail',
+                'required',
+                'string',
+                'max:200',
+                'distinct:ignore_case',
+            ],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'titulo.required' => 'El título es obligatorio.',
+            'titulo.string' => 'El título debe ser un texto.',
+            'titulo.max' => 'El título no debe superar los 100 caracteres.',
+            'titulo.not_regex' => 'El título no puede contener solo espacios.',
+
+            'descripcion.required' => 'La descripción es obligatoria.',
+            'descripcion.string' => 'La descripción debe ser un texto.',
+            'descripcion.min' => 'La descripción debe tener al menos 50 caracteres.',
+            'descripcion.not_regex' => 'La descripción no puede contener solo espacios.',
+
+            'nivel_puesto_id.required' => 'Seleccione el nivel del puesto.',
+            'nivel_puesto_id.integer' => 'El nivel debe ser un identificador entero.',
+            'nivel_puesto_id.min' => 'El identificador del nivel debe ser positivo.',
+            'nivel_puesto_id.exists' => 'Seleccione un nivel global habilitado.',
+
+            'area_estudio_id.required' => 'Seleccione el área profesional.',
+            'area_estudio_id.integer' => 'El área debe ser un identificador entero.',
+            'area_estudio_id.min' => 'El identificador del área debe ser positivo.',
+            'area_estudio_id.exists' => 'Seleccione un área existente y activa.',
+
+            'tipo_empleo.required' => 'Seleccione la modalidad de trabajo.',
+            'tipo_empleo.string' => 'La modalidad debe ser un texto.',
+            'tipo_empleo.in' => 'La modalidad debe ser presencial, remoto o hibrido.',
+
+            'ubicacion.required' => 'La ubicación es obligatoria para presencial e híbrido.',
+            'ubicacion.string' => 'La ubicación debe ser un texto.',
+            'ubicacion.max' => 'La ubicación no debe superar los 255 caracteres.',
+            'ubicacion.not_regex' => 'La ubicación no puede contener solo espacios.',
+
+            'salario_min.required_with' => 'Informe el salario mínimo cuando indique el máximo.',
+            'salario_min.numeric' => 'El salario mínimo debe ser numérico.',
+            'salario_min.gt' => 'El salario mínimo debe ser mayor que cero.',
+            'salario_min.decimal' => 'El salario mínimo debe tener hasta 2 decimales.',
+            'salario_min.max' => 'El salario mínimo no debe superar 99999999.99 soles.',
+
+            'salario_max.required_with' => 'Informe el salario máximo cuando indique el mínimo.',
+            'salario_max.numeric' => 'El salario máximo debe ser numérico.',
+            'salario_max.gt' => 'El salario máximo debe ser mayor que cero.',
+            'salario_max.decimal' => 'El salario máximo debe tener hasta 2 decimales.',
+            'salario_max.gte' => 'El salario máximo no puede ser menor que el mínimo.',
+            'salario_max.max' => 'El salario máximo no debe superar 99999999.99 soles.',
+
+            'fecha_inicio_vigencia.required' => 'La fecha de inicio es obligatoria.',
+            'fecha_inicio_vigencia.date_format' => 'La fecha de inicio debe tener el formato AAAA-MM-DD.',
+            'fecha_inicio_vigencia.after_or_equal' => 'La fecha de inicio no puede ser anterior a hoy en Lima.',
+
+            'fecha_fin_vigencia.required' => 'La fecha de fin es obligatoria.',
+            'fecha_fin_vigencia.date_format' => 'La fecha de fin debe tener el formato AAAA-MM-DD.',
+            'fecha_fin_vigencia.after' => 'La fecha de fin debe ser posterior a la fecha de inicio.',
+
+            'max_contrataciones.required' => 'El máximo de contrataciones es obligatorio.',
+            'max_contrataciones.integer' => 'El máximo de contrataciones debe ser un entero.',
+            'max_contrataciones.min' => 'Debe permitir al menos una contratación.',
+            'max_contrataciones.max' => 'El máximo de contrataciones no debe superar 65535.',
+
+            'habilidades.required' => 'Seleccione entre 5 y 10 habilidades, sumando técnicas y blandas.',
+            'habilidades.array' => 'Las habilidades deben enviarse como una lista.',
+            'habilidades.list' => 'Las habilidades deben tener índices consecutivos.',
+            'habilidades.min' => 'Seleccione al menos 5 habilidades, sumando técnicas y blandas.',
+            'habilidades.max' => 'No puede asociar más de 10 habilidades a la vacante, sumando técnicas y blandas.',
+
+            'habilidades.*.required' => 'Proporcione los datos de cada habilidad.',
+            'habilidades.*.array' => 'Cada habilidad debe contener únicamente habilidad_id y requisito.',
+
+            'habilidades.*.habilidad_id.required' => 'El identificador de la habilidad es obligatorio.',
+            'habilidades.*.habilidad_id.integer' => 'El identificador de la habilidad debe ser entero.',
+            'habilidades.*.habilidad_id.min' => 'El identificador de la habilidad debe ser positivo.',
+            'habilidades.*.habilidad_id.distinct' => 'No puede repetir habilidades.',
+
+            'habilidades.*.requisito.required' => 'Indique si la habilidad es obligatoria o deseable.',
+            'habilidades.*.requisito.string' => 'El requisito debe ser un texto.',
+            'habilidades.*.requisito.in' => 'El requisito debe ser must_have o nice_to_have.',
+
+            'requisitos.array' => 'Los requisitos deben enviarse como una lista.',
+            'requisitos.list' => 'Los requisitos deben tener índices consecutivos.',
+            'requisitos.max' => 'No puede registrar más de 10 requisitos.',
+            'requisitos.*.required' => 'Cada requisito debe tener un texto.',
+            'requisitos.*.string' => 'Cada requisito debe ser un texto.',
+            'requisitos.*.max' => 'Cada requisito no debe superar los 200 caracteres.',
+            'requisitos.*.distinct' => 'No puede repetir requisitos.',
+
+            'beneficios.array' => 'Los beneficios deben enviarse como una lista.',
+            'beneficios.list' => 'Los beneficios deben tener índices consecutivos.',
+            'beneficios.max' => 'No puede registrar más de 10 beneficios.',
+            'beneficios.*.required' => 'Cada beneficio debe tener un texto.',
+            'beneficios.*.string' => 'Cada beneficio debe ser un texto.',
+            'beneficios.*.max' => 'Cada beneficio no debe superar los 200 caracteres.',
+            'beneficios.*.distinct' => 'No puede repetir beneficios.',
+        ];
+    }
+}
+===== PAGAR VACANTE REQUEST =====
+<?php
+
+namespace App\Http\Requests\Pagos;
+
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Carbon;
+use Illuminate\Validation\Validator;
+
+/**
+ * Datos de la tarjeta del pago simulado.
+ * Se acepta cualquier tarjeta con número válido (algoritmo de Luhn), vencimiento vigente y CVV: el pago siempre se aprueba.
+ * El monto no se recibe: lo calcula el servidor. El número completo y el CVV nunca se guardan.
+ */
+class PagarVacanteRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('titular') && is_string($this->titular)) {
+            $this->merge([
+                'titular' => preg_replace('/\s+/u', ' ', trim($this->titular)),
+            ]);
+        }
+    }
+
+    public function rules(): array
+    {
+        return [
+            'titular' => [
+                'required',
+                'string',
+                'max:100',
+            ],
+
+            'numero_tarjeta' => [
+                'bail',
+                'required',
+                'string',
+                'digits:16',
+            ],
+
+            'vencimiento' => [
+                'bail',
+                'required',
+                'string',
+                'regex:/^(0[1-9]|1[0-2])\/\d{2}$/',
+            ],
+
+            'cvv' => [
+                'required',
+                'string',
+                'digits:3',
+            ],
+        ];
+    }
+
+    public function after(): array
+    {
+        return [
+            function (Validator $validator): void {
+                if ($validator->errors()->has('numero_tarjeta')) {
+                    return;
+                }
+
+                if (! $this->cumpleLuhn($this->input('numero_tarjeta'))) {
+                    $validator->errors()->add('numero_tarjeta', 'El número de tarjeta no es válido.');
+                }
+            },
+
+            function (Validator $validator): void {
+                if ($validator->errors()->has('vencimiento')) {
+                    return;
+                }
+
+                // La tarjeta sirve hasta el último día del mes indicado
+                $vence = Carbon::createFromFormat('!m/y', $this->input('vencimiento'))->endOfMonth();
+
+                if ($vence->isPast()) {
+                    $validator->errors()->add('vencimiento', 'La tarjeta está vencida.');
+                }
+            },
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'titular.required' => 'El titular es obligatorio.',
+            'titular.string' => 'El titular debe ser una cadena de texto.',
+            'titular.max' => 'El titular no debe superar los 100 caracteres.',
+
+            'numero_tarjeta.required' => 'El número de tarjeta es obligatorio.',
+            'numero_tarjeta.string' => 'El número de tarjeta debe enviarse como texto.',
+            'numero_tarjeta.digits' => 'El número de tarjeta debe tener 16 dígitos.',
+
+            'vencimiento.required' => 'El vencimiento es obligatorio.',
+            'vencimiento.string' => 'El vencimiento debe enviarse como texto.',
+            'vencimiento.regex' => 'El vencimiento debe tener el formato MM/AA.',
+
+            'cvv.required' => 'El CVV es obligatorio.',
+            'cvv.string' => 'El CVV debe enviarse como texto.',
+            'cvv.digits' => 'El CVV debe tener 3 dígitos.',
+        ];
+    }
+
+    // Dígito verificador de las tarjetas: desde la derecha se duplica uno de cada dos dígitos y la suma debe ser múltiplo de 10
+    private function cumpleLuhn(string $numero): bool
+    {
+        if (! preg_match('/^[0-9]{16}$/D', $numero)) {
+            return false;
+        }
+
+        $suma = 0;
+        $duplicar = false;
+
+        for ($i = strlen($numero) - 1; $i >= 0; $i--) {
+            $digito = (int) $numero[$i];
+
+            if ($duplicar) {
+                $digito *= 2;
+
+                if ($digito > 9) {
+                    $digito -= 9;
+                }
+            }
+
+            $suma += $digito;
+            $duplicar = ! $duplicar;
+        }
+
+        return $suma % 10 === 0;
+    }
+}
+===== NO APROBAR VACANTE REQUEST =====
+<?php
+
+namespace App\Http\Requests\Moderacion;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+// No aprobar una vacante. El motivo es obligatorio porque la decisión es definitiva.
+class NoAprobarVacanteRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    protected function prepareForValidation(): void
+    {
+        // Un motivo de solo espacios queda vacío y lo rechaza 'required'
+        if ($this->has('motivo') && is_string($this->motivo)) {
+            $this->merge([
+                'motivo' => trim($this->motivo),
+            ]);
+        }
+    }
+
+    public function rules(): array
+    {
+        return [
+            'motivo' => [
+                'required',
+                'string',
+                'max:500',
+            ],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'motivo.required' => 'El motivo de no aprobación es obligatorio.',
+            'motivo.string' => 'El motivo debe ser una cadena de texto.',
+            'motivo.max' => 'El motivo no debe superar los 500 caracteres.',
+        ];
+    }
+}
+===== VACANTE EMPRESA RESOURCE =====
+<?php
+
+namespace App\Http\Resources\Api\V1;
+
+use App\Models\Empleo;
+use App\Models\PagoVacante;
+use App\Models\RevisionVacante;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
+
+/**
+ * Vacante vista por su empresa.
+ *
+ * Relaciones: nivelPuesto, areaEstudio, habilidades, revision y pagos.
+ *
+ * @mixin Empleo
+ */
+class VacanteEmpresaResource extends JsonResource
+{
+    public function toArray(Request $request): array
+    {
+        return [
+            'id' => $this->id,
+            'titulo' => $this->titulo,
+            'descripcion' => $this->descripcion,
+            'requisitos' => $this->requisitos ?? [],
+            'beneficios' => $this->beneficios ?? [],
+
+            'nivel_puesto' => $this->whenLoaded(
+                'nivelPuesto',
+                fn () => [
+                    'id' => $this->nivel_puesto_id,
+                    'nombre' => $this->nivelPuesto?->nombre,
+                ]
+            ),
+
+            'area_profesional' => $this->whenLoaded(
+                'areaEstudio',
+                fn () => [
+                    'id' => $this->area_estudio_id,
+                    'nombre' => $this->areaEstudio?->nombre,
+                ]
+            ),
+
+            'tipo_empleo' => $this->tipo_empleo,
+            'ubicacion' => $this->ubicacion,
+
+            // Conservar NULL: ausencia de salario no equivale a cero.
+            'salario_min' => $this->salario_min === null
+                ? null
+                : (float) $this->salario_min,
+
+            'salario_max' => $this->salario_max === null
+                ? null
+                : (float) $this->salario_max,
+
+            'fecha_inicio_vigencia' => $this->fecha_inicio_vigencia
+                ?->toDateString(),
+
+            'fecha_fin_vigencia' => $this->fecha_fin_vigencia
+                ?->toDateString(),
+
+            'max_contrataciones' => $this->numero_vacantes,
+
+            'habilidades' => $this->whenLoaded(
+                'habilidades',
+                fn () => $this->habilidades
+                    ->map(fn ($habilidad) => [
+                        'id' => $habilidad->id,
+                        'nombre' => $habilidad->nombre,
+                        'tipo_habilidad' => $habilidad->tipo_habilidad,
+                        'requisito' => $habilidad->pivot->tipo_requisito,
+                    ])
+                    ->values()
+            ),
+
+            'estado' => [
+                'general' => $this->estadoGeneral(),
+                'revision' => RevisionVacante::estadoDe($this->revision),
+                'motivo_no_aprobacion' => $this->revision?->decision === RevisionVacante::NO_APROBADA
+                    ? $this->revision->motivo
+                    : null,
+                'pago' => PagoVacante::estadoDe($this->pagos),
+                'disponibilidad' => $this->estadoDisponibilidad(),
+                'vigente' => $this->estaVigente(),
+                'publicada_en' => $this->publicadaEn(),
+            ],
+
+            'postulaciones_count' => $this->whenCounted(
+                'postulaciones',
+                fn ($total) => (int) $total
+            ),
+
+            'postulaciones_semana_count' => $this->whenCounted(
+                'postulaciones_semana',
+                fn ($total) => (int) $total
+            ),
+
+            'creado_en' => $this->created_at,
+            'eliminado_en' => $this->deleted_at,
+        ];
+    }
+}
+===== VACANTE REVISION RESOURCE =====
+<?php
+
+namespace App\Http\Resources\Api\V1;
+
+use App\Models\Empleo;
+use App\Models\RevisionVacante;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
+
+/**
+ * Vacante consultada por el administrador para su revisión.
+ *
+ * @mixin Empleo
+ */
+class VacanteRevisionResource extends JsonResource
+{
+    public function toArray(Request $request): array
+    {
+        return [
+            'id' => $this->id,
+            'titulo' => $this->titulo,
+            'descripcion' => $this->descripcion,
+            'requisitos' => $this->requisitos ?? [],
+            'beneficios' => $this->beneficios ?? [],
+
+            'nivel_puesto' => $this->whenLoaded(
+                'nivelPuesto',
+                fn () => [
+                    'id' => $this->nivel_puesto_id,
+                    'nombre' => $this->nivelPuesto?->nombre,
+                ]
+            ),
+
+            'area_profesional' => $this->whenLoaded(
+                'areaEstudio',
+                fn () => [
+                    'id' => $this->area_estudio_id,
+                    'nombre' => $this->areaEstudio?->nombre,
+                ]
+            ),
+
+            'tipo_empleo' => $this->tipo_empleo,
+            'ubicacion' => $this->ubicacion,
+
+            'salario_min' => $this->salario_min === null
+                ? null
+                : (float) $this->salario_min,
+
+            'salario_max' => $this->salario_max === null
+                ? null
+                : (float) $this->salario_max,
+
+            'fecha_inicio_vigencia' => $this->fecha_inicio_vigencia
+                ?->toDateString(),
+
+            'fecha_fin_vigencia' => $this->fecha_fin_vigencia
+                ?->toDateString(),
+
+            'max_contrataciones' => $this->numero_vacantes,
+
+            'habilidades' => $this->whenLoaded(
+                'habilidades',
+                fn () => $this->habilidades
+                    ->map(fn ($habilidad) => [
+                        'id' => $habilidad->id,
+                        'nombre' => $habilidad->nombre,
+                        'tipo_habilidad' => $habilidad->tipo_habilidad,
+                        'requisito' => $habilidad->pivot->tipo_requisito,
+                    ])
+                    ->values()
+            ),
+
+            'empresa' => $this->whenLoaded(
+                'empresa',
+                fn () => [
+                    'id' => $this->empresa->id,
+                    'razon_social' => $this->empresa->razon_social,
+                    'ruc' => $this->empresa->ruc,
+                    'sector' => $this->empresa->sector,
+                ]
+            ),
+
+            'revision' => [
+                'estado' => RevisionVacante::estadoDe($this->revision),
+                'motivo' => $this->revision?->motivo,
+                'revisado_en' => $this->revision?->created_at,
+            ],
+
+            'creado_en' => $this->created_at,
+        ];
+    }
+}
+===== PAGO VACANTE RESOURCE =====
+<?php
+
+namespace App\Http\Resources\Api\V1;
+
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
+
+/**
+ * Un intento de pago simulado (PAG-01 a PAG-03). De la tarjeta solo se muestran los últimos 4 dígitos.
+ *
+ * @mixin \App\Models\PagoVacante
+ */
+class PagoVacanteResource extends JsonResource
+{
+    public function toArray(Request $request): array
+    {
+        return [
+            'id'        => $this->id,
+            'resultado' => $this->resultado,
+            'monto'     => (float) $this->monto,
+            'tarjeta'   => $this->tarjeta_ultimos4 !== null ? '**** ' . $this->tarjeta_ultimos4 : null,
+            'fecha'     => $this->created_at,
+        ];
+    }
+}
+===== CONFIGURACION PAGO =====
+<?php
+
+/*
+|--------------------------------------------------------------------------
+| Pago simulado de vacantes (HU-03)
+|--------------------------------------------------------------------------
+|
+| Tarifa y unidad son la referencia de la HU (aprox. S/ 100 por puesto).
+| Se usan salvo que el dueño del negocio indique otros valores.
+|
+*/
+
+return [
+
+    // Monto en soles por cada unidad de cobro
+    'tarifa_por_puesto' => 100,
+
+    // 'puesto'  → monto = tarifa × max_contrataciones de la vacante
+    // 'vacante' → monto = tarifa (un solo cobro por anuncio)
+    'unidad_cobro' => 'vacante',
+
+    'moneda' => 'PEN',
+
+];
